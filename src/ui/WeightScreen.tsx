@@ -182,6 +182,7 @@ export function WeightScreen() {
       <SetGoalSheet
         visible={goalSheet}
         initialTargetKg={goal?.targetKg ?? Math.round((last?.trendKg ?? 75) - 4)}
+        initialTargetDate={goal?.targetDate ?? addDays(today(), 84)}
         startKg={goal?.startKg ?? last?.trendKg ?? 75}
         startDate={goal?.startDate ?? today()}
         canClear={goal !== null}
@@ -218,13 +219,25 @@ function GoalCard({
   const progress = goalProgressPct({ startKg: goal.startKg, currentTrendKg, goalKg: goal.targetKg });
   const remaining = Math.abs(goal.targetKg - currentTrendKg);
 
-  let etaText = 'Sigue registrando para estimar la fecha';
+  // Fecha objetivo (la meta fijada) y, aparte, la proyección a tu ritmo real.
   let timePct: number | null = null;
+  let metaLine = 'Sin fecha objetivo';
+  if (goal.targetDate) {
+    metaLine = `📅 Meta: ${formatDate(goal.targetDate)}`;
+    const totalDays = daysBetween(goal.startDate, goal.targetDate);
+    timePct = timeElapsedPct({ startDate: goal.startDate, asOf: today(), estimatedTotalDays: totalDays });
+  }
+
+  let projLine: string | null = null;
   if (days != null) {
     const eta = addDays(today(), days);
-    const totalDays = daysBetween(goal.startDate, today()) + days;
-    timePct = timeElapsedPct({ startDate: goal.startDate, asOf: today(), estimatedTotalDays: totalDays });
-    etaText = `📅 Fecha estimada: ${formatDate(eta)} (${friendlyMonth(eta)})`;
+    projLine = `A tu ritmo actual, ~${formatDate(eta)} (${friendlyMonth(eta)})`;
+    if (!goal.targetDate) {
+      const totalDays = daysBetween(goal.startDate, today()) + days;
+      timePct = timeElapsedPct({ startDate: goal.startDate, asOf: today(), estimatedTotalDays: totalDays });
+    }
+  } else if (!goal.targetDate) {
+    projLine = 'Sigue registrando para estimar la fecha';
   }
 
   return (
@@ -233,7 +246,8 @@ function GoalCard({
         <Text style={styles.goalTitle}>🎯 Objetivo: {formatKg(goal.targetKg)}</Text>
         <Text style={styles.muted}>faltan {formatKg(remaining)}</Text>
       </View>
-      <Text style={styles.eta}>{etaText}</Text>
+      <Text style={styles.eta}>{metaLine}</Text>
+      {projLine && <Text style={styles.proj}>{projLine}</Text>}
 
       <Bar label="Progreso" pct={progress} color={Brand.accent} />
       {timePct != null && <Bar label="Tiempo transcurrido" pct={timePct} color="#5b8fd4" />}
@@ -280,7 +294,8 @@ const styles = StyleSheet.create({
   defineGoalTxt: { color: Brand.accent, fontWeight: '700' },
   goalHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   goalTitle: { color: Brand.text, fontWeight: '700' },
-  eta: { color: Brand.info, marginVertical: 8 },
+  eta: { color: Brand.info, marginTop: 8 },
+  proj: { color: Brand.textMuted, fontSize: 12, marginTop: 2, marginBottom: 6 },
   bar: { marginTop: 8 },
   barLabelRow: { flexDirection: 'row', justifyContent: 'space-between' },
   barLabel: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase' },

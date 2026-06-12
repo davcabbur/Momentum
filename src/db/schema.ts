@@ -13,6 +13,7 @@ export const weightGoal = sqliteTable('weight_goal', {
   targetKg: real('target_kg').notNull(),
   startKg: real('start_kg').notNull(),
   startDate: text('start_date').notNull(), // YYYY-MM-DD
+  targetDate: text('target_date'), // YYYY-MM-DD (nullable por compatibilidad)
 });
 
 /**
@@ -23,6 +24,7 @@ export const userProfile = sqliteTable('user_profile', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   sex: text('sex').notNull(), // 'male' | 'female'
   age: integer('age').notNull(),
+  heightCm: integer('height_cm'), // nullable: ALTER ADD en tabla con filas no admite NOT NULL sin default
   stage: text('stage').notNull(), // 'definicion' | 'normocalorica' | 'volumen'
   activityLevel: text('activity_level').notNull(), // 'sedentary'|'light'|'moderate'|'high'|'very_high'
 });

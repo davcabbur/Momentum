@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { addDays, suggestGoal } from '@/bodyweight/goal';
 import { formatDate, parseDmy } from '@/bodyweight/format';
 import { Brand } from '@/constants/theme';
-import { setProfile, upsertWeight, setGoal } from '@/db/bodyweight-repo';
+import { setGoal, setProfile, upsertWeight } from '@/db/bodyweight-repo';
 
 const SEXES = [
   { key: 'male', label: 'Hombre' },
@@ -24,7 +25,7 @@ const ACTIVITIES = [
   { key: 'very_high', label: 'Muy alto', desc: 'Trabajo físico + deporte' },
 ];
 
-const STEPS = ['Sobre ti', 'Tu peso de hoy', 'Tu objetivo', 'Tu etapa', 'Tu actividad'];
+const STEPS = ['Sobre ti', 'Peso inicial', 'Tu etapa', 'Tu objetivo', 'Tu actividad'];
 
 function num(s: string): number {
   return parseFloat(s.replace(',', '.'));
@@ -36,18 +37,32 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const [step, setStep] = useState(0);
   const [sex, setSex] = useState<string | null>(null);
   const [age, setAge] = useState('');
+  const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [dateStr, setDateStr] = useState(formatDate(todayIso));
-  const [target, setTarget] = useState('');
   const [stage, setStage] = useState<string | null>(null);
+  const [target, setTarget] = useState('');
+  const [targetDateStr, setTargetDateStr] = useState('');
   const [activity, setActivity] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Al elegir etapa, autocompletamos objetivo (peso + fecha) de forma orientativa.
+  function chooseStage(key: string) {
+    setStage(key);
+    const startIso = parseDmy(dateStr) ?? todayIso;
+    const w = num(weight);
+    if (w > 0) {
+      const s = suggestGoal({ initialKg: w, stage: key, startDate: startIso });
+      setTarget(String(s.targetKg));
+      setTargetDateStr(formatDate(s.targetDate));
+    }
+  }
+
   const valid = [
-    sex !== null && Number(age) > 0,
+    sex !== null && Number(age) > 0 && num(height) > 0,
     num(weight) > 0 && parseDmy(dateStr) !== null,
-    num(target) > 0,
     stage !== null,
+    num(target) > 0 && parseDmy(targetDateStr) !== null,
     activity !== null,
   ];
   const canNext = valid[step];
@@ -55,11 +70,18 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
 
   async function finish() {
     setSaving(true);
-    const iso = parseDmy(dateStr) ?? todayIso;
+    const startIso = parseDmy(dateStr) ?? todayIso;
+    const targetIso = parseDmy(targetDateStr) ?? addDays(startIso, 84);
     const w = num(weight);
-    await setProfile({ sex: sex!, age: Math.round(Number(age)), stage: stage!, activityLevel: activity! });
-    await upsertWeight(iso, w);
-    await setGoal(num(target), w, iso);
+    await setProfile({
+      sex: sex!,
+      age: Math.round(Number(age)),
+      heightCm: Math.round(num(height)),
+      stage: stage!,
+      activityLevel: activity!,
+    });
+    await upsertWeight(startIso, w);
+    await setGoal(num(target), w, startIso, targetIso);
     onDone();
   }
 
@@ -73,74 +95,35 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       {step === 0 && (
         <>
           <Text style={styles.label}>Sexo</Text>
-          <Text style={styles.help}>Lo usaremos para calcular tus calorías más adelante.</Text>
+          <Text style={styles.help}>Para calcular tus calorías más adelante.</Text>
           <View style={styles.rowOptions}>
             {SEXES.map((o) => (
-              <Pressable
-                key={o.key}
-                style={[styles.pill, sex === o.key && styles.pillOn]}
-                onPress={() => setSex(o.key)}>
+              <Pressable key={o.key} style={[styles.pill, sex === o.key && styles.pillOn]} onPress={() => setSex(o.key)}>
                 <Text style={[styles.pillTxt, sex === o.key && styles.pillTxtOn]}>{o.label}</Text>
               </Pressable>
             ))}
           </View>
           <Text style={[styles.label, { marginTop: 16 }]}>Edad</Text>
-          <TextInput
-            value={age}
-            onChangeText={setAge}
-            keyboardType="number-pad"
-            placeholder="años"
-            placeholderTextColor={Brand.textMuted}
-            style={styles.input}
-          />
+          <TextInput value={age} onChangeText={setAge} keyboardType="number-pad" placeholder="años" placeholderTextColor={Brand.textMuted} style={styles.input} />
+          <Text style={[styles.label, { marginTop: 16 }]}>Altura (cm)</Text>
+          <TextInput value={height} onChangeText={setHeight} keyboardType="number-pad" placeholder="cm" placeholderTextColor={Brand.textMuted} style={styles.input} />
         </>
       )}
 
       {step === 1 && (
         <>
-          <Text style={styles.label}>¿Cuánto pesas hoy? (kg)</Text>
-          <TextInput
-            value={weight}
-            onChangeText={setWeight}
-            keyboardType="decimal-pad"
-            placeholder="kg"
-            placeholderTextColor={Brand.textMuted}
-            style={styles.input}
-          />
-          <Text style={[styles.label, { marginTop: 16 }]}>Fecha de este peso</Text>
+          <Text style={styles.label}>Peso inicial (kg)</Text>
+          <TextInput value={weight} onChangeText={setWeight} keyboardType="decimal-pad" placeholder="kg" placeholderTextColor={Brand.textMuted} style={styles.input} />
+          <Text style={[styles.label, { marginTop: 16 }]}>Fecha de inicio</Text>
           <Text style={styles.help}>Formato DD/MM/AAAA. Por defecto, hoy.</Text>
-          <TextInput
-            value={dateStr}
-            onChangeText={setDateStr}
-            placeholder="DD/MM/AAAA"
-            placeholderTextColor={Brand.textMuted}
-            style={styles.input}
-          />
+          <TextInput value={dateStr} onChangeText={setDateStr} placeholder="DD/MM/AAAA" placeholderTextColor={Brand.textMuted} style={styles.input} />
         </>
       )}
 
       {step === 2 && (
-        <>
-          <Text style={styles.label}>¿Cuál es tu objetivo de peso? (kg)</Text>
-          <Text style={styles.help}>Una guía orientativa; la fecha estimada se recalcula sola con tus pesajes.</Text>
-          <TextInput
-            value={target}
-            onChangeText={setTarget}
-            keyboardType="decimal-pad"
-            placeholder="kg"
-            placeholderTextColor={Brand.textMuted}
-            style={styles.input}
-          />
-        </>
-      )}
-
-      {step === 3 && (
         <View style={styles.optionList}>
           {STAGES.map((o) => (
-            <Pressable
-              key={o.key}
-              style={[styles.option, stage === o.key && styles.optionOn]}
-              onPress={() => setStage(o.key)}>
+            <Pressable key={o.key} style={[styles.option, stage === o.key && styles.optionOn]} onPress={() => chooseStage(o.key)}>
               <Text style={styles.optionLabel}>{o.label}</Text>
               <Text style={styles.optionDesc}>{o.desc}</Text>
             </Pressable>
@@ -148,13 +131,23 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         </View>
       )}
 
+      {step === 3 && (
+        <>
+          <Text style={styles.help}>
+            Te proponemos un objetivo y una fecha orientativos según tu etapa. Edítalos si quieres; la fecha se irá
+            ajustando sola con tus pesajes.
+          </Text>
+          <Text style={[styles.label, { marginTop: 8 }]}>Peso objetivo (kg)</Text>
+          <TextInput value={target} onChangeText={setTarget} keyboardType="decimal-pad" placeholder="kg" placeholderTextColor={Brand.textMuted} style={styles.input} />
+          <Text style={[styles.label, { marginTop: 16 }]}>Fecha objetivo</Text>
+          <TextInput value={targetDateStr} onChangeText={setTargetDateStr} placeholder="DD/MM/AAAA" placeholderTextColor={Brand.textMuted} style={styles.input} />
+        </>
+      )}
+
       {step === 4 && (
         <View style={styles.optionList}>
           {ACTIVITIES.map((o) => (
-            <Pressable
-              key={o.key}
-              style={[styles.option, activity === o.key && styles.optionOn]}
-              onPress={() => setActivity(o.key)}>
+            <Pressable key={o.key} style={[styles.option, activity === o.key && styles.optionOn]} onPress={() => setActivity(o.key)}>
               <Text style={styles.optionLabel}>{o.label}</Text>
               <Text style={styles.optionDesc}>{o.desc}</Text>
             </Pressable>

@@ -13,6 +13,7 @@ export async function getProfile(): Promise<Profile | null> {
 export async function setProfile(p: {
   sex: string;
   age: number;
+  heightCm: number;
   stage: string;
   activityLevel: string;
 }): Promise<void> {
@@ -53,12 +54,20 @@ export async function getGoal(): Promise<typeof weightGoal.$inferSelect | null> 
   return rows[0] ?? null;
 }
 
-export async function setGoal(targetKg: number, startKg: number, startDate: string): Promise<void> {
+export async function setGoal(
+  targetKg: number,
+  startKg: number,
+  startDate: string,
+  targetDate: string,
+): Promise<void> {
   const current = await getGoal();
   if (current) {
-    await db.update(weightGoal).set({ targetKg, startKg, startDate }).where(eq(weightGoal.id, current.id));
+    await db
+      .update(weightGoal)
+      .set({ targetKg, startKg, startDate, targetDate })
+      .where(eq(weightGoal.id, current.id));
   } else {
-    await db.insert(weightGoal).values({ targetKg, startKg, startDate });
+    await db.insert(weightGoal).values({ targetKg, startKg, startDate, targetDate });
   }
 }
 

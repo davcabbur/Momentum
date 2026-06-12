@@ -45,3 +45,33 @@ export function timeElapsedPct(p: { startDate: string; asOf: string; estimatedTo
   const elapsed = daysBetween(p.startDate, p.asOf);
   return clampPct((elapsed / p.estimatedTotalDays) * 100);
 }
+
+/**
+ * Sugerencia automática de objetivo (peso + fecha) según la etapa, para el onboarding.
+ * Son valores orientativos y editables: ritmos saludables por defecto.
+ */
+export function suggestGoal(p: {
+  initialKg: number;
+  stage: string;
+  startDate: string;
+}): { targetKg: number; targetDate: string } {
+  const round05 = (x: number) => Math.round(x * 2) / 2;
+  let targetKg: number;
+  let weeks: number;
+
+  if (p.stage === 'definicion') {
+    targetKg = round05(p.initialKg * 0.92); // perder ~8 %
+    const ratePerWeek = p.initialKg * 0.005; // ~0,5 %/semana
+    weeks = ratePerWeek > 0 ? (p.initialKg - targetKg) / ratePerWeek : 12;
+  } else if (p.stage === 'volumen') {
+    targetKg = round05(p.initialKg * 1.05); // ganar ~5 %
+    const ratePerWeek = p.initialKg * 0.003; // ~0,3 %/semana
+    weeks = ratePerWeek > 0 ? (targetKg - p.initialKg) / ratePerWeek : 12;
+  } else {
+    // normocalórica / recomposición: mantener peso, horizonte de revisión
+    targetKg = round05(p.initialKg);
+    weeks = 12;
+  }
+
+  return { targetKg, targetDate: addDays(p.startDate, Math.round(weeks * 7)) };
+}

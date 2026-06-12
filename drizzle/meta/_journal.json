@@ -15,6 +15,13 @@
       "when": 1781282146048,
       "tag": "0001_uneven_bishop",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1781290607770,
+      "tag": "0002_wakeful_morph",
+      "breakpoints": true
     }
   ]
 }

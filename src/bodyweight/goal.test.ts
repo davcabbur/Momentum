@@ -1,4 +1,4 @@
-import { estimateDaysToGoal, addDays, daysBetween, goalProgressPct, timeElapsedPct } from './goal';
+import { estimateDaysToGoal, addDays, daysBetween, goalProgressPct, timeElapsedPct, suggestGoal } from './goal';
 
 test('estima días al objetivo cuando se progresa en la dirección correcta', () => {
   // faltan 1 kg, perdiendo 0,25 kg/semana → 28 días
@@ -29,4 +29,22 @@ test('progreso = recorrido / distancia total, acotado 0..100', () => {
 
 test('tiempo transcurrido = días pasados / días totales estimados, acotado 0..100', () => {
   expect(timeElapsedPct({ startDate: '2026-01-01', asOf: '2026-01-08', estimatedTotalDays: 28 })).toBeCloseTo(25, 1);
+});
+
+test('suggestGoal en definición propone bajar y una fecha futura', () => {
+  const r = suggestGoal({ initialKg: 80, stage: 'definicion', startDate: '2026-01-01' });
+  expect(r.targetKg).toBe(73.5); // 80 * 0.92 = 73.6 → 73.5
+  expect(r.targetDate > '2026-01-01').toBe(true);
+});
+
+test('suggestGoal en volumen propone subir', () => {
+  const r = suggestGoal({ initialKg: 80, stage: 'volumen', startDate: '2026-01-01' });
+  expect(r.targetKg).toBe(84); // 80 * 1.05
+  expect(r.targetDate > '2026-01-01').toBe(true);
+});
+
+test('suggestGoal en normocalórica mantiene el peso', () => {
+  const r = suggestGoal({ initialKg: 80, stage: 'normocalorica', startDate: '2026-01-01' });
+  expect(r.targetKg).toBe(80);
+  expect(r.targetDate).toBe(addDays('2026-01-01', 84));
 });
