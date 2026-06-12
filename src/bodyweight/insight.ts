@@ -4,7 +4,11 @@ export interface WeightInsightInput {
   currentTrendKg: number;
   /** Objetivo de peso, o null si no hay. */
   goalKg: number | null;
+  /** Número de pesajes registrados (para no dar veredicto de tendencia con pocos datos). */
+  pointCount: number;
 }
+
+const MIN_POINTS_FOR_TREND = 4;
 
 export interface WeightInsight {
   title: string;
@@ -34,6 +38,20 @@ function goalDir(currentTrendKg: number, goalKg: number | null): GoalDir {
  * Tono siempre tranquilizador (regla de producto): nunca culpabiliza un dato puntual.
  */
 export function weightInsight(input: WeightInsightInput): WeightInsight {
+  // Sin datos suficientes no hay tendencia: mensaje de arranque, no un veredicto.
+  if (input.pointCount <= 1) {
+    return {
+      title: 'Peso inicial guardado 🎯',
+      body: 'Este es tu punto de partida. Pésate unos días (mejor en ayunas, recién levantado) y aquí verás tu tendencia y consejos según cómo evoluciones.',
+    };
+  }
+  if (input.pointCount < MIN_POINTS_FOR_TREND) {
+    return {
+      title: 'Vas cogiendo datos 📊',
+      body: 'Con unos pesajes más calcularé tu tendencia real. El peso baila a diario (agua, comida, sal); lo que importa es la línea, no el número de un día.',
+    };
+  }
+
   const dir = trendDir(input.slopePerWeek);
   const goal = goalDir(input.currentTrendKg, input.goalKg);
   const pctPerWeek = input.currentTrendKg > 0 ? (input.slopePerWeek / input.currentTrendKg) * 100 : 0;

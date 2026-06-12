@@ -67,7 +67,12 @@ export function WeightScreen() {
   const todayExists = points.some((p) => p.date === todayStr);
   const history = [...points].reverse(); // más reciente primero
   const allSelected = history.length > 0 && selected.size === history.length;
-  const insight = weightInsight({ slopePerWeek: slope, currentTrendKg: last.trendKg, goalKg: goal?.targetKg ?? null });
+  const insight = weightInsight({
+    slopePerWeek: slope,
+    currentTrendKg: last.trendKg,
+    goalKg: goal?.targetKg ?? null,
+    pointCount: points.length,
+  });
 
   function openToday() {
     setEditing({ date: todayStr, kg: last?.weightKg ?? 75, isExisting: todayExists });
@@ -116,9 +121,13 @@ export function WeightScreen() {
 
       {goal && (
         <View style={styles.stats}>
-          <Stat label="Partida" value={formatKg(goal.startKg)} />
-          <Stat label="Actual" value={formatKg(last.weightKg)} highlight />
-          <Stat label="Objetivo" value={formatKg(goal.targetKg)} />
+          <Stat label="Partida" value={formatKg(goal.startKg)} date={formatDate(goal.startDate)} />
+          <Stat label="Actual" value={formatKg(last.weightKg)} date={formatDate(last.date)} highlight />
+          <Stat
+            label="Objetivo"
+            value={formatKg(goal.targetKg)}
+            date={goal.targetDate ? formatDate(goal.targetDate) : undefined}
+          />
         </View>
       )}
 
@@ -195,11 +204,22 @@ export function WeightScreen() {
   );
 }
 
-function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function Stat({
+  label,
+  value,
+  date,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  date?: string;
+  highlight?: boolean;
+}) {
   return (
     <View style={[styles.stat, highlight && styles.statHighlight]}>
       <Text style={styles.statLabel}>{label}</Text>
       <Text style={styles.statValue}>{value}</Text>
+      {date && <Text style={styles.statDate}>{date}</Text>}
     </View>
   );
 }
@@ -290,6 +310,7 @@ const styles = StyleSheet.create({
   statHighlight: { borderColor: Brand.accentStrong },
   statLabel: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase' },
   statValue: { color: Brand.text, fontSize: 16, fontWeight: '800', marginTop: 4 },
+  statDate: { color: Brand.textMuted, fontSize: 10, marginTop: 3 },
   defineGoal: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 16, alignItems: 'center' },
   defineGoalTxt: { color: Brand.accent, fontWeight: '700' },
   goalHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },

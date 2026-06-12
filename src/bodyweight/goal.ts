@@ -46,32 +46,52 @@ export function timeElapsedPct(p: { startDate: string; asOf: string; estimatedTo
   return clampPct((elapsed / p.estimatedTotalDays) * 100);
 }
 
+const LOSE_RATE_PER_WEEK = 0.005; // ~0,5 %/semana del peso corporal
+const GAIN_RATE_PER_WEEK = 0.003; // ~0,3 %/semana del peso corporal
+const DEFAULT_HORIZON_DAYS = 84; // ~12 semanas (mantenimiento)
+
+function round05(x: number): number {
+  return Math.round(x * 2) / 2;
+}
+
 /**
  * Sugerencia automática de objetivo (peso + fecha) según la etapa, para el onboarding.
- * Son valores orientativos y editables: ritmos saludables por defecto.
+ * Valores orientativos y editables, a ritmos saludables por defecto.
  */
 export function suggestGoal(p: {
   initialKg: number;
   stage: string;
   startDate: string;
 }): { targetKg: number; targetDate: string } {
-  const round05 = (x: number) => Math.round(x * 2) / 2;
-  let targetKg: number;
-  let weeks: number;
-
   if (p.stage === 'definicion') {
-    targetKg = round05(p.initialKg * 0.92); // perder ~8 %
-    const ratePerWeek = p.initialKg * 0.005; // ~0,5 %/semana
-    weeks = ratePerWeek > 0 ? (p.initialKg - targetKg) / ratePerWeek : 12;
-  } else if (p.stage === 'volumen') {
-    targetKg = round05(p.initialKg * 1.05); // ganar ~5 %
-    const ratePerWeek = p.initialKg * 0.003; // ~0,3 %/semana
-    weeks = ratePerWeek > 0 ? (targetKg - p.initialKg) / ratePerWeek : 12;
-  } else {
-    // normocalórica / recomposición: mantener peso, horizonte de revisión
-    targetKg = round05(p.initialKg);
-    weeks = 12;
+    const targetKg = round05(p.initialKg * 0.92); // perder ~8 %
+    return { targetKg, targetDate: estimateTargetDate({ initialKg: p.initialKg, targetKg, startDate: p.startDate }) };
   }
+  if (p.stage === 'volumen') {
+    const targetKg = round05(p.initialKg * 1.05); // ganar ~5 %
+    return { targetKg, targetDate: estimateTargetDate({ initialKg: p.initialKg, targetKg, startDate: p.startDate }) };
+  }
+  return { targetKg: round05(p.initialKg), targetDate: addDays(p.startDate, DEFAULT_HORIZON_DAYS) };
+}
 
-  return { targetKg, targetDate: addDays(p.startDate, Math.round(weeks * 7)) };
+/** Fecha objetivo estimada para un peso, a ritmo saludable (dirección según peso vs inicial). */
+export function estimateTargetDate(p: { initialKg: number; targetKg: number; startDate: string }): string {
+  const diff = Math.abs(p.targetKg - p.initialKg);
+  if (diff < 0.05) return addDays(p.startDate, DEFAULT_HORIZON_DAYS);
+  const ratePerWeek = p.initialKg * (p.targetKg < p.initialKg ? LOSE_RATE_PER_WEEK : GAIN_RATE_PER_WEEK);
+  const weeks = diff / ratePerWeek;
+  return addDays(p.startDate, Math.round(weeks * 7));
+}
+
+/** Peso objetivo alcanzable en la fecha dada, a ritmo saludable (dirección según etapa). */
+export function estimateTargetWeight(p: {
+  initialKg: number;
+  startDate: string;
+  targetDate: string;
+  stage: string;
+}): number {
+  const weeks = Math.max(0, daysBetween(p.startDate, p.targetDate)) / 7;
+  if (p.stage === 'definicion') return round05(p.initialKg - p.initialKg * LOSE_RATE_PER_WEEK * weeks);
+  if (p.stage === 'volumen') return round05(p.initialKg + p.initialKg * GAIN_RATE_PER_WEEK * weeks);
+  return round05(p.initialKg);
 }

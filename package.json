@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo/ui": "~0.2.0-beta.9",
+    "@react-native-community/datetimepicker": "8.4.4",
     "drizzle-orm": "^0.45.2",
     "expo": "^54",
     "expo-constants": "~18.0.13",

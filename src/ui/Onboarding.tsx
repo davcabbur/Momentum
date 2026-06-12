@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { addDays, suggestGoal } from '@/bodyweight/goal';
 import { formatDate, parseDmy } from '@/bodyweight/format';
+import { addDays, estimateTargetDate, estimateTargetWeight, suggestGoal } from '@/bodyweight/goal';
 import { Brand } from '@/constants/theme';
 import { setGoal, setProfile, upsertWeight } from '@/db/bodyweight-repo';
+import { kcalForTarget } from '@/nutrition/kcal';
+import { DateField } from '@/ui/DateField';
 
 const SEXES = [
   { key: 'male', label: 'Hombre' },
@@ -25,7 +27,7 @@ const ACTIVITIES = [
   { key: 'very_high', label: 'Muy alto', desc: 'Trabajo físico + deporte' },
 ];
 
-const STEPS = ['Sobre ti', 'Peso inicial', 'Tu etapa', 'Tu objetivo', 'Tu actividad'];
+const STEPS = ['Sobre ti', 'Peso inicial', 'Tu etapa', 'Tu actividad', 'Tu objetivo'];
 
 function num(s: string): number {
   return parseFloat(s.replace(',', '.'));
@@ -41,38 +43,78 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const [weight, setWeight] = useState('');
   const [dateStr, setDateStr] = useState(formatDate(todayIso));
   const [stage, setStage] = useState<string | null>(null);
+  const [activity, setActivity] = useState<string | null>(null);
   const [target, setTarget] = useState('');
   const [targetDateStr, setTargetDateStr] = useState('');
-  const [activity, setActivity] = useState<string | null>(null);
+  const [weightTouched, setWeightTouched] = useState(false);
+  const [dateTouched, setDateTouched] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Al elegir etapa, autocompletamos objetivo (peso + fecha) de forma orientativa.
+  const startIso = parseDmy(dateStr);
+  const initial = num(weight);
+
+  // Al elegir etapa, autocompletamos objetivo (peso + fecha); aún sin "tocar" por el usuario.
   function chooseStage(key: string) {
     setStage(key);
-    const startIso = parseDmy(dateStr) ?? todayIso;
-    const w = num(weight);
-    if (w > 0) {
-      const s = suggestGoal({ initialKg: w, stage: key, startDate: startIso });
+    if (initial > 0 && startIso) {
+      const s = suggestGoal({ initialKg: initial, stage: key, startDate: startIso });
       setTarget(String(s.targetKg));
       setTargetDateStr(formatDate(s.targetDate));
+      setWeightTouched(false);
+      setDateTouched(false);
     }
   }
 
+  // Cambias el peso → si no has tocado la fecha, se recalcula sola.
+  function onChangeTarget(v: string) {
+    setTarget(v);
+    setWeightTouched(true);
+    const t = num(v);
+    if (!dateTouched && t > 0 && initial > 0 && startIso) {
+      setTargetDateStr(formatDate(estimateTargetDate({ initialKg: initial, targetKg: t, startDate: startIso })));
+    }
+  }
+
+  // Cambias la fecha → si no has tocado el peso, se recalcula solo.
+  function onChangeTargetDate(v: string) {
+    setTargetDateStr(v);
+    setDateTouched(true);
+    const d = parseDmy(v);
+    if (!weightTouched && d && initial > 0 && startIso && stage) {
+      setTarget(String(estimateTargetWeight({ initialKg: initial, startDate: startIso, targetDate: d, stage })));
+    }
+  }
+
+  const targetIsoParsed = parseDmy(targetDateStr);
+  const bothChosen = weightTouched && dateTouched;
+  const plan =
+    bothChosen && num(target) > 0 && targetIsoParsed && startIso && sex && activity
+      ? kcalForTarget({
+          sex,
+          age: Math.round(Number(age)),
+          heightCm: Math.round(num(height)),
+          activityLevel: activity,
+          currentKg: initial,
+          targetKg: num(target),
+          startDate: startIso,
+          targetDate: targetIsoParsed,
+        })
+      : null;
+
   const valid = [
     sex !== null && Number(age) > 0 && num(height) > 0,
-    num(weight) > 0 && parseDmy(dateStr) !== null,
+    initial > 0 && startIso !== null,
     stage !== null,
-    num(target) > 0 && parseDmy(targetDateStr) !== null,
     activity !== null,
+    num(target) > 0 && targetIsoParsed !== null,
   ];
   const canNext = valid[step];
   const isLast = step === STEPS.length - 1;
 
   async function finish() {
     setSaving(true);
-    const startIso = parseDmy(dateStr) ?? todayIso;
-    const targetIso = parseDmy(targetDateStr) ?? addDays(startIso, 84);
-    const w = num(weight);
+    const startFinal = startIso ?? todayIso;
+    const targetFinal = targetIsoParsed ?? addDays(startFinal, 84);
     await setProfile({
       sex: sex!,
       age: Math.round(Number(age)),
@@ -80,8 +122,8 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       stage: stage!,
       activityLevel: activity!,
     });
-    await upsertWeight(startIso, w);
-    await setGoal(num(target), w, startIso, targetIso);
+    await upsertWeight(startFinal, initial);
+    await setGoal(num(target), initial, startFinal, targetFinal);
     onDone();
   }
 
@@ -95,7 +137,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       {step === 0 && (
         <>
           <Text style={styles.label}>Sexo</Text>
-          <Text style={styles.help}>Para calcular tus calorías más adelante.</Text>
+          <Text style={styles.help}>Para calcular tus calorías.</Text>
           <View style={styles.rowOptions}>
             {SEXES.map((o) => (
               <Pressable key={o.key} style={[styles.pill, sex === o.key && styles.pillOn]} onPress={() => setSex(o.key)}>
@@ -115,8 +157,8 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           <Text style={styles.label}>Peso inicial (kg)</Text>
           <TextInput value={weight} onChangeText={setWeight} keyboardType="decimal-pad" placeholder="kg" placeholderTextColor={Brand.textMuted} style={styles.input} />
           <Text style={[styles.label, { marginTop: 16 }]}>Fecha de inicio</Text>
-          <Text style={styles.help}>Formato DD/MM/AAAA. Por defecto, hoy.</Text>
-          <TextInput value={dateStr} onChangeText={setDateStr} placeholder="DD/MM/AAAA" placeholderTextColor={Brand.textMuted} style={styles.input} />
+          <Text style={styles.help}>Escríbela o elígela en el calendario. Por defecto, hoy.</Text>
+          <DateField value={dateStr} onChange={setDateStr} />
         </>
       )}
 
@@ -132,19 +174,6 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       )}
 
       {step === 3 && (
-        <>
-          <Text style={styles.help}>
-            Te proponemos un objetivo y una fecha orientativos según tu etapa. Edítalos si quieres; la fecha se irá
-            ajustando sola con tus pesajes.
-          </Text>
-          <Text style={[styles.label, { marginTop: 8 }]}>Peso objetivo (kg)</Text>
-          <TextInput value={target} onChangeText={setTarget} keyboardType="decimal-pad" placeholder="kg" placeholderTextColor={Brand.textMuted} style={styles.input} />
-          <Text style={[styles.label, { marginTop: 16 }]}>Fecha objetivo</Text>
-          <TextInput value={targetDateStr} onChangeText={setTargetDateStr} placeholder="DD/MM/AAAA" placeholderTextColor={Brand.textMuted} style={styles.input} />
-        </>
-      )}
-
-      {step === 4 && (
         <View style={styles.optionList}>
           {ACTIVITIES.map((o) => (
             <Pressable key={o.key} style={[styles.option, activity === o.key && styles.optionOn]} onPress={() => setActivity(o.key)}>
@@ -153,6 +182,35 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             </Pressable>
           ))}
         </View>
+      )}
+
+      {step === 4 && (
+        <>
+          <Text style={styles.help}>
+            Cambia el peso y la fecha se ajusta sola (y al revés). Si fijas ambos a tu gusto, te calculo las kcal/día
+            realistas para lograrlo.
+          </Text>
+          <Text style={[styles.label, { marginTop: 8 }]}>Peso objetivo (kg)</Text>
+          <TextInput value={target} onChangeText={onChangeTarget} keyboardType="decimal-pad" placeholder="kg" placeholderTextColor={Brand.textMuted} style={styles.input} />
+          <Text style={[styles.label, { marginTop: 16 }]}>Fecha objetivo</Text>
+          <DateField value={targetDateStr} onChange={onChangeTargetDate} />
+
+          {plan && (
+            <View style={styles.kcalBox}>
+              <Text style={styles.kcalTitle}>≈ {plan.kcal} kcal/día</Text>
+              <Text style={styles.kcalDesc}>
+                Para llegar a {num(target)} kg el {targetDateStr}. (Mantenimiento ≈ {plan.tdee} kcal;{' '}
+                {plan.dailyDeltaKcal <= 0 ? 'déficit' : 'superávit'} de {Math.abs(plan.dailyDeltaKcal)} kcal/día.)
+              </Text>
+              {plan.kcal < plan.bmr && (
+                <Text style={styles.kcalWarn}>
+                  ⚠️ Ese ritmo deja las kcal por debajo de tu metabolismo basal ({plan.bmr}). Es muy agresivo: mejor dale
+                  algo más de tiempo.
+                </Text>
+              )}
+            </View>
+          )}
+        </>
       )}
 
       <View style={styles.nav}>
@@ -201,6 +259,10 @@ const styles = StyleSheet.create({
   optionOn: { borderColor: Brand.accentStrong, backgroundColor: '#241f3a' },
   optionLabel: { color: Brand.text, fontSize: 16, fontWeight: '700' },
   optionDesc: { color: Brand.textMuted, fontSize: 12, marginTop: 2 },
+  kcalBox: { backgroundColor: '#1a2330', borderRadius: 14, padding: 14, marginTop: 16 },
+  kcalTitle: { color: Brand.good, fontSize: 22, fontWeight: '800' },
+  kcalDesc: { color: '#b9c4d0', fontSize: 12, marginTop: 4 },
+  kcalWarn: { color: '#fbbf24', fontSize: 12, marginTop: 8 },
   nav: { flexDirection: 'row', gap: 10, marginTop: 24 },
   back: { paddingVertical: 14, paddingHorizontal: 18, borderRadius: 12, borderWidth: 1, borderColor: Brand.cardBorder },
   backTxt: { color: Brand.text, fontWeight: '700' },

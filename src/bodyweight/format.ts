@@ -20,6 +20,15 @@ export function formatDate(isoDate: string): string {
   return `${d}/${m}/${y}`;
 }
 
+/** Máscara de entrada: solo dígitos, inserta las `/` solas → "DD/MM/AAAA" (máx 8 dígitos). */
+export function maskDmy(input: string): string {
+  const d = input.replace(/\D/g, '').slice(0, 8);
+  let out = d.slice(0, 2);
+  if (d.length > 2) out += '/' + d.slice(2, 4);
+  if (d.length > 4) out += '/' + d.slice(4, 8);
+  return out;
+}
+
 /** 'DD/MM/AAAA' → 'YYYY-MM-DD', o null si no es una fecha válida. */
 export function parseDmy(input: string): string | null {
   const m = input.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);

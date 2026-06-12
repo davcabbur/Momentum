@@ -1,4 +1,13 @@
-import { estimateDaysToGoal, addDays, daysBetween, goalProgressPct, timeElapsedPct, suggestGoal } from './goal';
+import {
+  estimateDaysToGoal,
+  addDays,
+  daysBetween,
+  goalProgressPct,
+  timeElapsedPct,
+  suggestGoal,
+  estimateTargetDate,
+  estimateTargetWeight,
+} from './goal';
 
 test('estima días al objetivo cuando se progresa en la dirección correcta', () => {
   // faltan 1 kg, perdiendo 0,25 kg/semana → 28 días
@@ -47,4 +56,15 @@ test('suggestGoal en normocalórica mantiene el peso', () => {
   const r = suggestGoal({ initialKg: 80, stage: 'normocalorica', startDate: '2026-01-01' });
   expect(r.targetKg).toBe(80);
   expect(r.targetDate).toBe(addDays('2026-01-01', 84));
+});
+
+test('estimateTargetDate: perder 4 kg desde 80 a 0,5 %/sem (~0,4 kg/sem) ≈ 10 sem', () => {
+  // 4 / (80*0.005=0.4) = 10 semanas = 70 días
+  expect(estimateTargetDate({ initialKg: 80, targetKg: 76, startDate: '2026-01-01' })).toBe(addDays('2026-01-01', 70));
+});
+
+test('estimateTargetWeight: en definición, en 10 semanas baja ~4 kg desde 80', () => {
+  const target = '2026-01-01';
+  const date = addDays(target, 70);
+  expect(estimateTargetWeight({ initialKg: 80, startDate: '2026-01-01', targetDate: date, stage: 'definicion' })).toBe(76);
 });

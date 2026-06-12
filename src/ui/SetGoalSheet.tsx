@@ -5,6 +5,7 @@ import { formatDate, parseDmy } from '@/bodyweight/format';
 import { addDays } from '@/bodyweight/goal';
 import { Brand } from '@/constants/theme';
 import { clearGoal, setGoal } from '@/db/bodyweight-repo';
+import { DateField } from '@/ui/DateField';
 
 interface Props {
   visible: boolean;
@@ -56,7 +57,7 @@ export function SetGoalSheet({ visible, initialTargetKg, initialTargetDate, star
           <Text style={styles.label}>Peso objetivo (kg)</Text>
           <TextInput value={value} onChangeText={setValue} keyboardType="decimal-pad" selectTextOnFocus style={styles.input} />
           <Text style={styles.label}>Fecha objetivo</Text>
-          <TextInput value={dateStr} onChangeText={setDateStr} placeholder="DD/MM/AAAA" placeholderTextColor={Brand.textMuted} style={styles.input} />
+          <DateField value={dateStr} onChange={setDateStr} />
           <Pressable style={styles.save} onPress={save}>
             <Text style={styles.saveTxt}>Guardar objetivo</Text>
           </Pressable>

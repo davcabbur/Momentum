@@ -1,4 +1,4 @@
-import { formatKg, formatDelta, friendlyMonth, formatDate, parseDmy } from './format';
+import { formatKg, formatDelta, friendlyMonth, formatDate, parseDmy, maskDmy } from './format';
 
 test('peso con una decimal y coma', () => {
   expect(formatKg(78.42)).toBe('78,4 kg');
@@ -29,4 +29,12 @@ test('parseDmy devuelve null si no es válida', () => {
   expect(parseDmy('32/01/2026')).toBeNull();
   expect(parseDmy('15-10-2026')).toBeNull();
   expect(parseDmy('hola')).toBeNull();
+});
+
+test('maskDmy inserta las / al escribir dígitos', () => {
+  expect(maskDmy('15102026')).toBe('15/10/2026');
+  expect(maskDmy('1510')).toBe('15/10');
+  expect(maskDmy('15')).toBe('15');
+  expect(maskDmy('151020269')).toBe('15/10/2026'); // máx 8 dígitos
+  expect(maskDmy('15/10/2026')).toBe('15/10/2026'); // idempotente
 });
