@@ -1,5 +1,5 @@
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
 import { ActivityIndicator, StyleSheet, Text, View, useColorScheme } from 'react-native';
 
 import AppTabs from '@/components/app-tabs';

@@ -5,7 +5,7 @@ Primer y único usuario por ahora es el autor; posible salida a mercado más ade
 
 ## Estado actual
 
-- Scaffolding Expo completado (SDK 56, expo-router con tabs, TypeScript estricto). App compila con `npx tsc --noEmit`.
+- Scaffolding Expo completado (SDK 54, expo-router con tabs, TypeScript estricto). App compila con `npx tsc --noEmit`.
 - Subproyecto en curso: **A — Núcleo de seguimiento** (entreno + peso corporal). Diseño aprobado.
 - Diseño completo: `docs/superpowers/specs/2026-06-12-nucleo-seguimiento-design.md` (léelo antes de tocar el Núcleo; no lo importes aquí para no inflar el contexto).
 
