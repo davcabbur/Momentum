@@ -15,3 +15,6 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# Brainstorming visual companion (work files)
+.superpowers/
