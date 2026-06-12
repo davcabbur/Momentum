@@ -63,3 +63,20 @@ export const Spacing = {
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+/**
+ * Paleta de marca de Momentum (acentos del diseño aprobado).
+ * Se afinará junto al modo claro/oscuro cuando pulamos la UI sobre el dispositivo.
+ */
+export const Brand = {
+  accent: '#a78bfa',
+  accentStrong: '#8b5cf6',
+  good: '#34d399',
+  info: '#7dd3fc',
+  surface: '#0f0f13',
+  card: '#15151b',
+  cardBorder: '#26262f',
+  track: '#23232c',
+  text: '#e9e9ef',
+  textMuted: '#8a8a96',
+} as const;

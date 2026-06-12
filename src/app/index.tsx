@@ -1,21 +1,12 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { Brand } from '@/constants/theme';
+import { WeightScreen } from '@/ui/WeightScreen';
 
 export default function HomeScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Momentum</Text>
-    </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: Brand.surface }} edges={['top']}>
+      <WeightScreen />
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-  },
-});
