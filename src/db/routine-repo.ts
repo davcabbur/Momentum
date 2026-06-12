@@ -17,6 +17,27 @@ export async function createRoutine(name: string): Promise<number> {
   return res[0].id;
 }
 
+/** Borra la rutina actual (y sus días/ejercicios). El historial de sesiones se conserva. */
+export async function clearRoutine(): Promise<void> {
+  const rs = await db.select().from(routine);
+  for (const r of rs) {
+    const ds = await db.select().from(routineDay).where(eq(routineDay.routineId, r.id));
+    for (const d of ds) await db.delete(routineDayExercise).where(eq(routineDayExercise.routineDayId, d.id));
+    await db.delete(routineDay).where(eq(routineDay.routineId, r.id));
+  }
+  await db.delete(routine);
+}
+
+/** Crea una rutina nueva con días predefinidos (de una plantilla). Reemplaza la anterior. */
+export async function createRoutineWithDays(name: string, dayNames: string[]): Promise<number> {
+  await clearRoutine();
+  const id = await createRoutine(name);
+  for (let i = 0; i < dayNames.length; i++) {
+    await db.insert(routineDay).values({ routineId: id, name: dayNames[i], orderIdx: i });
+  }
+  return id;
+}
+
 export async function listDays(routineId: number): Promise<RoutineDay[]> {
   return db.select().from(routineDay).where(eq(routineDay.routineId, routineId)).orderBy(asc(routineDay.orderIdx));
 }
