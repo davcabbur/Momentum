@@ -1,0 +1,69 @@
+# Momentum
+
+App móvil de gimnasio: "un entrenador que entiende y educa", no un registro tonto de datos.
+Primer y único usuario por ahora es el autor; posible salida a mercado más adelante.
+
+## Estado actual
+
+- Repo recién creado. **Todavía no hay código de la app** (sin scaffolding de Expo aún).
+- Subproyecto en curso: **A — Núcleo de seguimiento** (entreno + peso corporal). Diseño aprobado.
+- Diseño completo: `docs/superpowers/specs/2026-06-12-nucleo-seguimiento-design.md` (léelo antes de tocar el Núcleo; no lo importes aquí para no inflar el contexto).
+
+## Stack
+
+- **React Native + Expo** (TypeScript). **Android primero**; multiplataforma para abrir iOS sin reescribir.
+- **Datos locales**: SQLite con **Drizzle ORM** (preparado para sincronización en la nube a futuro).
+- **Navegación**: expo-router, pestañas inferiores: **Hoy · Entreno · Progreso · Más**.
+- **Gráficas**: librería sobre `react-native-svg`.
+- Pruebas en dispositivo con Expo Go / development build; builds en la nube con EAS.
+
+## Reglas de producto (innegociables)
+
+- **Nunca usar ni mostrar el IMC** en ningún sitio. No distingue músculo de grasa.
+- **Nada debe generar ansiedad.** Fechas y barras de progreso orientan, no presionan; tono educativo y tranquilizador.
+- **Peso corporal: manda la tendencia suavizada, no el pesaje del día.** Enmarcar subidas puntuales como agua/glucógeno/músculo, no grasa.
+- **Lenguaje de entrenador** (RIR, RPE, top set, back-off, deload, 1RM…) siempre acompañado de explicación a un toque (glosario).
+- **Lo fundamental, gratis y sin anuncios.**
+
+## Arquitectura (módulos con interfaces claras)
+
+- `data/` — esquema, acceso a SQLite y repositorios.
+- `training/` — rutina, recomendación de series/reps por nivel, doble progresión, 1RM.
+- `bodyweight/` — tendencia suavizada, objetivo y fecha estimada dinámica.
+- `education/` — glosario de términos.
+- `ui/` — pantallas y componentes.
+
+Mantener cada módulo enfocado y testeable por separado, para enchufar las fases B–E sin reescribir.
+
+## Convenciones de código
+
+- TypeScript en modo estricto. Indentación de 2 espacios.
+- Componentes React en PascalCase; hooks en `useX`; ficheros de componente `.tsx`.
+- Lógica de negocio en funciones puras (separada de la UI) para poder testearla.
+- Sin código muerto ni IMC: si aparece algún cálculo de IMC, eliminarlo.
+
+## Flujo de trabajo
+
+- **Responder siempre en español.**
+- Trabajo por subproyectos: spec aprobado → plan de implementación → construir. No saltarse el spec.
+- **TDD para la lógica pura**: recomendación de series/reps, doble progresión, 1RM, suavizado de tendencia, fecha estimada y barras guía. Tests antes que implementación.
+- Shell del entorno: **PowerShell en Windows** (usar sintaxis PowerShell, no bash, salvo scripts POSIX).
+- **Mover el proyecto fuera de OneDrive antes de instalar dependencias** (evita conflictos de sincronización con `node_modules`).
+- Commitear o hacer push **solo cuando el usuario lo pida**.
+
+## Comandos (cuando exista la app)
+
+Aún no aplican (sin scaffolding). Una vez creado el proyecto Expo, los comandos previstos serán:
+
+- `npx expo start` — arrancar en desarrollo.
+- `npm test` — ejecutar tests.
+- `npx drizzle-kit generate` — generar migraciones de la BD.
+
+> Actualizar esta sección con los comandos reales en cuanto se haga el scaffolding.
+
+## Roadmap (fuera del Núcleo, no construir aún)
+
+- **B** Nutrición: macros + escáner de código de barras (Open Food Facts).
+- **C** Kcal vivas: TDEE (Mifflin-St Jeor) + ajuste dinámico por tendencia de peso y etapa.
+- **D** Rutinas: recomendación inteligente de ejercicios.
+- **E** Inteligencia de fases: fatiga, estancamiento, deload, refeed/diet break.
