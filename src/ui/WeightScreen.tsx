@@ -8,31 +8,43 @@ import {
   goalProgressPct,
   timeElapsedPct,
 } from '@/bodyweight/goal';
-import { formatDelta, formatKg, friendlyMonth } from '@/bodyweight/format';
+import { formatDate, formatDelta, formatKg, friendlyMonth } from '@/bodyweight/format';
+import { weightInsight } from '@/bodyweight/insight';
 import { computeTrend, trendSlopePerWeek, type TrendPoint } from '@/bodyweight/trend';
 import { Brand } from '@/constants/theme';
-import { getGoal, listWeights } from '@/db/bodyweight-repo';
+import { deleteWeights, getGoal, listWeights } from '@/db/bodyweight-repo';
 import { weightGoal } from '@/db/schema';
 import { AddWeightSheet } from '@/ui/AddWeightSheet';
+import { Onboarding } from '@/ui/Onboarding';
 import { SetGoalSheet } from '@/ui/SetGoalSheet';
 import { WeightChart } from '@/ui/WeightChart';
 
 type Goal = typeof weightGoal.$inferSelect;
+type Editing = { date: string; kg: number; isExisting: boolean };
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function shortDate(iso: string): string {
+  const [, m, d] = iso.split('-');
+  return `${d}/${m}`;
+}
+
 export function WeightScreen() {
   const [points, setPoints] = useState<TrendPoint[]>([]);
   const [goal, setGoal] = useState<Goal | null>(null);
-  const [weightSheet, setWeightSheet] = useState(false);
+  const [editing, setEditing] = useState<Editing | null>(null);
   const [goalSheet, setGoalSheet] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [loaded, setLoaded] = useState(false);
 
   const load = useCallback(async () => {
     const ws = await listWeights();
     setPoints(computeTrend(ws, 0.1));
     setGoal(await getGoal());
+    setSelected(new Set());
+    setLoaded(true);
   }, []);
 
   useEffect(() => {
@@ -40,56 +52,130 @@ export function WeightScreen() {
   }, [load]);
 
   const last = points.at(-1);
-  const prev = points.at(-2);
+
+  // Primer arranque: aún cargando.
+  if (!loaded) {
+    return <View style={styles.screen} />;
+  }
+  // Sin pesajes todavía → onboarding paso a paso.
+  if (!last) {
+    return <Onboarding onDone={load} />;
+  }
+
   const slope = trendSlopePerWeek(points, 14);
+  const todayStr = today();
+  const todayExists = points.some((p) => p.date === todayStr);
+  const history = [...points].reverse(); // más reciente primero
+  const allSelected = history.length > 0 && selected.size === history.length;
+  const insight = weightInsight({ slopePerWeek: slope, currentTrendKg: last.trendKg, goalKg: goal?.targetKg ?? null });
+
+  function openToday() {
+    setEditing({ date: todayStr, kg: last?.weightKg ?? 75, isExisting: todayExists });
+  }
+
+  function toggleSelected(date: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(date)) next.delete(date);
+      else next.add(date);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    setSelected(allSelected ? new Set() : new Set(history.map((p) => p.date)));
+  }
+
+  async function deleteSelected() {
+    await deleteWeights([...selected]);
+    load();
+  }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.h1}>Peso corporal</Text>
-        <Pressable style={styles.add} onPress={() => setWeightSheet(true)}>
+        <Pressable style={styles.add} onPress={openToday}>
           <Text style={styles.addTxt}>＋</Text>
         </Pressable>
       </View>
 
-      {last ? (
-        <>
-          <View style={styles.bigRow}>
-            <Text style={styles.big}>{formatKg(last.trendKg)}</Text>
-            <Text style={styles.muted}>tendencia</Text>
-            {prev && <Text style={styles.delta}>{formatDelta(last.trendKg - prev.trendKg)}</Text>}
-          </View>
+      {/* Peso actual = protagonista; tendencia, secundaria. */}
+      <View style={styles.bigRow}>
+        <Text style={styles.big}>{formatKg(last.weightKg)}</Text>
+        <Text style={styles.muted}>peso actual</Text>
+      </View>
+      <Text style={styles.trendLine}>
+        Tendencia {formatKg(last.trendKg)}
+        {points.length >= 2 ? `  ·  ${formatDelta(slope)}/sem` : ''}
+      </Text>
 
-          <View style={styles.card}>
-            <WeightChart points={points} goalKg={goal?.targetKg} />
-          </View>
+      <View style={styles.card}>
+        <WeightChart points={points} goalKg={goal?.targetKg} />
+      </View>
 
-          {goal ? (
-            <GoalCard goal={goal} currentTrendKg={last.trendKg} slopePerWeek={slope} onEdit={() => setGoalSheet(true)} />
-          ) : (
-            <Pressable style={styles.defineGoal} onPress={() => setGoalSheet(true)}>
-              <Text style={styles.defineGoalTxt}>🎯 Definir un objetivo de peso</Text>
-            </Pressable>
-          )}
-
-          <View style={styles.insight}>
-            <Text style={styles.insightH}>💡 Tranquilo</Text>
-            <Text style={styles.insightP}>
-              Una subida de un día suele ser agua o glucógeno, no grasa. Mira la línea de tendencia, no el número del
-              día.
-            </Text>
-          </View>
-        </>
-      ) : (
-        <Text style={styles.empty}>Aún no hay pesajes. Toca ＋ para registrar el primero.</Text>
+      {goal && (
+        <View style={styles.stats}>
+          <Stat label="Partida" value={formatKg(goal.startKg)} />
+          <Stat label="Actual" value={formatKg(last.weightKg)} highlight />
+          <Stat label="Objetivo" value={formatKg(goal.targetKg)} />
+        </View>
       )}
 
+      {goal ? (
+        <GoalCard goal={goal} currentTrendKg={last.trendKg} slopePerWeek={slope} onEdit={() => setGoalSheet(true)} />
+      ) : (
+        <Pressable style={styles.defineGoal} onPress={() => setGoalSheet(true)}>
+          <Text style={styles.defineGoalTxt}>🎯 Definir un objetivo de peso</Text>
+        </Pressable>
+      )}
+
+      {insight && (
+        <View style={styles.insight}>
+          <Text style={styles.insightH}>{insight.title}</Text>
+          <Text style={styles.insightP}>{insight.body}</Text>
+        </View>
+      )}
+
+      {/* Historial: seleccionar para borrar en lote, o tocar "editar". */}
+      <Text style={styles.histTitle}>Historial</Text>
+      <View style={styles.card}>
+        <View style={styles.histToolbar}>
+          <Pressable onPress={toggleAll}>
+            <Text style={styles.selectAll}>{allSelected ? '✕ Quitar selección' : '☑ Seleccionar todo'}</Text>
+          </Pressable>
+          {selected.size > 0 && (
+            <Pressable style={styles.delBtn} onPress={deleteSelected}>
+              <Text style={styles.delBtnTxt}>🗑 Borrar ({selected.size})</Text>
+            </Pressable>
+          )}
+        </View>
+        {history.map((p, i) => {
+          const isSel = selected.has(p.date);
+          return (
+            <View key={p.date} style={[styles.histRow, i < history.length - 1 && styles.histRowBorder]}>
+              <Pressable style={styles.checkHit} onPress={() => toggleSelected(p.date)}>
+                <View style={[styles.checkbox, isSel && styles.checkboxOn]}>
+                  {isSel && <Text style={styles.checkMark}>✓</Text>}
+                </View>
+              </Pressable>
+              <Text style={styles.histDate}>{shortDate(p.date)}</Text>
+              <Text style={styles.histKg}>{formatKg(p.weightKg)}</Text>
+              <Pressable onPress={() => setEditing({ date: p.date, kg: p.weightKg, isExisting: true })}>
+                <Text style={styles.histEdit}>editar</Text>
+              </Pressable>
+            </View>
+          );
+        })}
+      </View>
+
       <AddWeightSheet
-        visible={weightSheet}
-        initialKg={last?.weightKg ?? 75}
-        date={today()}
+        visible={editing !== null}
+        date={editing?.date ?? todayStr}
+        initialKg={editing?.kg ?? 75}
+        isExisting={editing?.isExisting ?? false}
         onClose={() => {
-          setWeightSheet(false);
+          setEditing(null);
           load();
         }}
       />
@@ -98,12 +184,22 @@ export function WeightScreen() {
         initialTargetKg={goal?.targetKg ?? Math.round((last?.trendKg ?? 75) - 4)}
         startKg={goal?.startKg ?? last?.trendKg ?? 75}
         startDate={goal?.startDate ?? today()}
+        canClear={goal !== null}
         onClose={() => {
           setGoalSheet(false);
           load();
         }}
       />
     </ScrollView>
+  );
+}
+
+function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+  return (
+    <View style={[styles.stat, highlight && styles.statHighlight]}>
+      <Text style={styles.statLabel}>{label}</Text>
+      <Text style={styles.statValue}>{value}</Text>
+    </View>
   );
 }
 
@@ -125,9 +221,10 @@ function GoalCard({
   let etaText = 'Sigue registrando para estimar la fecha';
   let timePct: number | null = null;
   if (days != null) {
+    const eta = addDays(today(), days);
     const totalDays = daysBetween(goal.startDate, today()) + days;
     timePct = timeElapsedPct({ startDate: goal.startDate, asOf: today(), estimatedTotalDays: totalDays });
-    etaText = `Llegarías hacia ${friendlyMonth(addDays(today(), days))} a tu ritmo actual`;
+    etaText = `📅 Fecha estimada: ${formatDate(eta)} (${friendlyMonth(eta)})`;
   }
 
   return (
@@ -170,10 +267,15 @@ const styles = StyleSheet.create({
   add: { width: 36, height: 36, borderRadius: 11, backgroundColor: Brand.accentStrong, alignItems: 'center', justifyContent: 'center' },
   addTxt: { color: '#fff', fontSize: 22, fontWeight: '700', lineHeight: 24 },
   bigRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
-  big: { color: Brand.text, fontSize: 32, fontWeight: '800' },
+  big: { color: Brand.text, fontSize: 36, fontWeight: '800' },
   muted: { color: Brand.textMuted, fontSize: 12 },
-  delta: { color: Brand.good, marginLeft: 'auto', fontWeight: '700' },
+  trendLine: { color: Brand.textMuted, fontSize: 13, marginTop: -4 },
   card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 12 },
+  stats: { flexDirection: 'row', gap: 10 },
+  stat: { flex: 1, backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 12, alignItems: 'center' },
+  statHighlight: { borderColor: Brand.accentStrong },
+  statLabel: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase' },
+  statValue: { color: Brand.text, fontSize: 16, fontWeight: '800', marginTop: 4 },
   defineGoal: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 16, alignItems: 'center' },
   defineGoalTxt: { color: Brand.accent, fontWeight: '700' },
   goalHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
@@ -189,5 +291,19 @@ const styles = StyleSheet.create({
   insight: { backgroundColor: '#1a2330', borderRadius: 14, padding: 12 },
   insightH: { color: Brand.info, fontWeight: '700', marginBottom: 4 },
   insightP: { color: '#b9c4d0', fontSize: 12 },
+  histTitle: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', marginTop: 4 },
+  histToolbar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, marginBottom: 4, borderBottomWidth: 1, borderBottomColor: Brand.cardBorder },
+  selectAll: { color: Brand.accent, fontSize: 12, fontWeight: '600' },
+  delBtn: { backgroundColor: '#3b1f22', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
+  delBtnTxt: { color: '#f87171', fontSize: 12, fontWeight: '700' },
+  histRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, gap: 10 },
+  histRowBorder: { borderBottomWidth: 1, borderBottomColor: Brand.cardBorder },
+  checkHit: { padding: 2 },
+  checkbox: { width: 20, height: 20, borderRadius: 6, borderWidth: 1.5, borderColor: Brand.textMuted, alignItems: 'center', justifyContent: 'center' },
+  checkboxOn: { backgroundColor: Brand.accentStrong, borderColor: Brand.accentStrong },
+  checkMark: { color: '#fff', fontSize: 13, fontWeight: '900' },
+  histDate: { color: Brand.textMuted, fontSize: 13, width: 48 },
+  histKg: { color: Brand.text, fontSize: 15, fontWeight: '700', flex: 1 },
+  histEdit: { color: Brand.accent, fontSize: 12 },
   empty: { color: Brand.textMuted, marginTop: 20 },
 });

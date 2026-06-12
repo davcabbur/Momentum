@@ -15,4 +15,16 @@ export const weightGoal = sqliteTable('weight_goal', {
   startDate: text('start_date').notNull(), // YYYY-MM-DD
 });
 
+/**
+ * Perfil del usuario. sex/age se usarán para el cálculo de kcal (fase C, Mifflin-St Jeor);
+ * stage = etapa (definicion/normocalorica/volumen); activityLevel = nivel de actividad.
+ */
+export const userProfile = sqliteTable('user_profile', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  sex: text('sex').notNull(), // 'male' | 'female'
+  age: integer('age').notNull(),
+  stage: text('stage').notNull(), // 'definicion' | 'normocalorica' | 'volumen'
+  activityLevel: text('activity_level').notNull(), // 'sedentary'|'light'|'moderate'|'high'|'very_high'
+});
+
 // Nota de producto: no existe ningún campo de IMC, ni se calculará. Ver CLAUDE.md.

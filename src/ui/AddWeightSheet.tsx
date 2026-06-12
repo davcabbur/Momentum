@@ -2,20 +2,28 @@ import { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Brand } from '@/constants/theme';
-import { upsertWeight } from '@/db/bodyweight-repo';
+import { deleteWeight, upsertWeight } from '@/db/bodyweight-repo';
 
 interface Props {
   visible: boolean;
-  initialKg: number;
-  /** Fecha del pesaje (YYYY-MM-DD). La decide la pantalla, no la lógica pura. */
+  /** Fecha del pesaje (YYYY-MM-DD). */
   date: string;
+  initialKg: number;
+  /** Si ya existe un pesaje ese día (habilita "Borrar"). */
+  isExisting: boolean;
   onClose: () => void;
 }
 
-export function AddWeightSheet({ visible, initialKg, date, onClose }: Props) {
+function prettyDate(iso: string): string {
+  const todayIso = new Date().toISOString().slice(0, 10);
+  if (iso === todayIso) return 'hoy';
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+export function AddWeightSheet({ visible, date, initialKg, isExisting, onClose }: Props) {
   const [value, setValue] = useState(String(initialKg));
 
-  // Resincroniza el valor inicial cada vez que se abre la hoja.
   useEffect(() => {
     if (visible) setValue(String(initialKg));
   }, [visible, initialKg]);
@@ -34,11 +42,16 @@ export function AddWeightSheet({ visible, initialKg, date, onClose }: Props) {
     onClose();
   }
 
+  async function remove() {
+    await deleteWeight(date);
+    onClose();
+  }
+
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
         <Pressable style={styles.sheet} onPress={() => {}}>
-          <Text style={styles.title}>Peso de hoy (kg)</Text>
+          <Text style={styles.title}>Peso de {prettyDate(date)} (kg)</Text>
           <View style={styles.row}>
             <Pressable style={styles.stepBtn} onPress={() => step(-0.1)}>
               <Text style={styles.stepTxt}>−</Text>
@@ -57,6 +70,11 @@ export function AddWeightSheet({ visible, initialKg, date, onClose }: Props) {
           <Pressable style={styles.save} onPress={save}>
             <Text style={styles.saveTxt}>Guardar</Text>
           </Pressable>
+          {isExisting && (
+            <Pressable style={styles.delete} onPress={remove}>
+              <Text style={styles.deleteTxt}>Borrar este pesaje</Text>
+            </Pressable>
+          )}
         </Pressable>
       </Pressable>
     </Modal>
@@ -70,7 +88,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    gap: 14,
+    gap: 12,
   },
   title: { color: Brand.text, fontSize: 16 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -95,4 +113,6 @@ const styles = StyleSheet.create({
   },
   save: { backgroundColor: Brand.good, borderRadius: 12, padding: 14 },
   saveTxt: { textAlign: 'center', fontWeight: '800', color: '#06240f' },
+  delete: { padding: 10 },
+  deleteTxt: { textAlign: 'center', color: '#f87171', fontWeight: '700' },
 });

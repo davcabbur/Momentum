@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, TextInput } from 'react-native';
 
 import { Brand } from '@/constants/theme';
-import { setGoal } from '@/db/bodyweight-repo';
+import { clearGoal, setGoal } from '@/db/bodyweight-repo';
 
 interface Props {
   visible: boolean;
@@ -11,10 +11,12 @@ interface Props {
   startKg: number;
   /** Fecha de inicio del objetivo (YYYY-MM-DD). */
   startDate: string;
+  /** Si ya hay un objetivo (habilita "Borrar objetivo"). */
+  canClear: boolean;
   onClose: () => void;
 }
 
-export function SetGoalSheet({ visible, initialTargetKg, startKg, startDate, onClose }: Props) {
+export function SetGoalSheet({ visible, initialTargetKg, startKg, startDate, canClear, onClose }: Props) {
   const [value, setValue] = useState(String(initialTargetKg));
 
   useEffect(() => {
@@ -26,6 +28,11 @@ export function SetGoalSheet({ visible, initialTargetKg, startKg, startDate, onC
     if (!Number.isNaN(kg) && kg > 0) {
       await setGoal(kg, startKg, startDate);
     }
+    onClose();
+  }
+
+  async function remove() {
+    await clearGoal();
     onClose();
   }
 
@@ -47,6 +54,11 @@ export function SetGoalSheet({ visible, initialTargetKg, startKg, startDate, onC
           <Pressable style={styles.save} onPress={save}>
             <Text style={styles.saveTxt}>Guardar objetivo</Text>
           </Pressable>
+          {canClear && (
+            <Pressable style={styles.delete} onPress={remove}>
+              <Text style={styles.deleteTxt}>Borrar objetivo</Text>
+            </Pressable>
+          )}
         </Pressable>
       </Pressable>
     </Modal>
@@ -75,4 +87,6 @@ const styles = StyleSheet.create({
   },
   save: { backgroundColor: Brand.accentStrong, borderRadius: 12, padding: 14 },
   saveTxt: { textAlign: 'center', fontWeight: '800', color: '#fff' },
+  delete: { padding: 10 },
+  deleteTxt: { textAlign: 'center', color: '#f87171', fontWeight: '700' },
 });
