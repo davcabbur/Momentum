@@ -10,6 +10,11 @@ export async function getProfile(): Promise<Profile | null> {
   return rows[0] ?? null;
 }
 
+export async function setLevel(level: string): Promise<void> {
+  const current = await getProfile();
+  if (current) await db.update(userProfile).set({ level }).where(eq(userProfile.id, current.id));
+}
+
 export async function setProfile(p: {
   sex: string;
   age: number;

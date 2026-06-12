@@ -14,6 +14,7 @@ export default function AppTabs() {
         tabBarActiveTintColor: Brand.accent,
       }}>
       <Tabs.Screen name="index" options={{ title: 'Hoy' }} />
+      <Tabs.Screen name="entreno" options={{ title: 'Entreno' }} />
     </Tabs>
   );
 }
