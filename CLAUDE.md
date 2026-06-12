@@ -5,7 +5,7 @@ Primer y único usuario por ahora es el autor; posible salida a mercado más ade
 
 ## Estado actual
 
-- Repo recién creado. **Todavía no hay código de la app** (sin scaffolding de Expo aún).
+- Scaffolding Expo completado (SDK 56, expo-router con tabs, TypeScript estricto). App compila con `npx tsc --noEmit`.
 - Subproyecto en curso: **A — Núcleo de seguimiento** (entreno + peso corporal). Diseño aprobado.
 - Diseño completo: `docs/superpowers/specs/2026-06-12-nucleo-seguimiento-design.md` (léelo antes de tocar el Núcleo; no lo importes aquí para no inflar el contexto).
 
@@ -48,18 +48,17 @@ Mantener cada módulo enfocado y testeable por separado, para enchufar las fases
 - Trabajo por subproyectos: spec aprobado → plan de implementación → construir. No saltarse el spec.
 - **TDD para la lógica pura**: recomendación de series/reps, doble progresión, 1RM, suavizado de tendencia, fecha estimada y barras guía. Tests antes que implementación.
 - Shell del entorno: **PowerShell en Windows** (usar sintaxis PowerShell, no bash, salvo scripts POSIX).
-- **Mover el proyecto fuera de OneDrive antes de instalar dependencias** (evita conflictos de sincronización con `node_modules`).
+- El proyecto vive en **OneDrive** (decisión del usuario); riesgo de sync con `node_modules` aceptado por ahora. Revisar/mover si da problemas.
+- **Al terminar de implementar un spec o un plan, borrar su archivo** en `docs/superpowers/`. El usuario no quiere archivos de diseño/plan ya implementados acumulándose ("archivos basura"). Lo importante perdura en el código, en este `CLAUDE.md` y en la memoria.
 - Commitear o hacer push **solo cuando el usuario lo pida**.
 
-## Comandos (cuando exista la app)
+## Comandos
 
-Aún no aplican (sin scaffolding). Una vez creado el proyecto Expo, los comandos previstos serán:
-
-- `npx expo start` — arrancar en desarrollo.
-- `npm test` — ejecutar tests.
-- `npx drizzle-kit generate` — generar migraciones de la BD.
-
-> Actualizar esta sección con los comandos reales en cuanto se haga el scaffolding.
+- `npx expo start` — arrancar en desarrollo (escanear QR con Expo Go o build de desarrollo).
+- `npx expo start --android` — arrancar directo en Android.
+- `npm test` — ejecutar tests (Jest, cuando se configure en A2).
+- `npx tsc --noEmit` — verificar TypeScript sin emitir archivos.
+- `npx drizzle-kit generate` — generar migraciones de la BD (cuando se añada Drizzle).
 
 ## Roadmap (fuera del Núcleo, no construir aún)
 
