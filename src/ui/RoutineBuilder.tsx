@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Brand } from '@/constants/theme';
 import { getProfile, setLevel } from '@/db/bodyweight-repo';
@@ -14,6 +14,7 @@ import {
   type DayExercise,
   type RoutineDay,
 } from '@/db/routine-repo';
+import { defaultScheme } from '@/training/default-scheme';
 import { schemeForLevel, type Level } from '@/training/levels';
 import { DAYS_PER_WEEK_OPTIONS, routineTemplatesFor, type RoutineTemplate } from '@/training/routine-templates';
 import { ExercisePicker } from '@/ui/ExercisePicker';
@@ -29,6 +30,7 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
   const [forceChoose, setForceChoose] = useState(false);
   const [pickerDay, setPickerDay] = useState<number | null>(null);
   const [editEx, setEditEx] = useState<DayExercise | null>(null);
+  const [menuEx, setMenuEx] = useState<DayExercise | null>(null);
 
   const lvlScheme = schemeForLevel(level as Level);
 
@@ -121,15 +123,13 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
             <View key={d.id} style={styles.dayBox}>
               <Text style={styles.dayName}>{d.name}</Text>
               {(exByDay[d.id] ?? []).map((x) => (
-                <View key={x.rdeId} style={styles.exRow}>
-                  <Pressable style={styles.exMain} onPress={() => setEditEx(x)}>
+                <Pressable key={x.rdeId} style={styles.exRow} onPress={() => setMenuEx(x)}>
+                  <View style={styles.exMain}>
                     <Text style={styles.exName}>{x.exercise.name}</Text>
                     <Text style={styles.exScheme}>{schemeText(x)}</Text>
-                  </Pressable>
-                  <Pressable onPress={async () => { await removeExerciseFromDay(x.rdeId); load(); }}>
-                    <Text style={styles.del}>quitar</Text>
-                  </Pressable>
-                </View>
+                  </View>
+                  <Text style={styles.exMore}>⋯</Text>
+                </Pressable>
               ))}
               <Pressable style={styles.addEx} onPress={() => setPickerDay(d.id)}>
                 <Text style={styles.addExTxt}>＋ Ejercicio</Text>
@@ -144,9 +144,10 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
 
       <ExercisePicker
         visible={pickerDay != null}
-        onPick={async (exId) => {
+        onPick={async (ex) => {
           if (pickerDay != null) {
-            await addExerciseToDay(pickerDay, exId, { targetSets: lvlScheme.sets, repMin: lvlScheme.repMin, repMax: lvlScheme.repMax });
+            const sc = defaultScheme(ex.name, level as Level);
+            await addExerciseToDay(pickerDay, ex.id, { targetSets: sc.sets, repMin: sc.repMin, repMax: sc.repMax });
           }
           setPickerDay(null);
           load();
@@ -164,6 +165,32 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
           repMax={editEx.repMax ?? lvlScheme.repMax}
           onClose={() => { setEditEx(null); load(); }}
         />
+      )}
+
+      {menuEx && (
+        <Modal visible transparent animationType="fade" onRequestClose={() => setMenuEx(null)}>
+          <Pressable style={styles.menuBackdrop} onPress={() => setMenuEx(null)}>
+            <Pressable style={styles.menu} onPress={() => {}}>
+              <Text style={styles.menuTitle}>{menuEx.exercise.name}</Text>
+              <Pressable style={styles.menuBtn} onPress={() => { setEditEx(menuEx); setMenuEx(null); }}>
+                <Text style={styles.menuBtnTxt}>Editar series/reps</Text>
+              </Pressable>
+              <Pressable
+                style={styles.menuBtn}
+                onPress={async () => {
+                  const id = menuEx.rdeId;
+                  setMenuEx(null);
+                  await removeExerciseFromDay(id);
+                  load();
+                }}>
+                <Text style={[styles.menuBtnTxt, { color: '#f87171' }]}>Quitar ejercicio</Text>
+              </Pressable>
+              <Pressable style={styles.menuCancel} onPress={() => setMenuEx(null)}>
+                <Text style={styles.menuCancelTxt}>Cancelar</Text>
+              </Pressable>
+            </Pressable>
+          </Pressable>
+        </Modal>
       )}
     </ScrollView>
   );
@@ -196,4 +223,12 @@ const styles = StyleSheet.create({
   addExTxt: { color: Brand.accent, fontSize: 13, fontWeight: '600' },
   change: { padding: 12, alignItems: 'center', marginTop: 4 },
   changeTxt: { color: Brand.textMuted },
+  exMore: { color: Brand.textMuted, fontSize: 20, marginLeft: 8, paddingHorizontal: 4 },
+  menuBackdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
+  menu: { backgroundColor: Brand.card, padding: 12, borderTopLeftRadius: 20, borderTopRightRadius: 20, gap: 6 },
+  menuTitle: { color: Brand.text, fontSize: 16, fontWeight: '800', padding: 8 },
+  menuBtn: { padding: 14, borderRadius: 10, backgroundColor: Brand.surface },
+  menuBtnTxt: { color: Brand.text, fontSize: 15, fontWeight: '600' },
+  menuCancel: { padding: 14, alignItems: 'center' },
+  menuCancelTxt: { color: Brand.textMuted },
 });

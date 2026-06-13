@@ -6,7 +6,7 @@ import { addExercise, listExercises, type Exercise } from '@/db/exercise-repo';
 
 interface Props {
   visible: boolean;
-  onPick: (exerciseId: number) => void;
+  onPick: (exercise: Exercise) => void;
   onClose: () => void;
 }
 
@@ -38,7 +38,7 @@ export function ExercisePicker({ visible, onPick, onClose }: Props) {
           <Text style={styles.title}>Elige un ejercicio</Text>
           <ScrollView style={{ maxHeight: 360 }}>
             {items.map((e) => (
-              <Pressable key={e.id} style={styles.row} onPress={() => onPick(e.id)}>
+              <Pressable key={e.id} style={styles.row} onPress={() => onPick(e)}>
                 <Text style={styles.exName}>{e.name}</Text>
                 <Text style={styles.exGroup}>{e.muscleGroup}</Text>
               </Pressable>

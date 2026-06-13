@@ -1,6 +1,7 @@
 import { asc, eq } from 'drizzle-orm';
 
-import { schemeForLevel, type Level } from '@/training/levels';
+import { type Level } from '@/training/levels';
+import { defaultScheme } from '@/training/default-scheme';
 import { exercisesForType, type RoutineTemplate } from '@/training/routine-templates';
 import { db } from './client';
 import { listExercises } from './exercise-repo';
@@ -113,7 +114,6 @@ export async function removeExerciseFromDay(rdeId: number): Promise<void> {
 export async function createRoutineFromTemplate(template: RoutineTemplate, level: Level): Promise<number> {
   await clearRoutine();
   const id = await createRoutine(template.name);
-  const scheme = schemeForLevel(level);
   const all = await listExercises();
   const byName = new Map(all.map((e) => [e.name, e.id]));
   for (let i = 0; i < template.days.length; i++) {
@@ -127,13 +127,14 @@ export async function createRoutineFromTemplate(template: RoutineTemplate, level
     for (let j = 0; j < names.length; j++) {
       const exId = byName.get(names[j]);
       if (exId != null) {
+        const sc = defaultScheme(names[j], level);
         await db.insert(routineDayExercise).values({
           routineDayId: dayId,
           exerciseId: exId,
           orderIdx: j,
-          targetSets: scheme.sets,
-          repMin: scheme.repMin,
-          repMax: scheme.repMax,
+          targetSets: sc.sets,
+          repMin: sc.repMin,
+          repMax: sc.repMax,
         });
       }
     }
