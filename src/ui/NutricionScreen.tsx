@@ -7,6 +7,7 @@ import { computeTrend, trendSlopePerWeek } from '@/bodyweight/trend';
 import { Brand } from '@/constants/theme';
 import { getGoal, getProfile, listWeights } from '@/db/bodyweight-repo';
 import { liveKcalPlan, proteinTarget, type LiveKcalPlan } from '@/nutrition/kcal';
+import { dietBreakAdvice } from '@/training/intelligence';
 
 const STAGE_LABEL: Record<string, string> = {
   definicion: 'Definición',
@@ -33,6 +34,7 @@ interface State {
   stage: string | null;
   hasGoal: boolean;
   trendKg: number | null;
+  dietBreak: string | null;
   missing: string | null; // qué falta para poder calcular
 }
 
@@ -72,8 +74,14 @@ export function NutricionScreen() {
           protein = proteinTarget(trendKg, prof.stage ?? 'normocalorica');
         }
 
+        let dietBreak: string | null = null;
+        if (prof?.stage === 'definicion' && goal?.startDate) {
+          const weeks = Math.floor(daysBetween(goal.startDate, today()) / 7);
+          dietBreak = dietBreakAdvice('definicion', weeks)?.text ?? null;
+        }
+
         if (active) {
-          setS({ plan, protein, stage: prof?.stage ?? null, hasGoal: goal != null && goal.targetDate != null, trendKg, missing });
+          setS({ plan, protein, stage: prof?.stage ?? null, hasGoal: goal != null && goal.targetDate != null, trendKg, dietBreak, missing });
         }
       })();
       return () => {
@@ -154,6 +162,13 @@ export function NutricionScreen() {
               <Text style={styles.cardLbl}>Proteína</Text>
               <Text style={styles.big}>≈ {s.protein} g/día</Text>
               <Text style={styles.note}>Proteína alta siempre: protege el músculo en déficit y lo construye en superávit. Repártela entre tus comidas.</Text>
+            </View>
+          )}
+
+          {s.dietBreak && (
+            <View style={[styles.card, { borderColor: Brand.info }]}>
+              <Text style={styles.cardLbl}>Descanso de dieta</Text>
+              <Text style={[styles.note, { color: Brand.info }]}>{s.dietBreak}</Text>
             </View>
           )}
 

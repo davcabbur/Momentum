@@ -1,4 +1,11 @@
-import { detectStall, deloadAdvice, welcomeBackAdvice } from './intelligence';
+import {
+  detectStall,
+  deloadAdvice,
+  welcomeBackAdvice,
+  shoulderLoadOfDay,
+  shoulderOverlapAdvice,
+  dietBreakAdvice,
+} from './intelligence';
 
 test('detectStall: pocos datos → no concluye', () => {
   expect(detectStall([100, 105]).enoughData).toBe(false);
@@ -32,4 +39,32 @@ test('deloadAdvice: solo aconseja si estancado', () => {
 test('welcomeBackAdvice: solo tras un parón', () => {
   expect(welcomeBackAdvice(3)).toBeNull();
   expect(welcomeBackAdvice(14)?.kind).toBe('welcome-back');
+});
+
+test('shoulderLoadOfDay cuenta empujes y hombro', () => {
+  const day = [
+    { muscleGroup: 'pecho', pattern: 'empuje' },
+    { muscleGroup: 'hombro', pattern: 'empuje' },
+    { muscleGroup: 'espalda', pattern: 'tiron' },
+  ];
+  expect(shoulderLoadOfDay(day)).toBe(2);
+});
+
+test('shoulderOverlapAdvice: avisa de dos días de empuje seguidos', () => {
+  const push = [
+    { muscleGroup: 'pecho', pattern: 'empuje' },
+    { muscleGroup: 'hombro', pattern: 'empuje' },
+  ];
+  const pull = [
+    { muscleGroup: 'espalda', pattern: 'tiron' },
+    { muscleGroup: 'biceps', pattern: 'tiron' },
+  ];
+  expect(shoulderOverlapAdvice([{ name: 'A', exercises: push }, { name: 'B', exercises: push }])?.kind).toBe('shoulder');
+  expect(shoulderOverlapAdvice([{ name: 'A', exercises: push }, { name: 'B', exercises: pull }])).toBeNull();
+});
+
+test('dietBreakAdvice: solo en definición y déficit largo', () => {
+  expect(dietBreakAdvice('volumen', 20)).toBeNull();
+  expect(dietBreakAdvice('definicion', 6)).toBeNull();
+  expect(dietBreakAdvice('definicion', 11)?.kind).toBe('diet-break');
 });

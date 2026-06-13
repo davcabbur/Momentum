@@ -36,7 +36,7 @@ export function detectStall(e1rmBySession: number[], window = 3): StallStatus {
 
 export interface Advice {
   /** Tipo de aviso, por si la UI quiere icono/color. */
-  kind: 'deload' | 'welcome-back';
+  kind: 'deload' | 'welcome-back' | 'shoulder' | 'diet-break';
   text: string;
 }
 
@@ -59,5 +59,44 @@ export function welcomeBackAdvice(daysSinceLastSession: number): Advice | null {
   return {
     kind: 'welcome-back',
     text: `¡Bienvenido de vuelta! Han pasado ~${weeks} ${weeks === 1 ? 'semana' : 'semanas'}. Gracias a la memoria muscular recuperarás tu nivel mucho más rápido de lo que costó ganarlo. Empieza con algo menos de peso y sin prisa.`,
+  };
+}
+
+interface DayLoad {
+  muscleGroup: string;
+  pattern: string;
+}
+
+/** Cuántos ejercicios de un día cargan el hombro (empujes + trabajo directo de hombro). */
+export function shoulderLoadOfDay(exercises: DayLoad[]): number {
+  return exercises.filter((e) => e.pattern === 'empuje' || e.muscleGroup === 'hombro').length;
+}
+
+/**
+ * Avisa si dos días seguidos cargan mucho el hombro (los empujes siempre lo
+ * involucran). Sugiere intercalar pierna/tirón para que se recupere.
+ */
+export function shoulderOverlapAdvice(days: { name: string; exercises: DayLoad[] }[]): Advice | null {
+  const heavy = days.map((d) => shoulderLoadOfDay(d.exercises) >= 2);
+  for (let i = 0; i < days.length - 1; i++) {
+    if (heavy[i] && heavy[i + 1]) {
+      return {
+        kind: 'shoulder',
+        text: `"${days[i].name}" y "${days[i + 1].name}" cargan bastante el hombro (empujes) seguidos. Si los entrenas en días consecutivos, el hombro no descansa: intercala un día de pierna o tirón entre ellos.`,
+      };
+    }
+  }
+  return null;
+}
+
+/**
+ * En definición, tras un déficit largo, sugiere un descanso de dieta
+ * (1-2 semanas en mantenimiento) para recuperar energía y hormonas.
+ */
+export function dietBreakAdvice(stage: string, weeksInDeficit: number): Advice | null {
+  if (stage !== 'definicion' || weeksInDeficit < 10) return null;
+  return {
+    kind: 'diet-break',
+    text: `Llevas ~${weeksInDeficit} semanas en déficit. Un descanso de dieta (1-2 semanas comiendo a mantenimiento) ayuda a recuperar energía, hormonas y cabeza, y luego sigues mejor. No es perder el progreso: es sostenerlo.`,
   };
 }

@@ -18,6 +18,7 @@ import { defaultScheme } from '@/training/default-scheme';
 import { schemeForLevel, type Level } from '@/training/levels';
 import { DAYS_PER_WEEK_OPTIONS, routineTemplatesFor, type RoutineTemplate } from '@/training/routine-templates';
 import { muscleVolumeStatus } from '@/training/volume';
+import { shoulderOverlapAdvice } from '@/training/intelligence';
 import { ExercisePicker } from '@/ui/ExercisePicker';
 import { SchemeEditSheet } from '@/ui/SchemeEditSheet';
 
@@ -86,6 +87,13 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
 
   const STATUS_COLOR: Record<string, string> = { ok: Brand.textMuted, info: Brand.accent, warn: '#fbbf24' };
 
+  const shoulderAdvice = shoulderOverlapAdvice(
+    days.map((d) => ({
+      name: d.name,
+      exercises: (exByDay[d.id] ?? []).map((x) => ({ muscleGroup: x.exercise.muscleGroup, pattern: x.exercise.pattern })),
+    })),
+  );
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Pressable onPress={onDone}>
@@ -151,6 +159,12 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
               </Pressable>
             </View>
           ))}
+          {shoulderAdvice && (
+            <View style={styles.shoulderBox}>
+              <Text style={styles.shoulderTxt}>🤚 {shoulderAdvice.text}</Text>
+            </View>
+          )}
+
           {muscleRows.length > 0 && (
             <View style={styles.volBox}>
               <Text style={styles.volTitle}>Volumen semanal por músculo</Text>
@@ -266,6 +280,8 @@ const styles = StyleSheet.create({
   volSets: { fontSize: 13, fontWeight: '700' },
   volNote: { fontSize: 12, lineHeight: 17 },
   volFoot: { color: Brand.textMuted, fontSize: 11, fontStyle: 'italic', marginTop: 2 },
+  shoulderBox: { backgroundColor: '#2a2412', borderColor: '#5c4d1e', borderWidth: 1, borderRadius: 14, padding: 14 },
+  shoulderTxt: { color: '#fbbf24', fontSize: 12, lineHeight: 18 },
   exMore: { color: Brand.textMuted, fontSize: 20, marginLeft: 8, paddingHorizontal: 4 },
   menuBackdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
   menu: { backgroundColor: Brand.card, padding: 12, borderTopLeftRadius: 20, borderTopRightRadius: 20, gap: 6 },
