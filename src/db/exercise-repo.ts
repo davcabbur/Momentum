@@ -33,6 +33,8 @@ const STARTER: { name: string; muscleGroup: string; pattern: string }[] = [
   { name: 'Curl inclinado', muscleGroup: 'biceps', pattern: 'tiron' },
   { name: 'Curl concentrado', muscleGroup: 'biceps', pattern: 'tiron' },
   { name: 'Curl martillo', muscleGroup: 'biceps', pattern: 'tiron' },
+  { name: 'Curl predicador', muscleGroup: 'biceps', pattern: 'tiron' },
+  { name: 'Curl Bayesiano', muscleGroup: 'biceps', pattern: 'tiron' },
   { name: 'Sentadilla', muscleGroup: 'pierna', pattern: 'pierna' },
   { name: 'Hack squat', muscleGroup: 'pierna', pattern: 'pierna' },
   { name: 'Prensa', muscleGroup: 'pierna', pattern: 'pierna' },

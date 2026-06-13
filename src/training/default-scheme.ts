@@ -35,6 +35,8 @@ const ISOLATION = new Set([
   'Curl inclinado',
   'Curl concentrado',
   'Curl martillo',
+  'Curl predicador',
+  'Curl Bayesiano',
   'Curl femoral',
   'Extensión cuádriceps',
   'Gemelo de pie',
