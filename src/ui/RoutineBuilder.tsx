@@ -17,6 +17,7 @@ import {
 import { defaultScheme } from '@/training/default-scheme';
 import { schemeForLevel, type Level } from '@/training/levels';
 import { DAYS_PER_WEEK_OPTIONS, routineTemplatesFor, type RoutineTemplate } from '@/training/routine-templates';
+import { muscleVolumeStatus } from '@/training/volume';
 import { ExercisePicker } from '@/ui/ExercisePicker';
 import { SchemeEditSheet } from '@/ui/SchemeEditSheet';
 
@@ -70,6 +71,20 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
     const hi = x.repMax ?? lvlScheme.repMax;
     return `${sets}×${lo}–${hi}`;
   }
+
+  // Volumen semanal planificado por músculo (series objetivo sumadas en todos los días).
+  const weeklyByMuscle: Record<string, number> = {};
+  for (const d of days) {
+    for (const x of exByDay[d.id] ?? []) {
+      const sets = x.targetSets ?? lvlScheme.sets;
+      weeklyByMuscle[x.exercise.muscleGroup] = (weeklyByMuscle[x.exercise.muscleGroup] ?? 0) + sets;
+    }
+  }
+  const muscleRows = Object.entries(weeklyByMuscle)
+    .map(([muscle, sets]) => ({ muscle, sets, status: muscleVolumeStatus(muscle, sets) }))
+    .sort((a, b) => b.sets - a.sets);
+
+  const STATUS_COLOR: Record<string, string> = { ok: Brand.textMuted, info: Brand.accent, warn: '#fbbf24' };
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -136,6 +151,25 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
               </Pressable>
             </View>
           ))}
+          {muscleRows.length > 0 && (
+            <View style={styles.volBox}>
+              <Text style={styles.volTitle}>Volumen semanal por músculo</Text>
+              <Text style={styles.volIntro}>Series objetivo a la semana. Orienta, no presiona.</Text>
+              {muscleRows.map((r) => (
+                <View key={r.muscle} style={styles.volItem}>
+                  <View style={styles.volHead}>
+                    <Text style={styles.volMuscle}>{r.muscle[0].toUpperCase() + r.muscle.slice(1)}</Text>
+                    <Text style={[styles.volSets, { color: STATUS_COLOR[r.status.level] }]}>{r.sets} series</Text>
+                  </View>
+                  {r.status.level !== 'ok' && (
+                    <Text style={[styles.volNote, { color: STATUS_COLOR[r.status.level] }]}>{r.status.text}</Text>
+                  )}
+                </View>
+              ))}
+              <Text style={styles.volFoot}>Los compuestos cuentan a su músculo principal; es una guía aproximada.</Text>
+            </View>
+          )}
+
           <Pressable style={styles.change} onPress={() => setForceChoose(true)}>
             <Text style={styles.changeTxt}>Cambiar rutina (días/plantilla)</Text>
           </Pressable>
@@ -223,6 +257,15 @@ const styles = StyleSheet.create({
   addExTxt: { color: Brand.accent, fontSize: 13, fontWeight: '600' },
   change: { padding: 12, alignItems: 'center', marginTop: 4 },
   changeTxt: { color: Brand.textMuted },
+  volBox: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 8, marginTop: 4 },
+  volTitle: { color: Brand.text, fontSize: 15, fontWeight: '700' },
+  volIntro: { color: Brand.textMuted, fontSize: 12 },
+  volItem: { gap: 2 },
+  volHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  volMuscle: { color: Brand.text, fontSize: 14 },
+  volSets: { fontSize: 13, fontWeight: '700' },
+  volNote: { fontSize: 12, lineHeight: 17 },
+  volFoot: { color: Brand.textMuted, fontSize: 11, fontStyle: 'italic', marginTop: 2 },
   exMore: { color: Brand.textMuted, fontSize: 20, marginLeft: 8, paddingHorizontal: 4 },
   menuBackdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
   menu: { backgroundColor: Brand.card, padding: 12, borderTopLeftRadius: 20, borderTopRightRadius: 20, gap: 6 },
