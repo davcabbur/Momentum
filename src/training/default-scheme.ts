@@ -15,6 +15,9 @@ const COMPOUNDS = new Set([
   'Hack squat',
   'Prensa',
   'Peso muerto rumano',
+  'Zancadas',
+  'Sentadilla búlgara',
+  'Hip thrust',
 ]);
 
 const ISOLATION = new Set([
@@ -40,6 +43,7 @@ const ISOLATION = new Set([
   'Elevación de piernas',
   'Rotación de torso',
   'Plancha',
+  'Puente de glúteo',
 ]);
 
 /**
