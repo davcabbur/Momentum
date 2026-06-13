@@ -40,6 +40,8 @@ const STARTER: { name: string; muscleGroup: string; pattern: string }[] = [
   { name: 'Sentadilla búlgara', muscleGroup: 'pierna', pattern: 'pierna' },
   { name: 'Hip thrust', muscleGroup: 'gluteo', pattern: 'pierna' },
   { name: 'Puente de glúteo', muscleGroup: 'gluteo', pattern: 'pierna' },
+  { name: 'Patada de glúteo', muscleGroup: 'gluteo', pattern: 'pierna' },
+  { name: 'Abducción de cadera', muscleGroup: 'gluteo', pattern: 'pierna' },
   { name: 'Crunch', muscleGroup: 'core', pattern: 'otro' },
   { name: 'Elevación de piernas', muscleGroup: 'core', pattern: 'otro' },
   { name: 'Rotación de torso', muscleGroup: 'core', pattern: 'otro' },

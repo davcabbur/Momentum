@@ -44,6 +44,8 @@ const ISOLATION = new Set([
   'Rotación de torso',
   'Plancha',
   'Puente de glúteo',
+  'Patada de glúteo',
+  'Abducción de cadera',
 ]);
 
 /**

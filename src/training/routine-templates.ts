@@ -10,7 +10,7 @@ export interface RoutineTemplate {
 const DAY_EXERCISES: Record<string, string[]> = {
   empuje: ['Press inclinado', 'Press banca', 'Press militar', 'Elevaciones laterales', 'Press francés'],
   tiron: ['Jalón al pecho', 'Remo mancuerna', 'Remo barra', 'Curl bíceps'],
-  pierna: ['Sentadilla', 'Zancadas', 'Peso muerto rumano', 'Curl femoral', 'Gemelo de pie'],
+  pierna: ['Sentadilla', 'Zancadas', 'Peso muerto rumano', 'Hip thrust', 'Curl femoral', 'Gemelo de pie'],
   torso: ['Press inclinado', 'Jalón al pecho', 'Press militar', 'Curl bíceps', 'Press francés'],
   fullbody: ['Press inclinado', 'Jalón al pecho', 'Sentadilla', 'Press militar', 'Curl bíceps'],
   // 4 esenciales por región: inclinado (superior), banca (medio), aperturas (aísla), fondos (inferior)
