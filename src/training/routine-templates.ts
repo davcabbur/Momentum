@@ -16,7 +16,7 @@ const DAY_EXERCISES: Record<string, string[]> = {
   // 4 esenciales por región: inclinado (superior), banca (medio), aperturas (aísla), fondos (inferior)
   pecho: ['Press inclinado', 'Press banca', 'Aperturas', 'Fondos'],
   espalda: ['Jalón al pecho', 'Remo mancuerna', 'Remo barra', 'Curl bíceps'],
-  hombro: ['Press militar', 'Elevaciones laterales'],
+  hombro: ['Press militar', 'Elevaciones laterales', 'Pájaros'],
   brazo: ['Curl bíceps', 'Extensión tríceps polea', 'Extensión tríceps sobre la cabeza'],
   core: [],
 };

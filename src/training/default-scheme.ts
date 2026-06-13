@@ -18,6 +18,7 @@ const COMPOUNDS = new Set([
 const ISOLATION = new Set([
   'Aperturas',
   'Elevaciones laterales',
+  'Pájaros',
   'Press francés',
   'Extensión tríceps polea',
   'Extensión tríceps sobre la cabeza',
