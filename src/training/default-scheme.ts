@@ -40,6 +40,8 @@ const ISOLATION = new Set([
   'Gemelo de pie',
   'Face pull',
   'Encogimiento de hombros',
+  'Encogimientos de Kelso',
+  'Dominadas escapulares',
   'Pullover',
   'Crunch',
   'Elevación de piernas',

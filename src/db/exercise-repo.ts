@@ -27,6 +27,8 @@ const STARTER: { name: string; muscleGroup: string; pattern: string }[] = [
   { name: 'Pullover', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Encogimiento de hombros', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Face pull', muscleGroup: 'espalda', pattern: 'tiron' },
+  { name: 'Encogimientos de Kelso', muscleGroup: 'espalda', pattern: 'tiron' },
+  { name: 'Dominadas escapulares', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Curl bíceps', muscleGroup: 'biceps', pattern: 'tiron' },
   { name: 'Curl inclinado', muscleGroup: 'biceps', pattern: 'tiron' },
   { name: 'Curl concentrado', muscleGroup: 'biceps', pattern: 'tiron' },
