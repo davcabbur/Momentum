@@ -13,7 +13,8 @@ const DAY_EXERCISES: Record<string, string[]> = {
   pierna: ['Sentadilla', 'Prensa', 'Curl femoral', 'Extensión cuádriceps', 'Gemelo de pie'],
   torso: ['Press inclinado', 'Jalón al pecho', 'Press militar', 'Curl bíceps', 'Press francés'],
   fullbody: ['Press inclinado', 'Jalón al pecho', 'Sentadilla', 'Press militar', 'Curl bíceps'],
-  pecho: ['Press inclinado', 'Press banca', 'Press plano mancuerna', 'Aperturas', 'Fondos'],
+  // 4 esenciales por región: inclinado (superior), banca (medio), aperturas (aísla), fondos (inferior)
+  pecho: ['Press inclinado', 'Press banca', 'Aperturas', 'Fondos'],
   espalda: ['Jalón al pecho', 'Remo mancuerna', 'Remo barra', 'Curl bíceps'],
   hombro: ['Press militar', 'Elevaciones laterales'],
   brazo: ['Curl bíceps', 'Press francés', 'Extensión tríceps polea'],
