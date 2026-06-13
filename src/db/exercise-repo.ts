@@ -13,6 +13,9 @@ const STARTER: { name: string; muscleGroup: string; pattern: string }[] = [
   { name: 'Elevaciones laterales', muscleGroup: 'hombro', pattern: 'empuje' },
   { name: 'Press francés', muscleGroup: 'triceps', pattern: 'empuje' },
   { name: 'Extensión tríceps polea', muscleGroup: 'triceps', pattern: 'empuje' },
+  { name: 'Extensión tríceps sobre la cabeza', muscleGroup: 'triceps', pattern: 'empuje' },
+  { name: 'Patada de tríceps', muscleGroup: 'triceps', pattern: 'empuje' },
+  { name: 'Extensión tríceps unilateral', muscleGroup: 'triceps', pattern: 'empuje' },
   { name: 'Jalón al pecho', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Remo mancuerna', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Remo barra', muscleGroup: 'espalda', pattern: 'tiron' },
@@ -26,11 +29,13 @@ const STARTER: { name: string; muscleGroup: string; pattern: string }[] = [
   { name: 'Gemelo de pie', muscleGroup: 'gemelo', pattern: 'pierna' },
 ];
 
-/** Siembra el catálogo inicial si la tabla está vacía. */
-export async function seedExercisesIfEmpty(): Promise<void> {
-  const existing = await db.select().from(exercise).limit(1);
-  if (existing.length === 0) {
-    await db.insert(exercise).values(STARTER.map((e) => ({ ...e, isCustom: false })));
+/** Asegura el catálogo: inserta los ejercicios del catálogo que falten (por nombre). */
+export async function seedExercises(): Promise<void> {
+  const existing = await db.select().from(exercise);
+  const have = new Set(existing.map((e) => e.name));
+  const missing = STARTER.filter((e) => !have.has(e.name));
+  if (missing.length > 0) {
+    await db.insert(exercise).values(missing.map((e) => ({ ...e, isCustom: false })));
   }
 }
 

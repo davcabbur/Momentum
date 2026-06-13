@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Brand } from '@/constants/theme';
-import { seedExercisesIfEmpty } from '@/db/exercise-repo';
+import { seedExercises } from '@/db/exercise-repo';
 import { getActiveRoutine, listDays, type RoutineDay } from '@/db/routine-repo';
 import { RoutineBuilder } from '@/ui/RoutineBuilder';
 import { SessionScreen } from '@/ui/SessionScreen';
@@ -16,7 +16,7 @@ export function EntrenoScreen() {
   const [loaded, setLoaded] = useState(false);
 
   const load = useCallback(async () => {
-    await seedExercisesIfEmpty();
+    await seedExercises();
     const r = await getActiveRoutine();
     setRoutineId(r?.id ?? null);
     const ds = r ? await listDays(r.id) : [];

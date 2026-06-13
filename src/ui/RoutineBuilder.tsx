@@ -3,7 +3,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 
 import { Brand } from '@/constants/theme';
 import { getProfile, setLevel } from '@/db/bodyweight-repo';
-import { seedExercisesIfEmpty } from '@/db/exercise-repo';
+import { seedExercises } from '@/db/exercise-repo';
 import {
   addExerciseToDay,
   createRoutineFromTemplate,
@@ -35,7 +35,7 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
   const lvlScheme = schemeForLevel(level as Level);
 
   const load = useCallback(async () => {
-    await seedExercisesIfEmpty();
+    await seedExercises();
     const r = await getActiveRoutine();
     const ds = r ? await listDays(r.id) : [];
     setDays(Array.isArray(ds) ? ds : []);

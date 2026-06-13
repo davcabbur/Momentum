@@ -17,7 +17,7 @@ const DAY_EXERCISES: Record<string, string[]> = {
   pecho: ['Press inclinado', 'Press banca', 'Aperturas', 'Fondos'],
   espalda: ['Jalón al pecho', 'Remo mancuerna', 'Remo barra', 'Curl bíceps'],
   hombro: ['Press militar', 'Elevaciones laterales'],
-  brazo: ['Curl bíceps', 'Press francés', 'Extensión tríceps polea'],
+  brazo: ['Curl bíceps', 'Extensión tríceps polea', 'Extensión tríceps sobre la cabeza'],
   core: [],
 };
 
