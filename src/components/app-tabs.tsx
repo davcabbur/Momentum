@@ -30,6 +30,13 @@ export default function AppTabs() {
           tabBarIcon: ({ color, size }) => <Ionicons name="barbell-outline" size={size} color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="mas"
+        options={{
+          title: 'Más',
+          tabBarIcon: ({ color, size }) => <Ionicons name="book-outline" size={size} color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
