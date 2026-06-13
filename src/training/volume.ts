@@ -43,6 +43,61 @@ export function weeklyVolumeRange(muscleGroup: string): { min: number; max: numb
   return LARGE_MUSCLES.has(muscleGroup) ? { min: 10, max: 20 } : { min: 8, max: 15 };
 }
 
+/**
+ * Músculos secundarios por ejercicio compuesto (cuentan a medias para el volumen).
+ * De la metodología: los empujes implican hombro/tríceps, los tirones bíceps, etc.
+ */
+const SECONDARY: Record<string, string[]> = {
+  'Press inclinado': ['hombro', 'triceps'],
+  'Press banca': ['hombro', 'triceps'],
+  'Press plano mancuerna': ['hombro', 'triceps'],
+  'Press declinado': ['hombro', 'triceps'],
+  Fondos: ['hombro', 'triceps'],
+  'Press militar': ['triceps'],
+  'Press militar con barra': ['triceps'],
+  'Press hombro en máquina': ['triceps'],
+  'Jalón al pecho': ['biceps'],
+  Dominadas: ['biceps'],
+  'Remo mancuerna': ['biceps'],
+  'Remo barra': ['biceps'],
+  'Remo Gironda': ['biceps'],
+  Sentadilla: ['gluteo'],
+  'Hack squat': ['gluteo'],
+  Prensa: ['gluteo'],
+  Zancadas: ['gluteo'],
+  'Sentadilla búlgara': ['gluteo'],
+  'Peso muerto rumano': ['gluteo'],
+  'Hip thrust': ['pierna'],
+};
+
+const SECONDARY_FACTOR = 0.5;
+
+export function secondaryMuscles(exerciseName: string): string[] {
+  return SECONDARY[exerciseName] ?? [];
+}
+
+export interface VolumeItem {
+  name: string;
+  muscleGroup: string;
+  targetSets: number;
+}
+
+/**
+ * Series semanales por músculo: cuenta entero al músculo principal y a medias a
+ * los secundarios de los compuestos. Redondeado a 0,5.
+ */
+export function weeklyMuscleVolume(items: VolumeItem[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const it of items) {
+    out[it.muscleGroup] = (out[it.muscleGroup] ?? 0) + it.targetSets;
+    for (const m of secondaryMuscles(it.name)) {
+      out[m] = (out[m] ?? 0) + it.targetSets * SECONDARY_FACTOR;
+    }
+  }
+  for (const k of Object.keys(out)) out[k] = Math.round(out[k] * 2) / 2;
+  return out;
+}
+
 /** Estado del volumen semanal planificado de un músculo (para la rutina). */
 export function muscleVolumeStatus(muscleGroup: string, weeklySets: number): VolumeWarning {
   const { min, max } = weeklyVolumeRange(muscleGroup);

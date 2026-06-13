@@ -1,4 +1,4 @@
-import { exerciseSetWarning, exerciseSetCap, weeklyVolumeRange, muscleVolumeStatus } from './volume';
+import { exerciseSetWarning, exerciseSetCap, weeklyVolumeRange, muscleVolumeStatus, secondaryMuscles, weeklyMuscleVolume } from './volume';
 
 test('tope de series por ejercicio', () => {
   expect(exerciseSetCap(3)).toBe(5);
@@ -21,4 +21,19 @@ test('estado del volumen semanal: poco / óptimo / demasiado', () => {
   expect(muscleVolumeStatus('pecho', 6).level).toBe('info');
   expect(muscleVolumeStatus('pecho', 24).level).toBe('warn');
   expect(muscleVolumeStatus('biceps', 0).level).toBe('ok'); // sin planificar, sin alarma
+});
+
+test('secondaryMuscles de un compuesto', () => {
+  expect(secondaryMuscles('Press banca')).toEqual(['hombro', 'triceps']);
+  expect(secondaryMuscles('Curl bíceps')).toEqual([]);
+});
+
+test('weeklyMuscleVolume suma primario entero y secundarios a medias', () => {
+  const v = weeklyMuscleVolume([
+    { name: 'Press banca', muscleGroup: 'pecho', targetSets: 4 },
+    { name: 'Elevaciones laterales', muscleGroup: 'hombro', targetSets: 3 },
+  ]);
+  expect(v.pecho).toBe(4);
+  expect(v.hombro).toBe(5); // 3 directas + 2 (mitad de las 4 de press)
+  expect(v.triceps).toBe(2); // mitad de las 4 de press
 });

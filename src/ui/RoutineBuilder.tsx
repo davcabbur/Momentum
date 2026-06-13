@@ -17,7 +17,7 @@ import {
 import { defaultScheme } from '@/training/default-scheme';
 import { schemeForLevel, type Level } from '@/training/levels';
 import { DAYS_PER_WEEK_OPTIONS, routineTemplatesFor, type RoutineTemplate } from '@/training/routine-templates';
-import { muscleVolumeStatus } from '@/training/volume';
+import { muscleVolumeStatus, weeklyMuscleVolume } from '@/training/volume';
 import { shoulderOverlapAdvice } from '@/training/intelligence';
 import { ExercisePicker } from '@/ui/ExercisePicker';
 import { SchemeEditSheet } from '@/ui/SchemeEditSheet';
@@ -73,17 +73,19 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
     return `${sets}×${lo}–${hi}`;
   }
 
-  // Volumen semanal planificado por músculo (series objetivo sumadas en todos los días).
-  const weeklyByMuscle: Record<string, number> = {};
-  for (const d of days) {
-    for (const x of exByDay[d.id] ?? []) {
-      const sets = x.targetSets ?? lvlScheme.sets;
-      weeklyByMuscle[x.exercise.muscleGroup] = (weeklyByMuscle[x.exercise.muscleGroup] ?? 0) + sets;
-    }
-  }
+  // Volumen semanal planificado por músculo (principal entero + secundarios a medias).
+  const volItems = days.flatMap((d) =>
+    (exByDay[d.id] ?? []).map((x) => ({
+      name: x.exercise.name,
+      muscleGroup: x.exercise.muscleGroup,
+      targetSets: x.targetSets ?? lvlScheme.sets,
+    })),
+  );
+  const weeklyByMuscle = weeklyMuscleVolume(volItems);
   const muscleRows = Object.entries(weeklyByMuscle)
     .map(([muscle, sets]) => ({ muscle, sets, status: muscleVolumeStatus(muscle, sets) }))
     .sort((a, b) => b.sets - a.sets);
+  const fmtSets = (n: number) => (n % 1 === 0 ? `${n}` : n.toFixed(1).replace('.', ','));
 
   const STATUS_COLOR: Record<string, string> = { ok: Brand.textMuted, info: Brand.accent, warn: '#fbbf24' };
 
@@ -173,14 +175,14 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
                 <View key={r.muscle} style={styles.volItem}>
                   <View style={styles.volHead}>
                     <Text style={styles.volMuscle}>{r.muscle[0].toUpperCase() + r.muscle.slice(1)}</Text>
-                    <Text style={[styles.volSets, { color: STATUS_COLOR[r.status.level] }]}>{r.sets} series</Text>
+                    <Text style={[styles.volSets, { color: STATUS_COLOR[r.status.level] }]}>{fmtSets(r.sets)} series</Text>
                   </View>
                   {r.status.level !== 'ok' && (
                     <Text style={[styles.volNote, { color: STATUS_COLOR[r.status.level] }]}>{r.status.text}</Text>
                   )}
                 </View>
               ))}
-              <Text style={styles.volFoot}>Los compuestos cuentan a su músculo principal; es una guía aproximada.</Text>
+              <Text style={styles.volFoot}>Los compuestos suman entero a su músculo principal y a medias a los secundarios; es una guía aproximada.</Text>
             </View>
           )}
 
