@@ -51,8 +51,10 @@ const ISOLATION = new Set([
   'Patada de glúteo',
   'Abducción de cadera',
   'Colgarse en barra',
-  'Curl de muñeca',
 ]);
+
+// Antebrazo/muñeca: recorrido corto → reps altas.
+const HIGH_REP = new Set(['Curl de muñeca', 'Curl inverso', 'Extensión de muñeca']);
 
 /**
  * Esquema de partida por ejercicio: compuestos a menos reps (más fuerza),
@@ -60,6 +62,7 @@ const ISOLATION = new Set([
  */
 export function defaultScheme(exerciseName: string, level: Level): { sets: number; repMin: number; repMax: number } {
   const sets = level === 'principiante' ? 3 : 4;
+  if (HIGH_REP.has(exerciseName)) return { sets: 3, repMin: 12, repMax: 20 };
   if (COMPOUNDS.has(exerciseName)) return { sets, repMin: 6, repMax: 10 };
   if (ISOLATION.has(exerciseName)) return { sets: 3, repMin: 10, repMax: 15 };
   return { sets: 3, repMin: 8, repMax: 12 };

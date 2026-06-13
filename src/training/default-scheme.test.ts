@@ -15,3 +15,8 @@ test('aislamiento: 3 series y más reps', () => {
 test('desconocido/custom: esquema genérico', () => {
   expect(defaultScheme('Mi ejercicio raro', 'intermedio')).toEqual({ sets: 3, repMin: 8, repMax: 12 });
 });
+
+test('muñeca/antebrazo: reps altas', () => {
+  expect(defaultScheme('Curl de muñeca', 'intermedio')).toEqual({ sets: 3, repMin: 12, repMax: 20 });
+  expect(defaultScheme('Curl inverso', 'principiante')).toEqual({ sets: 3, repMin: 12, repMax: 20 });
+});
