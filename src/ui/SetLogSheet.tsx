@@ -5,6 +5,7 @@ import { Brand } from '@/constants/theme';
 import { getProfile } from '@/db/bodyweight-repo';
 import { deleteSet, getLastPerformance, listSets, upsertSet, type SetLog } from '@/db/workout-repo';
 import { schemeForLevel, type Level } from '@/training/levels';
+import { progressionHint, type ProgressionHint } from '@/training/progression';
 
 const RIRS = [0, 1, 2, 3, 4];
 const TYPES = [
@@ -31,12 +32,14 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, targ
   const [sets, setSets] = useState<SetLog[]>([]);
   const [last, setLast] = useState<{ date: string; sets: SetLog[] } | null>(null);
   const [target, setTarget] = useState('');
+  const [hint, setHint] = useState<ProgressionHint | null>(null);
   const [editing, setEditing] = useState<Editing | null>(null);
 
   const load = useCallback(async () => {
     if (!visible || !exerciseId) return;
     setSets(await listSets(sessionId, exerciseId));
-    setLast(await getLastPerformance(exerciseId, sessionId));
+    const lp = await getLastPerformance(exerciseId, sessionId);
+    setLast(lp);
     const prof = await getProfile();
     const lvl = (prof?.level as Level) ?? 'intermedio';
     const sc = schemeForLevel(lvl);
@@ -45,6 +48,7 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, targ
     const hi = repMax ?? sc.repMax;
     const rir = sc.rirMin === sc.rirMax ? `${sc.rirMin}` : `${sc.rirMin}–${sc.rirMax}`;
     setTarget(`${setsN}×${lo}–${hi} · RIR ${rir}`);
+    setHint(lp ? progressionHint(lp.sets, { sets: setsN, repMin: lo, repMax: hi }) : null);
   }, [visible, sessionId, exerciseId, targetSets, repMin, repMax]);
 
   useEffect(() => {
@@ -104,6 +108,12 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, targ
           <Text style={styles.target}>🎯 {target}</Text>
           {last && (
             <Text style={styles.last}>Última vez: {last.sets.map((s) => `${s.weightKg}×${s.reps}`).join('  ')}</Text>
+          )}
+          {hint && last && (
+            <Text style={[styles.hint, hint.ready && styles.hintReady]}>
+              {hint.ready ? '📈 ' : ''}
+              {hint.text}
+            </Text>
           )}
 
           <View style={styles.head}>
@@ -195,6 +205,8 @@ const styles = StyleSheet.create({
   title: { color: Brand.text, fontSize: 18, fontWeight: '800' },
   target: { color: Brand.accent, fontSize: 13, fontWeight: '700' },
   last: { color: Brand.textMuted, fontSize: 12, marginBottom: 6 },
+  hint: { color: Brand.textMuted, fontSize: 12, marginBottom: 6 },
+  hintReady: { color: Brand.good, fontWeight: '700' },
   head: { flexDirection: 'row', gap: 8, paddingHorizontal: 4, marginTop: 4 },
   hCell: { color: Brand.textMuted, fontSize: 10, textTransform: 'uppercase' },
   row: { flexDirection: 'row', gap: 8, alignItems: 'center', backgroundColor: Brand.surface, borderRadius: 10, paddingHorizontal: 4, paddingVertical: 10, marginTop: 4 },
