@@ -55,6 +55,7 @@ export function SessionScreen({ dayId, dayName, onBack }: Props) {
           sessionId={sessionId}
           exerciseId={openItem?.exercise.id ?? 0}
           exerciseName={openItem?.exercise.name ?? ''}
+          muscleGroup={openItem?.exercise.muscleGroup}
           targetSets={openItem?.targetSets ?? null}
           repMin={openItem?.repMin ?? null}
           repMax={openItem?.repMax ?? null}

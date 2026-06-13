@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Brand } from '@/constants/theme';
 import { getProfile } from '@/db/bodyweight-repo';
 import { deleteSet, getLastPerformance, listSets, upsertSet, type SetLog } from '@/db/workout-repo';
+import { exerciseImage } from '@/training/exercise-images';
+import { exerciseInfo } from '@/training/exercise-info';
 import { schemeForLevel, type Level } from '@/training/levels';
 import { progressionHint, type ProgressionHint } from '@/training/progression';
+import { exerciseSetWarning } from '@/training/volume';
 
 const RIRS = [0, 1, 2, 3, 4];
 const TYPES = [
@@ -20,6 +24,7 @@ interface Props {
   sessionId: number;
   exerciseId: number;
   exerciseName: string;
+  muscleGroup?: string;
   targetSets?: number | null;
   repMin?: number | null;
   repMax?: number | null;
@@ -28,16 +33,24 @@ interface Props {
 
 type Editing = { setNumber: number; weightKg: number; reps: number; rir: number | null; setType: string; exists: boolean };
 
-export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, targetSets, repMin, repMax, onClose }: Props) {
+export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, muscleGroup, targetSets, repMin, repMax, onClose }: Props) {
   const [sets, setSets] = useState<SetLog[]>([]);
   const [last, setLast] = useState<{ date: string; sets: SetLog[] } | null>(null);
   const [target, setTarget] = useState('');
+  const [schemeSets, setSchemeSets] = useState(3);
   const [hint, setHint] = useState<ProgressionHint | null>(null);
   const [editing, setEditing] = useState<Editing | null>(null);
+  const [showHow, setShowHow] = useState(true);
+
+  const info = exerciseInfo(exerciseName);
+  const image = exerciseImage(exerciseName);
+  const workSets = sets.filter((s) => s.setType !== 'warmup').length;
+  const volWarn = exerciseSetWarning(workSets, schemeSets);
 
   const load = useCallback(async () => {
     if (!visible || !exerciseId) return;
-    setSets(await listSets(sessionId, exerciseId));
+    const fetched = await listSets(sessionId, exerciseId);
+    setSets(fetched);
     const lp = await getLastPerformance(exerciseId, sessionId);
     setLast(lp);
     const prof = await getProfile();
@@ -47,8 +60,14 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, targ
     const lo = repMin ?? sc.repMin;
     const hi = repMax ?? sc.repMax;
     const rir = sc.rirMin === sc.rirMax ? `${sc.rirMin}` : `${sc.rirMin}–${sc.rirMax}`;
+    setSchemeSets(setsN);
     setTarget(`${setsN}×${lo}–${hi} · RIR ${rir}`);
     setHint(lp ? progressionHint(lp.sets, { sets: setsN, repMin: lo, repMax: hi }) : null);
+    // Serie 1 ya abierta para anotar al entrar.
+    if (fetched.length === 0) {
+      const prev = lp?.sets[0];
+      setEditing({ setNumber: 1, weightKg: prev?.weightKg ?? 20, reps: prev?.reps ?? 8, rir: 2, setType: 'normal', exists: false });
+    }
   }, [visible, sessionId, exerciseId, targetSets, repMin, repMax]);
 
   useEffect(() => {
@@ -104,95 +123,123 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, targ
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
         <Pressable style={styles.sheet} onPress={() => {}}>
-          <Text style={styles.title}>{exerciseName}</Text>
-          <Text style={styles.target}>🎯 {target}</Text>
-          {last && (
-            <Text style={styles.last}>Última vez: {last.sets.map((s) => `${s.weightKg}×${s.reps}`).join('  ')}</Text>
-          )}
-          {hint && last && (
-            <Text style={[styles.hint, hint.ready && styles.hintReady]}>
-              {hint.ready ? '📈 ' : ''}
-              {hint.text}
-            </Text>
-          )}
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <Text style={styles.title}>{exerciseName}</Text>
 
-          <View style={styles.head}>
-            <Text style={[styles.hCell, { width: 44 }]}>Serie</Text>
-            <Text style={[styles.hCell, { flex: 1 }]}>Kg</Text>
-            <Text style={[styles.hCell, { flex: 1 }]}>Reps</Text>
-            <Text style={[styles.hCell, { width: 50 }]}>RIR</Text>
-          </View>
-          {sets.map((s) => (
-            <Pressable key={s.id} style={styles.row} onPress={() => openEdit(s)}>
-              <Text style={[styles.cell, { width: 44, color: Brand.textMuted }]}>{s.setNumber}</Text>
-              <Text style={[styles.cell, { flex: 1 }]}>{s.weightKg}</Text>
-              <Text style={[styles.cell, { flex: 1 }]}>{s.reps}</Text>
-              <Text style={[styles.cell, { width: 50 }]}>{s.rir ?? '—'}</Text>
-            </Pressable>
-          ))}
-          <Pressable style={styles.addSet} onPress={openNew}>
-            <Text style={styles.addSetTxt}>＋ Añadir serie</Text>
-          </Pressable>
+            {image ? (
+              <Image source={image} style={styles.image} resizeMode="contain" />
+            ) : (
+              <View style={styles.imagePlaceholder}>
+                <Ionicons name="barbell-outline" size={34} color={Brand.textMuted} />
+                <Text style={styles.placeholderTxt}>{muscleGroup ?? 'ejercicio'} · imagen próximamente</Text>
+              </View>
+            )}
 
-          {editing && (
-            <View style={styles.focus}>
-              <Text style={styles.focusTitle}>Serie {editing.setNumber}</Text>
-              <View style={styles.stepper}>
-                <Pressable style={styles.stepBtn} onPress={() => step('weightKg', -2.5)}>
-                  <Text style={styles.stepTxt}>−</Text>
+            {info && (
+              <View style={styles.howBox}>
+                <Pressable style={styles.howHead} onPress={() => setShowHow((v) => !v)}>
+                  <Text style={styles.howTitle}>Cómo hacerlo</Text>
+                  <Ionicons name={showHow ? 'chevron-up' : 'chevron-down'} size={16} color={Brand.accent} />
                 </Pressable>
-                <View style={styles.stepVal}>
-                  <Text style={styles.stepValTxt}>{editing.weightKg}</Text>
-                  <Text style={styles.stepUnit}>kg</Text>
-                </View>
-                <Pressable style={styles.stepBtn} onPress={() => step('weightKg', 2.5)}>
-                  <Text style={styles.stepTxt}>+</Text>
-                </Pressable>
+                {showHow &&
+                  info.howTo.map((cue, i) => (
+                    <Text key={i} style={styles.cue}>
+                      • {cue}
+                    </Text>
+                  ))}
               </View>
-              <View style={styles.stepper}>
-                <Pressable style={styles.stepBtn} onPress={() => step('reps', -1)}>
-                  <Text style={styles.stepTxt}>−</Text>
-                </Pressable>
-                <View style={styles.stepVal}>
-                  <Text style={styles.stepValTxt}>{editing.reps}</Text>
-                  <Text style={styles.stepUnit}>reps</Text>
-                </View>
-                <Pressable style={styles.stepBtn} onPress={() => step('reps', 1)}>
-                  <Text style={styles.stepTxt}>+</Text>
-                </Pressable>
-              </View>
-              <Text style={styles.lbl}>RIR</Text>
-              <View style={styles.chips}>
-                {RIRS.map((r) => (
-                  <Pressable
-                    key={r}
-                    style={[styles.chip, editing.rir === r && styles.chipOn]}
-                    onPress={() => setEditing((e) => (e ? { ...e, rir: r } : e))}>
-                    <Text style={[styles.chipTxt, editing.rir === r && styles.chipTxtOn]}>{r === 4 ? '4+' : r}</Text>
-                  </Pressable>
-                ))}
-              </View>
-              <Text style={styles.lbl}>Tipo de serie</Text>
-              <View style={styles.chips}>
-                {TYPES.map((t) => (
-                  <Pressable
-                    key={t.key}
-                    style={[styles.chip, editing.setType === t.key && styles.chipOn]}
-                    onPress={() => setEditing((e) => (e ? { ...e, setType: t.key } : e))}>
-                    <Text style={[styles.chipTxt, editing.setType === t.key && styles.chipTxtOn]}>{t.label}</Text>
-                  </Pressable>
-                ))}
-              </View>
-              <Pressable style={styles.done} onPress={save}>
-                <Text style={styles.doneTxt}>✓ Serie hecha</Text>
-              </Pressable>
-              {editing.exists && (
-                <Pressable style={styles.del} onPress={removeSet}>
-                  <Text style={styles.delTxt}>Borrar serie</Text>
-                </Pressable>
-              )}
+            )}
+
+            <Text style={styles.target}>🎯 {target}</Text>
+            {last && (
+              <Text style={styles.last}>Última vez: {last.sets.map((s) => `${s.weightKg}×${s.reps}`).join('  ')}</Text>
+            )}
+            {hint && last && (
+              <Text style={[styles.hint, hint.ready && styles.hintReady]}>
+                {hint.ready ? '📈 ' : ''}
+                {hint.text}
+              </Text>
+            )}
+            {volWarn.level === 'warn' && <Text style={styles.warn}>{volWarn.text}</Text>}
+
+            <View style={styles.head}>
+              <Text style={[styles.hCell, { width: 44 }]}>Serie</Text>
+              <Text style={[styles.hCell, { flex: 1 }]}>Kg</Text>
+              <Text style={[styles.hCell, { flex: 1 }]}>Reps</Text>
+              <Text style={[styles.hCell, { width: 50 }]}>RIR</Text>
             </View>
-          )}
+            {sets.map((s) => (
+              <Pressable key={s.id} style={styles.row} onPress={() => openEdit(s)}>
+                <Text style={[styles.cell, { width: 44, color: Brand.textMuted }]}>{s.setNumber}</Text>
+                <Text style={[styles.cell, { flex: 1 }]}>{s.weightKg}</Text>
+                <Text style={[styles.cell, { flex: 1 }]}>{s.reps}</Text>
+                <Text style={[styles.cell, { width: 50 }]}>{s.rir ?? '—'}</Text>
+              </Pressable>
+            ))}
+            <Pressable style={styles.addSet} onPress={openNew}>
+              <Text style={styles.addSetTxt}>＋ Añadir serie</Text>
+            </Pressable>
+
+            {editing && (
+              <View style={styles.focus}>
+                <Text style={styles.focusTitle}>Serie {editing.setNumber}</Text>
+                <View style={styles.stepper}>
+                  <Pressable style={styles.stepBtn} onPress={() => step('weightKg', -2.5)}>
+                    <Text style={styles.stepTxt}>−</Text>
+                  </Pressable>
+                  <View style={styles.stepVal}>
+                    <Text style={styles.stepValTxt}>{editing.weightKg}</Text>
+                    <Text style={styles.stepUnit}>kg</Text>
+                  </View>
+                  <Pressable style={styles.stepBtn} onPress={() => step('weightKg', 2.5)}>
+                    <Text style={styles.stepTxt}>+</Text>
+                  </Pressable>
+                </View>
+                <View style={styles.stepper}>
+                  <Pressable style={styles.stepBtn} onPress={() => step('reps', -1)}>
+                    <Text style={styles.stepTxt}>−</Text>
+                  </Pressable>
+                  <View style={styles.stepVal}>
+                    <Text style={styles.stepValTxt}>{editing.reps}</Text>
+                    <Text style={styles.stepUnit}>reps</Text>
+                  </View>
+                  <Pressable style={styles.stepBtn} onPress={() => step('reps', 1)}>
+                    <Text style={styles.stepTxt}>+</Text>
+                  </Pressable>
+                </View>
+                <Text style={styles.lbl}>RIR</Text>
+                <View style={styles.chips}>
+                  {RIRS.map((r) => (
+                    <Pressable
+                      key={r}
+                      style={[styles.chip, editing.rir === r && styles.chipOn]}
+                      onPress={() => setEditing((e) => (e ? { ...e, rir: r } : e))}>
+                      <Text style={[styles.chipTxt, editing.rir === r && styles.chipTxtOn]}>{r === 4 ? '4+' : r}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <Text style={styles.lbl}>Tipo de serie</Text>
+                <View style={styles.chips}>
+                  {TYPES.map((t) => (
+                    <Pressable
+                      key={t.key}
+                      style={[styles.chip, editing.setType === t.key && styles.chipOn]}
+                      onPress={() => setEditing((e) => (e ? { ...e, setType: t.key } : e))}>
+                      <Text style={[styles.chipTxt, editing.setType === t.key && styles.chipTxtOn]}>{t.label}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <Pressable style={styles.done} onPress={save}>
+                  <Text style={styles.doneTxt}>✓ Serie hecha</Text>
+                </Pressable>
+                {editing.exists && (
+                  <Pressable style={styles.del} onPress={removeSet}>
+                    <Text style={styles.delTxt}>Borrar serie</Text>
+                  </Pressable>
+                )}
+              </View>
+            )}
+          </ScrollView>
         </Pressable>
       </Pressable>
     </Modal>
@@ -201,13 +248,21 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, targ
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
-  sheet: { backgroundColor: Brand.card, padding: 18, borderTopLeftRadius: 20, borderTopRightRadius: 20, gap: 6 },
-  title: { color: Brand.text, fontSize: 18, fontWeight: '800' },
-  target: { color: Brand.accent, fontSize: 13, fontWeight: '700' },
-  last: { color: Brand.textMuted, fontSize: 12, marginBottom: 6 },
-  hint: { color: Brand.textMuted, fontSize: 12, marginBottom: 6 },
+  sheet: { backgroundColor: Brand.card, padding: 18, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '92%' },
+  title: { color: Brand.text, fontSize: 18, fontWeight: '800', marginBottom: 8 },
+  image: { width: '100%', height: 170, borderRadius: 12, backgroundColor: '#fff', marginBottom: 8 },
+  imagePlaceholder: { width: '100%', height: 110, borderRadius: 12, backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 },
+  placeholderTxt: { color: Brand.textMuted, fontSize: 12 },
+  howBox: { backgroundColor: Brand.surface, borderRadius: 12, padding: 12, marginBottom: 8, gap: 4 },
+  howHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  howTitle: { color: Brand.accent, fontSize: 13, fontWeight: '700' },
+  cue: { color: Brand.text, fontSize: 13, lineHeight: 19 },
+  target: { color: Brand.accent, fontSize: 13, fontWeight: '700', marginTop: 2 },
+  last: { color: Brand.textMuted, fontSize: 12, marginTop: 4 },
+  hint: { color: Brand.textMuted, fontSize: 12, marginTop: 4 },
   hintReady: { color: Brand.good, fontWeight: '700' },
-  head: { flexDirection: 'row', gap: 8, paddingHorizontal: 4, marginTop: 4 },
+  warn: { color: '#fbbf24', fontSize: 12, marginTop: 6, lineHeight: 18 },
+  head: { flexDirection: 'row', gap: 8, paddingHorizontal: 4, marginTop: 8 },
   hCell: { color: Brand.textMuted, fontSize: 10, textTransform: 'uppercase' },
   row: { flexDirection: 'row', gap: 8, alignItems: 'center', backgroundColor: Brand.surface, borderRadius: 10, paddingHorizontal: 4, paddingVertical: 10, marginTop: 4 },
   cell: { color: Brand.text, fontWeight: '700', textAlign: 'center' },
