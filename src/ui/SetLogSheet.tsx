@@ -10,7 +10,12 @@ import { muscleView } from '@/training/muscle-map';
 import { exerciseInfo } from '@/training/exercise-info';
 import { schemeForLevel, type Level } from '@/training/levels';
 import { progressionHint, type ProgressionHint } from '@/training/progression';
+import { recommendedRestSeconds } from '@/training/rest';
 import { exerciseSetWarning } from '@/training/volume';
+
+function mmss(secs: number): string {
+  return `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+}
 
 const RIRS = [0, 1, 2, 3, 4];
 const TYPES = [
@@ -42,6 +47,8 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, musc
   const [hint, setHint] = useState<ProgressionHint | null>(null);
   const [editing, setEditing] = useState<Editing | null>(null);
   const [showHow, setShowHow] = useState(true);
+  const [restGoal, setRestGoal] = useState(120);
+  const [restLeft, setRestLeft] = useState(0);
 
   const info = exerciseInfo(exerciseName);
   const mv = muscleView(muscleGroup ?? '');
@@ -63,11 +70,21 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, musc
     const rir = sc.rirMin === sc.rirMax ? `${sc.rirMin}` : `${sc.rirMin}–${sc.rirMax}`;
     setSchemeSets(setsN);
     setTarget(`${setsN}×${lo}–${hi} · RIR ${rir}`);
-    setHint(lp ? progressionHint(lp.sets, { sets: setsN, repMin: lo, repMax: hi }) : null);
-    // Serie 1 ya abierta para anotar al entrar.
+    setRestGoal(recommendedRestSeconds(hi));
+    const h = lp ? progressionHint(lp.sets, { sets: setsN, repMin: lo, repMax: hi }) : null;
+    setHint(h);
+    // Serie 1 ya abierta para anotar al entrar. Si toca subir peso, pre-rellena lo sugerido.
     if (fetched.length === 0) {
       const prev = lp?.sets[0];
-      setEditing({ setNumber: 1, weightKg: prev?.weightKg ?? 20, reps: prev?.reps ?? 8, rir: 2, setType: 'normal', exists: false });
+      const up = h?.ready && h.suggestedWeightKg != null;
+      setEditing({
+        setNumber: 1,
+        weightKg: up ? h!.suggestedWeightKg! : prev?.weightKg ?? 20,
+        reps: up ? lo : prev?.reps ?? 8,
+        rir: 2,
+        setType: 'normal',
+        exists: false,
+      });
     }
   }, [visible, sessionId, exerciseId, targetSets, repMin, repMax]);
 
@@ -75,13 +92,21 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, musc
     load();
   }, [load]);
 
+  // Cuenta atrás del descanso entre series.
+  useEffect(() => {
+    if (restLeft <= 0) return;
+    const id = setInterval(() => setRestLeft((r) => (r <= 1 ? 0 : r - 1)), 1000);
+    return () => clearInterval(id);
+  }, [restLeft > 0]);
+
   function openNew() {
     const n = sets.length + 1;
     const lastSame = last?.sets.find((s) => s.setNumber === n);
     const todayPrev = sets[sets.length - 1];
+    const up = hint?.ready && hint.suggestedWeightKg != null && !todayPrev;
     setEditing({
       setNumber: n,
-      weightKg: lastSame?.weightKg ?? todayPrev?.weightKg ?? 20,
+      weightKg: up ? hint!.suggestedWeightKg! : lastSame?.weightKg ?? todayPrev?.weightKg ?? 20,
       reps: lastSame?.reps ?? todayPrev?.reps ?? 8,
       rir: 2,
       setType: 'normal',
@@ -108,7 +133,9 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, musc
       rir: editing.rir,
       setType: editing.setType,
     });
+    const wasWarmup = editing.setType === 'warmup';
     setEditing(null);
+    if (!wasWarmup) setRestLeft(restGoal);
     load();
   }
 
@@ -173,6 +200,19 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, musc
               </Text>
             )}
             {volWarn.level === 'warn' && <Text style={styles.warn}>{volWarn.text}</Text>}
+
+            {restLeft > 0 && (
+              <View style={styles.restBox}>
+                <Ionicons name="timer-outline" size={20} color={Brand.good} />
+                <Text style={styles.restTime}>Descanso {mmss(restLeft)}</Text>
+                <Pressable style={styles.restBtn} onPress={() => setRestLeft((r) => r + 30)}>
+                  <Text style={styles.restBtnTxt}>+30s</Text>
+                </Pressable>
+                <Pressable style={styles.restBtn} onPress={() => setRestLeft(0)}>
+                  <Text style={styles.restBtnTxt}>Saltar</Text>
+                </Pressable>
+              </View>
+            )}
 
             <View style={styles.head}>
               <Text style={[styles.hCell, { width: 44 }]}>Serie</Text>
@@ -275,6 +315,10 @@ const styles = StyleSheet.create({
   hint: { color: Brand.textMuted, fontSize: 12, marginTop: 4 },
   hintReady: { color: Brand.good, fontWeight: '700' },
   warn: { color: '#fbbf24', fontSize: 12, marginTop: 6, lineHeight: 18 },
+  restBox: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#15251c', borderRadius: 12, padding: 12, marginTop: 8 },
+  restTime: { color: Brand.good, fontSize: 16, fontWeight: '800', flex: 1 },
+  restBtn: { backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 9, paddingVertical: 6, paddingHorizontal: 12 },
+  restBtnTxt: { color: Brand.text, fontWeight: '700', fontSize: 12 },
   head: { flexDirection: 'row', gap: 8, paddingHorizontal: 4, marginTop: 8 },
   hCell: { color: Brand.textMuted, fontSize: 10, textTransform: 'uppercase' },
   row: { flexDirection: 'row', gap: 8, alignItems: 'center', backgroundColor: Brand.surface, borderRadius: 10, paddingHorizontal: 4, paddingVertical: 10, marginTop: 4 },
