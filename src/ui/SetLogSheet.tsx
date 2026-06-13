@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Body from 'react-native-body-highlighter';
 
 import { Brand } from '@/constants/theme';
 import { getProfile } from '@/db/bodyweight-repo';
 import { deleteSet, getLastPerformance, listSets, upsertSet, type SetLog } from '@/db/workout-repo';
-import { exerciseImage } from '@/training/exercise-images';
+import { muscleView } from '@/training/muscle-map';
 import { exerciseInfo } from '@/training/exercise-info';
 import { schemeForLevel, type Level } from '@/training/levels';
 import { progressionHint, type ProgressionHint } from '@/training/progression';
@@ -43,7 +44,7 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, musc
   const [showHow, setShowHow] = useState(true);
 
   const info = exerciseInfo(exerciseName);
-  const image = exerciseImage(exerciseName);
+  const mv = muscleView(muscleGroup ?? '');
   const workSets = sets.filter((s) => s.setType !== 'warmup').length;
   const volWarn = exerciseSetWarning(workSets, schemeSets);
 
@@ -126,12 +127,23 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, musc
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text style={styles.title}>{exerciseName}</Text>
 
-            {image ? (
-              <Image source={image} style={styles.image} resizeMode="contain" />
+            {mv ? (
+              <View style={styles.bodyBox}>
+                <Body
+                  data={[{ slug: mv.slug, intensity: 1 }]}
+                  side={mv.side}
+                  gender="male"
+                  colors={[Brand.accent]}
+                  defaultFill="#2e2e3a"
+                  border="none"
+                  scale={0.62}
+                />
+                <Text style={styles.bodyCaption}>Músculo principal: {muscleGroup}</Text>
+              </View>
             ) : (
               <View style={styles.imagePlaceholder}>
                 <Ionicons name="barbell-outline" size={34} color={Brand.textMuted} />
-                <Text style={styles.placeholderTxt}>{muscleGroup ?? 'ejercicio'} · imagen próximamente</Text>
+                <Text style={styles.placeholderTxt}>{muscleGroup ?? 'ejercicio'}</Text>
               </View>
             )}
 
@@ -250,9 +262,10 @@ const styles = StyleSheet.create({
   backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
   sheet: { backgroundColor: Brand.card, padding: 18, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '92%' },
   title: { color: Brand.text, fontSize: 18, fontWeight: '800', marginBottom: 8 },
-  image: { width: '100%', height: 170, borderRadius: 12, backgroundColor: '#fff', marginBottom: 8 },
-  imagePlaceholder: { width: '100%', height: 110, borderRadius: 12, backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 },
-  placeholderTxt: { color: Brand.textMuted, fontSize: 12 },
+  bodyBox: { backgroundColor: Brand.surface, borderRadius: 12, borderColor: Brand.cardBorder, borderWidth: 1, alignItems: 'center', paddingVertical: 10, gap: 4, marginBottom: 8 },
+  bodyCaption: { color: Brand.textMuted, fontSize: 12, textTransform: 'capitalize' },
+  imagePlaceholder: { width: '100%', height: 90, borderRadius: 12, backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 },
+  placeholderTxt: { color: Brand.textMuted, fontSize: 12, textTransform: 'capitalize' },
   howBox: { backgroundColor: Brand.surface, borderRadius: 12, padding: 12, marginBottom: 8, gap: 4 },
   howHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   howTitle: { color: Brand.accent, fontSize: 13, fontWeight: '700' },
