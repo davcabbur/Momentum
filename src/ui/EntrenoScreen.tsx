@@ -1,11 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { daysBetween } from '@/bodyweight/goal';
 import { Brand } from '@/constants/theme';
 import { seedExercises } from '@/db/exercise-repo';
 import { getActiveRoutine, listDays, type RoutineDay } from '@/db/routine-repo';
+import { lastSessionDate } from '@/db/workout-repo';
+import { welcomeBackAdvice } from '@/training/intelligence';
 import { RoutineBuilder } from '@/ui/RoutineBuilder';
 import { SessionScreen } from '@/ui/SessionScreen';
+
+function today(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 type EntrenoView = 'home' | 'builder' | { dayId: number; dayName: string };
 
@@ -14,6 +21,7 @@ export function EntrenoScreen() {
   const [days, setDays] = useState<RoutineDay[]>([]);
   const [view, setView] = useState<EntrenoView>('home');
   const [loaded, setLoaded] = useState(false);
+  const [welcome, setWelcome] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     await seedExercises();
@@ -21,6 +29,8 @@ export function EntrenoScreen() {
     setRoutineId(r?.id ?? null);
     const ds = r ? await listDays(r.id) : [];
     setDays(Array.isArray(ds) ? ds : []);
+    const last = await lastSessionDate();
+    setWelcome(last ? welcomeBackAdvice(daysBetween(last, today()))?.text ?? null : null);
     setLoaded(true);
   }, []);
 
@@ -37,6 +47,11 @@ export function EntrenoScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.h1}>Entreno</Text>
+      {welcome && (
+        <View style={styles.welcome}>
+          <Text style={styles.welcomeTxt}>{welcome}</Text>
+        </View>
+      )}
       {routineId == null ? (
         <Pressable style={styles.cta} onPress={() => setView('builder')}>
           <Text style={styles.ctaTxt}>＋ Crear mi rutina</Text>
@@ -64,6 +79,8 @@ const styles = StyleSheet.create({
   content: { padding: 14, gap: 12 },
   h1: { color: Brand.text, fontSize: 20, fontWeight: '800' },
   muted: { color: Brand.textMuted },
+  welcome: { backgroundColor: '#1a2330', borderRadius: 14, padding: 14 },
+  welcomeTxt: { color: '#b9c4d0', fontSize: 13, lineHeight: 19 },
   cta: { backgroundColor: Brand.accentStrong, borderRadius: 14, padding: 18, alignItems: 'center' },
   ctaTxt: { color: '#fff', fontWeight: '800', fontSize: 16 },
   dayCard: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

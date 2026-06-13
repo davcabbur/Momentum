@@ -71,6 +71,16 @@ export async function getLastPerformance(
   return { date: prev.date, sets };
 }
 
+/** Fecha (YYYY-MM-DD) de la sesión más reciente, o null si no hay ninguna. */
+export async function lastSessionDate(): Promise<string | null> {
+  const rows = await db
+    .select({ date: workoutSession.date })
+    .from(workoutSession)
+    .orderBy(desc(workoutSession.date))
+    .limit(1);
+  return rows[0]?.date ?? null;
+}
+
 /** Historial completo (una fila por serie), ordenado por fecha, para construir el progreso. */
 export async function getHistoryRows(): Promise<HistoryRow[]> {
   return db

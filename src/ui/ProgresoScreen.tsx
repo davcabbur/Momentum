@@ -5,6 +5,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Brand } from '@/constants/theme';
 import { getHistoryRows } from '@/db/workout-repo';
 import { buildProgress, type ExerciseProgress } from '@/training/progression';
+import { detectStall, deloadAdvice } from '@/training/intelligence';
 import { LineChart } from './LineChart';
 
 function fmt(n: number): string {
@@ -44,6 +45,7 @@ export function ProgresoScreen() {
 
       {items.map((ex) => {
         const latest = ex.points[ex.points.length - 1];
+        const advice = deloadAdvice(ex.name, detectStall(ex.points.map((p) => p.e1rm)));
         return (
           <View key={ex.exerciseId} style={styles.card}>
             <Text style={styles.name}>{ex.name}</Text>
@@ -66,6 +68,7 @@ export function ProgresoScreen() {
             ) : (
               <Text style={styles.note}>Necesitas otra sesión para ver la tendencia.</Text>
             )}
+            {advice && <Text style={styles.deload}>🔋 {advice.text}</Text>}
           </View>
         );
       })}
@@ -87,4 +90,5 @@ const styles = StyleSheet.create({
   statVal: { color: Brand.accent, fontSize: 17, fontWeight: '800' },
   statLbl: { color: Brand.textMuted, fontSize: 11, marginTop: 2 },
   note: { color: Brand.textMuted, fontSize: 12, fontStyle: 'italic' },
+  deload: { color: '#fbbf24', fontSize: 12, lineHeight: 18, marginTop: 2 },
 });
