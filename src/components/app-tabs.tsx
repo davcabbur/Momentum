@@ -4,8 +4,8 @@ import { Tabs } from 'expo-router';
 import { Brand } from '@/constants/theme';
 
 /**
- * Barra de pestañas inferior. Por ahora "Hoy" (peso) y "Entreno".
- * Progreso · Más se añadirán con sus milestones.
+ * Barra de pestañas inferior: Inicio · Entreno · Progreso · Nutrición.
+ * Ajustes y Glosario son rutas accesibles (engranaje en Inicio), no pestañas.
  */
 export default function AppTabs() {
   return (
@@ -19,8 +19,8 @@ export default function AppTabs() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Hoy',
-          tabBarIcon: ({ color, size }) => <Ionicons name="today-outline" size={size} color={color} />,
+          title: 'Inicio',
+          tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -44,13 +44,9 @@ export default function AppTabs() {
           tabBarIcon: ({ color, size }) => <Ionicons name="nutrition-outline" size={size} color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="mas"
-        options={{
-          title: 'Más',
-          tabBarIcon: ({ color, size }) => <Ionicons name="book-outline" size={size} color={color} />,
-        }}
-      />
+      {/* Rutas fuera de la barra (se abren desde el engranaje de Inicio) */}
+      <Tabs.Screen name="ajustes" options={{ href: null }} />
+      <Tabs.Screen name="glosario" options={{ href: null }} />
     </Tabs>
   );
 }

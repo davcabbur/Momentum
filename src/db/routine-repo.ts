@@ -110,6 +110,20 @@ export async function removeExerciseFromDay(rdeId: number): Promise<void> {
   await db.delete(routineDayExercise).where(eq(routineDayExercise.id, rdeId));
 }
 
+/** Reaplica el esquema por defecto (según nivel) a todos los ejercicios de la rutina actual. */
+export async function reapplyLevelToRoutine(level: Level): Promise<void> {
+  const r = await getActiveRoutine();
+  if (!r) return;
+  const days = await listDays(r.id);
+  for (const d of days) {
+    const exs = await listDayExercises(d.id);
+    for (const x of exs) {
+      const sc = defaultScheme(x.exercise.name, level);
+      await updateDayExerciseScheme(x.rdeId, { targetSets: sc.sets, repMin: sc.repMin, repMax: sc.repMax });
+    }
+  }
+}
+
 /** Crea la rutina desde una plantilla: días + ejercicios por defecto con esquema según nivel. */
 export async function createRoutineFromTemplate(template: RoutineTemplate, level: Level): Promise<number> {
   await clearRoutine();

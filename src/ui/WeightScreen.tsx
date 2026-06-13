@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import {
@@ -15,6 +17,7 @@ import { Brand } from '@/constants/theme';
 import { deleteWeights, getGoal, listWeights } from '@/db/bodyweight-repo';
 import { weightGoal } from '@/db/schema';
 import { AddWeightSheet } from '@/ui/AddWeightSheet';
+import { KcalSummaryCard } from '@/ui/KcalSummaryCard';
 import { Onboarding } from '@/ui/Onboarding';
 import { SetGoalSheet } from '@/ui/SetGoalSheet';
 import { WeightChart } from '@/ui/WeightChart';
@@ -32,6 +35,7 @@ function shortDate(iso: string): string {
 }
 
 export function WeightScreen() {
+  const router = useRouter();
   const [points, setPoints] = useState<TrendPoint[]>([]);
   const [goal, setGoal] = useState<Goal | null>(null);
   const [editing, setEditing] = useState<Editing | null>(null);
@@ -98,8 +102,17 @@ export function WeightScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <View style={styles.topBar}>
+        <Text style={styles.h1}>Inicio</Text>
+        <Pressable style={styles.gear} onPress={() => router.push('/ajustes')} hitSlop={10}>
+          <Ionicons name="settings-outline" size={22} color={Brand.textMuted} />
+        </Pressable>
+      </View>
+
+      <KcalSummaryCard onPress={() => router.push('/nutricion')} />
+
       <View style={styles.header}>
-        <Text style={styles.h1}>Peso corporal</Text>
+        <Text style={styles.h2}>Peso corporal</Text>
         <Pressable style={styles.add} onPress={openToday}>
           <Text style={styles.addTxt}>＋</Text>
         </Pressable>
@@ -296,8 +309,11 @@ function Bar({ label, pct, color }: { label: string; pct: number; color: string 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Brand.surface },
   content: { padding: 14, gap: 12 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  h1: { color: Brand.text, fontSize: 20, fontWeight: '800' },
+  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  gear: { padding: 4 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
+  h1: { color: Brand.text, fontSize: 22, fontWeight: '800' },
+  h2: { color: Brand.text, fontSize: 18, fontWeight: '800' },
   add: { width: 36, height: 36, borderRadius: 11, backgroundColor: Brand.accentStrong, alignItems: 'center', justifyContent: 'center' },
   addTxt: { color: '#fff', fontSize: 22, fontWeight: '700', lineHeight: 24 },
   bigRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
