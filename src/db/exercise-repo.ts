@@ -48,6 +48,8 @@ const STARTER: { name: string; muscleGroup: string; pattern: string }[] = [
   { name: 'Elevación de piernas', muscleGroup: 'core', pattern: 'otro' },
   { name: 'Rotación de torso', muscleGroup: 'core', pattern: 'otro' },
   { name: 'Plancha', muscleGroup: 'core', pattern: 'otro' },
+  { name: 'Colgarse en barra', muscleGroup: 'antebrazo', pattern: 'otro' },
+  { name: 'Curl de muñeca', muscleGroup: 'antebrazo', pattern: 'otro' },
 ];
 
 /** Asegura el catálogo: inserta los ejercicios del catálogo que falten (por nombre). */
