@@ -3,34 +3,41 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Brand } from '@/constants/theme';
 import { getProfile, setLevel } from '@/db/bodyweight-repo';
+import { seedExercisesIfEmpty } from '@/db/exercise-repo';
 import {
   addExerciseToDay,
-  createRoutineWithDays,
+  createRoutineFromTemplate,
   getActiveRoutine,
   listDayExercises,
   listDays,
   removeExerciseFromDay,
-  type Exercise,
+  type DayExercise,
   type RoutineDay,
 } from '@/db/routine-repo';
+import { schemeForLevel, type Level } from '@/training/levels';
 import { DAYS_PER_WEEK_OPTIONS, routineTemplatesFor, type RoutineTemplate } from '@/training/routine-templates';
 import { ExercisePicker } from '@/ui/ExercisePicker';
+import { SchemeEditSheet } from '@/ui/SchemeEditSheet';
 
 const LEVELS = ['principiante', 'intermedio', 'avanzado'];
 
 export function RoutineBuilder({ onDone }: { onDone: () => void }) {
   const [days, setDays] = useState<RoutineDay[]>([]);
-  const [exByDay, setExByDay] = useState<Record<number, { rdeId: number; exercise: Exercise }[]>>({});
+  const [exByDay, setExByDay] = useState<Record<number, DayExercise[]>>({});
   const [level, setLvl] = useState('intermedio');
   const [daysPerWeek, setDaysPerWeek] = useState<number | null>(null);
   const [forceChoose, setForceChoose] = useState(false);
   const [pickerDay, setPickerDay] = useState<number | null>(null);
+  const [editEx, setEditEx] = useState<DayExercise | null>(null);
+
+  const lvlScheme = schemeForLevel(level as Level);
 
   const load = useCallback(async () => {
+    await seedExercisesIfEmpty();
     const r = await getActiveRoutine();
     const ds = r ? await listDays(r.id) : [];
     setDays(Array.isArray(ds) ? ds : []);
-    const map: Record<number, { rdeId: number; exercise: Exercise }[]> = {};
+    const map: Record<number, DayExercise[]> = {};
     for (const d of ds) map[d.id] = await listDayExercises(d.id);
     setExByDay(map);
     const prof = await getProfile();
@@ -49,10 +56,17 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
   }
 
   async function pickTemplate(t: RoutineTemplate) {
-    await createRoutineWithDays(t.name, t.days);
+    await createRoutineFromTemplate(t, level as Level);
     setForceChoose(false);
     setDaysPerWeek(null);
     load();
+  }
+
+  function schemeText(x: DayExercise): string {
+    const sets = x.targetSets ?? lvlScheme.sets;
+    const lo = x.repMin ?? lvlScheme.repMin;
+    const hi = x.repMax ?? lvlScheme.repMax;
+    return `${sets}×${lo}–${hi}`;
   }
 
   return (
@@ -84,11 +98,11 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
 
           {daysPerWeek != null && (
             <>
-              <Text style={styles.lbl}>Elige una rutina</Text>
+              <Text style={styles.lbl}>Elige una rutina (se rellenan los ejercicios)</Text>
               {routineTemplatesFor(daysPerWeek).map((t) => (
                 <Pressable key={t.key} style={styles.tpl} onPress={() => pickTemplate(t)}>
                   <Text style={styles.tplName}>{t.name}</Text>
-                  <Text style={styles.tplDays}>{t.days.join(' · ')}</Text>
+                  <Text style={styles.tplDays}>{t.days.map((d) => d.name).join(' · ')}</Text>
                 </Pressable>
               ))}
             </>
@@ -102,13 +116,16 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
         </>
       ) : (
         <>
-          <Text style={styles.lbl}>Días (añade ejercicios a cada uno)</Text>
+          <Text style={styles.lbl}>Tus días (toca un ejercicio para ajustar series/reps)</Text>
           {days.map((d) => (
             <View key={d.id} style={styles.dayBox}>
               <Text style={styles.dayName}>{d.name}</Text>
               {(exByDay[d.id] ?? []).map((x) => (
                 <View key={x.rdeId} style={styles.exRow}>
-                  <Text style={styles.exName}>{x.exercise.name}</Text>
+                  <Pressable style={styles.exMain} onPress={() => setEditEx(x)}>
+                    <Text style={styles.exName}>{x.exercise.name}</Text>
+                    <Text style={styles.exScheme}>{schemeText(x)}</Text>
+                  </Pressable>
                   <Pressable onPress={async () => { await removeExerciseFromDay(x.rdeId); load(); }}>
                     <Text style={styles.del}>quitar</Text>
                   </Pressable>
@@ -128,12 +145,26 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
       <ExercisePicker
         visible={pickerDay != null}
         onPick={async (exId) => {
-          if (pickerDay != null) await addExerciseToDay(pickerDay, exId);
+          if (pickerDay != null) {
+            await addExerciseToDay(pickerDay, exId, { targetSets: lvlScheme.sets, repMin: lvlScheme.repMin, repMax: lvlScheme.repMax });
+          }
           setPickerDay(null);
           load();
         }}
         onClose={() => setPickerDay(null)}
       />
+
+      {editEx && (
+        <SchemeEditSheet
+          visible={editEx != null}
+          rdeId={editEx.rdeId}
+          name={editEx.exercise.name}
+          sets={editEx.targetSets ?? lvlScheme.sets}
+          repMin={editEx.repMin ?? lvlScheme.repMin}
+          repMax={editEx.repMax ?? lvlScheme.repMax}
+          onClose={() => { setEditEx(null); load(); }}
+        />
+      )}
     </ScrollView>
   );
 }
@@ -157,8 +188,10 @@ const styles = StyleSheet.create({
   dayBox: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 12, gap: 6 },
   dayName: { color: Brand.text, fontSize: 16, fontWeight: '700' },
   exRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6, borderTopWidth: 1, borderTopColor: Brand.cardBorder },
+  exMain: { flex: 1 },
   exName: { color: Brand.text },
-  del: { color: '#f87171', fontSize: 12 },
+  exScheme: { color: Brand.accent, fontSize: 12, marginTop: 1 },
+  del: { color: '#f87171', fontSize: 12, marginLeft: 8 },
   addEx: { paddingVertical: 8, alignItems: 'center', borderWidth: 1, borderColor: Brand.cardBorder, borderStyle: 'dashed', borderRadius: 10, marginTop: 4 },
   addExTxt: { color: Brand.accent, fontSize: 13, fontWeight: '600' },
   change: { padding: 12, alignItems: 'center', marginTop: 4 },

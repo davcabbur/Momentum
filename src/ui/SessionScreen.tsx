@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
 import { Brand } from '@/constants/theme';
-import { listDayExercises, type Exercise } from '@/db/routine-repo';
+import { listDayExercises, type DayExercise } from '@/db/routine-repo';
 import { getOrCreateSession, listSets } from '@/db/workout-repo';
 import { SetLogSheet } from '@/ui/SetLogSheet';
 
@@ -18,15 +18,15 @@ interface Props {
 
 export function SessionScreen({ dayId, dayName, onBack }: Props) {
   const [sessionId, setSessionId] = useState<number | null>(null);
-  const [exercises, setExercises] = useState<{ rdeId: number; exercise: Exercise }[]>([]);
+  const [exercises, setExercises] = useState<DayExercise[]>([]);
   const [counts, setCounts] = useState<Record<number, number>>({});
-  const [openEx, setOpenEx] = useState<Exercise | null>(null);
+  const [openItem, setOpenItem] = useState<DayExercise | null>(null);
 
   const load = useCallback(async () => {
     const sid = await getOrCreateSession(today(), dayId);
     setSessionId(sid);
     const exs = await listDayExercises(dayId);
-    setExercises(exs);
+    setExercises(Array.isArray(exs) ? exs : []);
     const c: Record<number, number> = {};
     for (const e of exs) c[e.exercise.id] = (await listSets(sid, e.exercise.id)).length;
     setCounts(c);
@@ -44,19 +44,22 @@ export function SessionScreen({ dayId, dayName, onBack }: Props) {
       <Text style={styles.h1}>{dayName}</Text>
       {exercises.length === 0 && <Text style={styles.muted}>Este día no tiene ejercicios. Edítalo en la rutina.</Text>}
       {exercises.map((e) => (
-        <Pressable key={e.rdeId} style={styles.card} onPress={() => setOpenEx(e.exercise)}>
+        <Pressable key={e.rdeId} style={styles.card} onPress={() => setOpenItem(e)}>
           <Text style={styles.exName}>{e.exercise.name}</Text>
           <Text style={styles.exMeta}>{counts[e.exercise.id] ? `${counts[e.exercise.id]} series ✓` : 'registrar ›'}</Text>
         </Pressable>
       ))}
       {sessionId != null && (
         <SetLogSheet
-          visible={openEx != null}
+          visible={openItem != null}
           sessionId={sessionId}
-          exerciseId={openEx?.id ?? 0}
-          exerciseName={openEx?.name ?? ''}
+          exerciseId={openItem?.exercise.id ?? 0}
+          exerciseName={openItem?.exercise.name ?? ''}
+          targetSets={openItem?.targetSets ?? null}
+          repMin={openItem?.repMin ?? null}
+          repMax={openItem?.repMax ?? null}
           onClose={() => {
-            setOpenEx(null);
+            setOpenItem(null);
             load();
           }}
         />

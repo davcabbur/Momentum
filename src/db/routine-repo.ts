@@ -1,11 +1,21 @@
 import { asc, eq } from 'drizzle-orm';
 
+import { schemeForLevel, type Level } from '@/training/levels';
+import { exercisesForType, type RoutineTemplate } from '@/training/routine-templates';
 import { db } from './client';
+import { listExercises } from './exercise-repo';
 import { exercise, routine, routineDay, routineDayExercise } from './schema';
 
 export type Routine = typeof routine.$inferSelect;
 export type RoutineDay = typeof routineDay.$inferSelect;
 export type Exercise = typeof exercise.$inferSelect;
+export interface DayExercise {
+  rdeId: number;
+  exercise: Exercise;
+  targetSets: number | null;
+  repMin: number | null;
+  repMax: number | null;
+}
 
 export async function getActiveRoutine(): Promise<Routine | null> {
   const rows = await db.select().from(routine).limit(1);
@@ -56,21 +66,77 @@ export async function deleteDay(dayId: number): Promise<void> {
   await db.delete(routineDay).where(eq(routineDay.id, dayId));
 }
 
-/** Ejercicios de un día, en orden, con sus datos. */
-export async function listDayExercises(dayId: number): Promise<{ rdeId: number; exercise: Exercise }[]> {
+/** Ejercicios de un día, en orden, con su esquema (series/reps). */
+export async function listDayExercises(dayId: number): Promise<DayExercise[]> {
   return db
-    .select({ rdeId: routineDayExercise.id, exercise })
+    .select({
+      rdeId: routineDayExercise.id,
+      exercise,
+      targetSets: routineDayExercise.targetSets,
+      repMin: routineDayExercise.repMin,
+      repMax: routineDayExercise.repMax,
+    })
     .from(routineDayExercise)
     .innerJoin(exercise, eq(routineDayExercise.exerciseId, exercise.id))
     .where(eq(routineDayExercise.routineDayId, dayId))
     .orderBy(asc(routineDayExercise.orderIdx));
 }
 
-export async function addExerciseToDay(dayId: number, exerciseId: number): Promise<void> {
+export async function addExerciseToDay(
+  dayId: number,
+  exerciseId: number,
+  scheme?: { targetSets: number; repMin: number; repMax: number },
+): Promise<void> {
   const current = await db.select().from(routineDayExercise).where(eq(routineDayExercise.routineDayId, dayId));
-  await db.insert(routineDayExercise).values({ routineDayId: dayId, exerciseId, orderIdx: current.length });
+  await db.insert(routineDayExercise).values({
+    routineDayId: dayId,
+    exerciseId,
+    orderIdx: current.length,
+    targetSets: scheme?.targetSets ?? null,
+    repMin: scheme?.repMin ?? null,
+    repMax: scheme?.repMax ?? null,
+  });
+}
+
+export async function updateDayExerciseScheme(
+  rdeId: number,
+  scheme: { targetSets: number; repMin: number; repMax: number },
+): Promise<void> {
+  await db.update(routineDayExercise).set(scheme).where(eq(routineDayExercise.id, rdeId));
 }
 
 export async function removeExerciseFromDay(rdeId: number): Promise<void> {
   await db.delete(routineDayExercise).where(eq(routineDayExercise.id, rdeId));
+}
+
+/** Crea la rutina desde una plantilla: días + ejercicios por defecto con esquema según nivel. */
+export async function createRoutineFromTemplate(template: RoutineTemplate, level: Level): Promise<number> {
+  await clearRoutine();
+  const id = await createRoutine(template.name);
+  const scheme = schemeForLevel(level);
+  const all = await listExercises();
+  const byName = new Map(all.map((e) => [e.name, e.id]));
+  for (let i = 0; i < template.days.length; i++) {
+    const d = template.days[i];
+    const dayRes = await db
+      .insert(routineDay)
+      .values({ routineId: id, name: d.name, orderIdx: i })
+      .returning({ id: routineDay.id });
+    const dayId = dayRes[0].id;
+    const names = exercisesForType(d.type);
+    for (let j = 0; j < names.length; j++) {
+      const exId = byName.get(names[j]);
+      if (exId != null) {
+        await db.insert(routineDayExercise).values({
+          routineDayId: dayId,
+          exerciseId: exId,
+          orderIdx: j,
+          targetSets: scheme.sets,
+          repMin: scheme.repMin,
+          repMax: scheme.repMax,
+        });
+      }
+    }
+  }
+  return id;
 }

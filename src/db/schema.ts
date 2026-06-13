@@ -56,6 +56,9 @@ export const routineDayExercise = sqliteTable('routine_day_exercise', {
   routineDayId: integer('routine_day_id').notNull(),
   exerciseId: integer('exercise_id').notNull(),
   orderIdx: integer('order_idx').notNull(),
+  targetSets: integer('target_sets'), // series objetivo (override del nivel; nullable)
+  repMin: integer('rep_min'),
+  repMax: integer('rep_max'),
 });
 
 export const workoutSession = sqliteTable('workout_session', {

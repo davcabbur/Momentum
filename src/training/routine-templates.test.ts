@@ -1,4 +1,4 @@
-import { routineTemplatesFor } from './routine-templates';
+import { routineTemplatesFor, exercisesForType } from './routine-templates';
 
 test('3 días ofrece PPL', () => {
   const t = routineTemplatesFor(3);
@@ -15,4 +15,11 @@ test('cada plantilla tiene tantos días como días/semana', () => {
 
 test('un número sin plantillas devuelve vacío', () => {
   expect(routineTemplatesFor(1)).toEqual([]);
+});
+
+test('cada día de plantilla tiene un tipo con ejercicios por defecto', () => {
+  const ppl = routineTemplatesFor(3).find((t) => t.key === 'ppl')!;
+  for (const d of ppl.days) {
+    expect(exercisesForType(d.type).length).toBeGreaterThan(0);
+  }
 });

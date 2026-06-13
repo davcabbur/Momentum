@@ -4,7 +4,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Brand } from '@/constants/theme';
 import { getProfile } from '@/db/bodyweight-repo';
 import { deleteSet, getLastPerformance, listSets, upsertSet, type SetLog } from '@/db/workout-repo';
-import { describeScheme, schemeForLevel, type Level } from '@/training/levels';
+import { schemeForLevel, type Level } from '@/training/levels';
 
 const RIRS = [0, 1, 2, 3, 4];
 const TYPES = [
@@ -19,12 +19,15 @@ interface Props {
   sessionId: number;
   exerciseId: number;
   exerciseName: string;
+  targetSets?: number | null;
+  repMin?: number | null;
+  repMax?: number | null;
   onClose: () => void;
 }
 
 type Editing = { setNumber: number; weightKg: number; reps: number; rir: number | null; setType: string; exists: boolean };
 
-export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, onClose }: Props) {
+export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, targetSets, repMin, repMax, onClose }: Props) {
   const [sets, setSets] = useState<SetLog[]>([]);
   const [last, setLast] = useState<{ date: string; sets: SetLog[] } | null>(null);
   const [target, setTarget] = useState('');
@@ -36,8 +39,13 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, onCl
     setLast(await getLastPerformance(exerciseId, sessionId));
     const prof = await getProfile();
     const lvl = (prof?.level as Level) ?? 'intermedio';
-    setTarget(describeScheme(schemeForLevel(lvl)));
-  }, [visible, sessionId, exerciseId]);
+    const sc = schemeForLevel(lvl);
+    const setsN = targetSets ?? sc.sets;
+    const lo = repMin ?? sc.repMin;
+    const hi = repMax ?? sc.repMax;
+    const rir = sc.rirMin === sc.rirMax ? `${sc.rirMin}` : `${sc.rirMin}–${sc.rirMax}`;
+    setTarget(`${setsN}×${lo}–${hi} · RIR ${rir}`);
+  }, [visible, sessionId, exerciseId, targetSets, repMin, repMax]);
 
   useEffect(() => {
     load();
