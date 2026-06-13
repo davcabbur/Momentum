@@ -36,6 +36,10 @@ const ISOLATION = new Set([
   'Face pull',
   'Encogimiento de hombros',
   'Pullover',
+  'Crunch',
+  'Elevación de piernas',
+  'Rotación de torso',
+  'Plancha',
 ]);
 
 /**

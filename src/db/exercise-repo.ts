@@ -36,6 +36,10 @@ const STARTER: { name: string; muscleGroup: string; pattern: string }[] = [
   { name: 'Curl femoral', muscleGroup: 'pierna', pattern: 'pierna' },
   { name: 'Extensión cuádriceps', muscleGroup: 'pierna', pattern: 'pierna' },
   { name: 'Gemelo de pie', muscleGroup: 'gemelo', pattern: 'pierna' },
+  { name: 'Crunch', muscleGroup: 'core', pattern: 'otro' },
+  { name: 'Elevación de piernas', muscleGroup: 'core', pattern: 'otro' },
+  { name: 'Rotación de torso', muscleGroup: 'core', pattern: 'otro' },
+  { name: 'Plancha', muscleGroup: 'core', pattern: 'otro' },
 ];
 
 /** Asegura el catálogo: inserta los ejercicios del catálogo que falten (por nombre). */
