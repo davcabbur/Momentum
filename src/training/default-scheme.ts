@@ -5,6 +5,7 @@ const COMPOUNDS = new Set([
   'Press banca',
   'Press plano mancuerna',
   'Fondos',
+  'Press declinado',
   'Press militar',
   'Jalón al pecho',
   'Remo mancuerna',
@@ -22,6 +23,7 @@ const COMPOUNDS = new Set([
 
 const ISOLATION = new Set([
   'Aperturas',
+  'Cruces en polea',
   'Elevaciones laterales',
   'Pájaros',
   'Press francés',

@@ -9,6 +9,8 @@ const STARTER: { name: string; muscleGroup: string; pattern: string }[] = [
   { name: 'Press plano mancuerna', muscleGroup: 'pecho', pattern: 'empuje' },
   { name: 'Aperturas', muscleGroup: 'pecho', pattern: 'empuje' },
   { name: 'Fondos', muscleGroup: 'pecho', pattern: 'empuje' },
+  { name: 'Cruces en polea', muscleGroup: 'pecho', pattern: 'empuje' },
+  { name: 'Press declinado', muscleGroup: 'pecho', pattern: 'empuje' },
   { name: 'Press militar', muscleGroup: 'hombro', pattern: 'empuje' },
   { name: 'Elevaciones laterales', muscleGroup: 'hombro', pattern: 'empuje' },
   { name: 'Pájaros', muscleGroup: 'hombro', pattern: 'tiron' },
