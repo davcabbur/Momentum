@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
-import { useFocusEffect } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Brand } from '@/constants/theme';
 import { getHistoryRows } from '@/db/workout-repo';
@@ -13,6 +14,7 @@ function fmt(n: number): string {
 }
 
 export function ProgresoScreen() {
+  const router = useRouter();
   const [items, setItems] = useState<ExerciseProgress[]>([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -36,6 +38,12 @@ export function ProgresoScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.h1}>Progreso</Text>
       <Text style={styles.intro}>Tu fuerza estimada (1RM) y volumen por ejercicio. Orienta, no presiona.</Text>
+
+      <Pressable style={styles.histBtn} onPress={() => router.push('/historial')}>
+        <Ionicons name="calendar-outline" size={18} color={Brand.accent} />
+        <Text style={styles.histTxt}>Historial de sesiones</Text>
+        <Ionicons name="chevron-forward" size={18} color={Brand.textMuted} />
+      </Pressable>
 
       {loaded && items.length === 0 && (
         <View style={styles.empty}>
@@ -91,4 +99,6 @@ const styles = StyleSheet.create({
   statLbl: { color: Brand.textMuted, fontSize: 11, marginTop: 2 },
   note: { color: Brand.textMuted, fontSize: 12, fontStyle: 'italic' },
   deload: { color: '#fbbf24', fontSize: 12, lineHeight: 18, marginTop: 2 },
+  histBtn: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  histTxt: { color: Brand.text, fontSize: 15, fontWeight: '600', flex: 1 },
 });

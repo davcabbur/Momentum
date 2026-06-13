@@ -44,9 +44,10 @@ export default function AppTabs() {
           tabBarIcon: ({ color, size }) => <Ionicons name="nutrition-outline" size={size} color={color} />,
         }}
       />
-      {/* Rutas fuera de la barra (se abren desde el engranaje de Inicio) */}
+      {/* Rutas fuera de la barra */}
       <Tabs.Screen name="ajustes" options={{ href: null }} />
       <Tabs.Screen name="glosario" options={{ href: null }} />
+      <Tabs.Screen name="historial" options={{ href: null }} />
     </Tabs>
   );
 }
