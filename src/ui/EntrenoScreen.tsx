@@ -19,7 +19,8 @@ export function EntrenoScreen() {
     await seedExercisesIfEmpty();
     const r = await getActiveRoutine();
     setRoutineId(r?.id ?? null);
-    setDays(r ? await listDays(r.id) : []);
+    const ds = r ? await listDays(r.id) : [];
+    setDays(Array.isArray(ds) ? ds : []);
     setLoaded(true);
   }, []);
 

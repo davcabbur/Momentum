@@ -29,7 +29,7 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
   const load = useCallback(async () => {
     const r = await getActiveRoutine();
     const ds = r ? await listDays(r.id) : [];
-    setDays(ds);
+    setDays(Array.isArray(ds) ? ds : []);
     const map: Record<number, { rdeId: number; exercise: Exercise }[]> = {};
     for (const d of ds) map[d.id] = await listDayExercises(d.id);
     setExByDay(map);
