@@ -1,7 +1,8 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq } from 'drizzle-orm';
 
 import { db } from './client';
-import { setLog, workoutSession } from './schema';
+import { exercise, setLog, workoutSession } from './schema';
+import type { HistoryRow } from '@/training/progression';
 
 export type SetLog = typeof setLog.$inferSelect;
 
@@ -68,4 +69,22 @@ export async function getLastPerformance(
   if (!prev) return null;
   const sets = rows.filter((r) => r.sessionId === prev.sessionId).map((r) => r.set);
   return { date: prev.date, sets };
+}
+
+/** Historial completo (una fila por serie), ordenado por fecha, para construir el progreso. */
+export async function getHistoryRows(): Promise<HistoryRow[]> {
+  return db
+    .select({
+      exerciseId: setLog.exerciseId,
+      name: exercise.name,
+      sessionId: setLog.sessionId,
+      date: workoutSession.date,
+      weightKg: setLog.weightKg,
+      reps: setLog.reps,
+      setType: setLog.setType,
+    })
+    .from(setLog)
+    .innerJoin(workoutSession, eq(setLog.sessionId, workoutSession.id))
+    .innerJoin(exercise, eq(setLog.exerciseId, exercise.id))
+    .orderBy(asc(workoutSession.date), asc(workoutSession.id));
 }

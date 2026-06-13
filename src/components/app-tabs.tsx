@@ -31,6 +31,13 @@ export default function AppTabs() {
         }}
       />
       <Tabs.Screen
+        name="progreso"
+        options={{
+          title: 'Progreso',
+          tabBarIcon: ({ color, size }) => <Ionicons name="trending-up-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="mas"
         options={{
           title: 'Más',
