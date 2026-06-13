@@ -8,6 +8,7 @@ import { Brand } from '@/constants/theme';
 import { getGoal, getProfile, listWeights } from '@/db/bodyweight-repo';
 import { liveKcalPlan, proteinTarget, type LiveKcalPlan } from '@/nutrition/kcal';
 import { dietBreakAdvice } from '@/training/intelligence';
+import { ComidaHoy } from '@/ui/ComidaHoy';
 
 const STAGE_LABEL: Record<string, string> = {
   definicion: 'Definición',
@@ -115,6 +116,8 @@ export function NutricionScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.h1}>Nutrición</Text>
       <Text style={styles.intro}>Tus calorías guía, calculadas con tu tendencia de peso (no con el dato de un día).</Text>
+
+      <ComidaHoy />
 
       {s.missing === 'perfil' && (
         <View style={styles.card}>

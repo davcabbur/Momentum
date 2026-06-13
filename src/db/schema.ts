@@ -78,4 +78,17 @@ export const setLog = sqliteTable('set_log', {
   setType: text('set_type').notNull().default('normal'), // warmup | top | backoff | normal
 });
 
+/** Alimento registrado en un día (fase B). Guarda los valores de la ración consumida. */
+export const foodEntry = sqliteTable('food_entry', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  date: text('date').notNull(), // YYYY-MM-DD
+  name: text('name').notNull(),
+  grams: real('grams'), // ración en gramos (nullable)
+  kcal: real('kcal').notNull(),
+  protein: real('protein').notNull(),
+  carbs: real('carbs').notNull(),
+  fat: real('fat').notNull(),
+  barcode: text('barcode'), // código de barras si vino del escáner (nullable)
+});
+
 // Nota de producto: no existe ningún campo de IMC, ni se calculará. Ver CLAUDE.md.

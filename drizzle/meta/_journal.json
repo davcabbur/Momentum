@@ -36,6 +36,13 @@
       "when": 1781338961577,
       "tag": "0004_sturdy_callisto",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1781360969822,
+      "tag": "0005_early_mimic",
+      "breakpoints": true
     }
   ]
 }
