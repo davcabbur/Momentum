@@ -9,6 +9,8 @@ const COMPOUNDS = new Set([
   'Jalón al pecho',
   'Remo mancuerna',
   'Remo barra',
+  'Dominadas',
+  'Remo Gironda',
   'Sentadilla',
   'Hack squat',
   'Prensa',
@@ -28,6 +30,9 @@ const ISOLATION = new Set([
   'Curl femoral',
   'Extensión cuádriceps',
   'Gemelo de pie',
+  'Face pull',
+  'Encogimiento de hombros',
+  'Pullover',
 ]);
 
 /**
