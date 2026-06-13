@@ -1,28 +1,36 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Brand } from '@/constants/theme';
 import { addFoodEntry } from '@/db/food-repo';
-import { portionMacros } from '@/nutrition/macros';
+import { portionMacros, type Macros } from '@/nutrition/macros';
 
 function num(s: string): number {
   return parseFloat(s.replace(',', '.')) || 0;
 }
 
+export interface FoodPrefill {
+  name: string;
+  per100: Macros;
+  barcode?: string;
+}
+
 interface Props {
   visible: boolean;
   date: string;
+  prefill?: FoodPrefill | null;
   onClose: () => void;
 }
 
 /** Alta manual de alimento por valores por 100 g (como las etiquetas). */
-export function AddFoodSheet({ visible, date, onClose }: Props) {
+export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
   const [name, setName] = useState('');
   const [grams, setGrams] = useState('100');
   const [kcal, setKcal] = useState('');
   const [prot, setProt] = useState('');
   const [carb, setCarb] = useState('');
   const [fat, setFat] = useState('');
+  const [barcode, setBarcode] = useState<string | null>(null);
 
   function reset() {
     setName('');
@@ -31,7 +39,24 @@ export function AddFoodSheet({ visible, date, onClose }: Props) {
     setProt('');
     setCarb('');
     setFat('');
+    setBarcode(null);
   }
+
+  // Al abrir, prerellenar desde el escáner (o limpiar para alta manual).
+  useEffect(() => {
+    if (!visible) return;
+    if (prefill) {
+      setName(prefill.name);
+      setGrams('100');
+      setKcal(String(prefill.per100.kcal));
+      setProt(String(prefill.per100.protein));
+      setCarb(String(prefill.per100.carbs));
+      setFat(String(prefill.per100.fat));
+      setBarcode(prefill.barcode ?? null);
+    } else {
+      reset();
+    }
+  }, [visible, prefill]);
 
   const g = num(grams);
   const per100 = { kcal: num(kcal), protein: num(prot), carbs: num(carb), fat: num(fat) };
@@ -48,6 +73,7 @@ export function AddFoodSheet({ visible, date, onClose }: Props) {
       protein: preview.protein,
       carbs: preview.carbs,
       fat: preview.fat,
+      barcode,
     });
     reset();
     onClose();

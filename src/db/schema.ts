@@ -91,4 +91,14 @@ export const foodEntry = sqliteTable('food_entry', {
   barcode: text('barcode'), // código de barras si vino del escáner (nullable)
 });
 
+/** Caché local de productos escaneados (Open Food Facts) para reusarlos offline. */
+export const foodProduct = sqliteTable('food_product', {
+  barcode: text('barcode').primaryKey(),
+  name: text('name').notNull(),
+  kcal100: real('kcal100').notNull(),
+  protein100: real('protein100').notNull(),
+  carbs100: real('carbs100').notNull(),
+  fat100: real('fat100').notNull(),
+});
+
 // Nota de producto: no existe ningún campo de IMC, ni se calculará. Ver CLAUDE.md.

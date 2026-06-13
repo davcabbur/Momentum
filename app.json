@@ -36,7 +36,13 @@
         }
       ],
       "expo-sqlite",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Momentum usa la cámara para escanear el código de barras de los alimentos."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
