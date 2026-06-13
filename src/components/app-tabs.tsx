@@ -38,6 +38,13 @@ export default function AppTabs() {
         }}
       />
       <Tabs.Screen
+        name="nutricion"
+        options={{
+          title: 'Nutrición',
+          tabBarIcon: ({ color, size }) => <Ionicons name="nutrition-outline" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="mas"
         options={{
           title: 'Más',

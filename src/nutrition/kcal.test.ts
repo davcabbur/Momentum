@@ -1,4 +1,4 @@
-import { bmrMifflin, tdee, kcalForTarget } from './kcal';
+import { bmrMifflin, tdee, kcalForTarget, proteinTarget, liveKcalPlan } from './kcal';
 
 test('BMR Mifflin-St Jeor hombre', () => {
   // 10*80 + 6.25*180 - 5*30 + 5 = 1780
@@ -30,4 +30,40 @@ test('kcalForTarget: perder 6 kg en 84 días desde 80 kg (hombre, moderado)', ()
   expect(plan.tdee).toBe(2759);
   expect(plan.dailyDeltaKcal).toBe(-550);
   expect(plan.kcal).toBe(2209);
+});
+
+test('proteinTarget: proteína alta, algo más en déficit', () => {
+  expect(proteinTarget(80, 'definicion')).toBe(176); // 80*2.2
+  expect(proteinTarget(80, 'normocalorica')).toBe(160); // 80*2.0
+  expect(proteinTarget(80, 'volumen')).toBe(144); // 80*1.8
+});
+
+const BASE = { sex: 'male', age: 30, heightCm: 180, activityLevel: 'moderate', trendKg: 80, targetKg: 74 };
+
+test('liveKcalPlan: objetivo estático coincide con kcalForTarget', () => {
+  // 84 días, mismo caso → mismo objetivo (tdee 2759, déficit -550 → 2209)
+  const plan = liveKcalPlan({ ...BASE, daysRemaining: 84, actualRatePerWeek: null });
+  expect(plan.tdee).toBe(2759);
+  expect(plan.targetKcal).toBe(2209);
+  expect(plan.track).toBe('sin-datos');
+  expect(plan.adjustedKcal).toBeNull();
+});
+
+test('liveKcalPlan: en camino cuando el ritmo real ≈ el previsto', () => {
+  // plannedRate = (74-80)/12 = -0.5 kg/sem
+  const plan = liveKcalPlan({ ...BASE, daysRemaining: 84, actualRatePerWeek: -0.5 });
+  expect(plan.track).toBe('en-camino');
+  expect(plan.adjustedKcal).toBe(plan.targetKcal);
+});
+
+test('liveKcalPlan: bajando más lento → comer menos (lento)', () => {
+  const plan = liveKcalPlan({ ...BASE, daysRemaining: 84, actualRatePerWeek: -0.2 });
+  expect(plan.track).toBe('lento');
+  expect(plan.adjustedKcal).toBeLessThan(plan.targetKcal);
+});
+
+test('liveKcalPlan: bajando más rápido → comer más (rápido)', () => {
+  const plan = liveKcalPlan({ ...BASE, daysRemaining: 84, actualRatePerWeek: -0.8 });
+  expect(plan.track).toBe('rapido');
+  expect(plan.adjustedKcal).toBeGreaterThan(plan.targetKcal);
 });

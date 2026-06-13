@@ -71,4 +71,19 @@ export const GLOSSARY: GlossaryTerm[] = [
     title: 'Etapas: definición / normocalórica / volumen',
     body: 'Definición = comer menos para perder grasa. Volumen = comer más para ganar músculo. Normocalórica/recomp = mantenerte y mejorar poco a poco.',
   },
+  {
+    key: 'tdee',
+    title: 'Mantenimiento (TDEE)',
+    body: 'Las calorías que gastas al día en total. Comer alrededor de tu TDEE mantiene tu peso; por debajo, bajas; por encima, subes.',
+  },
+  {
+    key: 'deficit',
+    title: 'Déficit y superávit',
+    body: 'Déficit = comer menos que tu mantenimiento (para perder grasa). Superávit = comer más (para ganar músculo). Mejor moderados y sostenibles.',
+  },
+  {
+    key: 'proteina',
+    title: 'Proteína',
+    body: 'El macronutriente que construye y protege el músculo. Conviene tomarla alta (≈1,8–2,2 g por kg de peso) y repartida en el día, sobre todo en déficit.',
+  },
 ];
