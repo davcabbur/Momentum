@@ -53,14 +53,6 @@ export function WeightDetail() {
         <WeightChart points={points} goalKg={goal?.targetKg} />
       </View>
 
-      {goal && (
-        <View style={styles.stats}>
-          <Stat label="Partida" value={formatKg(goal.startKg)} date={formatDate(goal.startDate)} />
-          <Stat label="Actual" value={formatKg(last.weightKg)} date={formatDate(last.date)} highlight />
-          <Stat label="Objetivo" value={formatKg(goal.targetKg)} date={goal.targetDate ? formatDate(goal.targetDate) : undefined} />
-        </View>
-      )}
-
       {goal ? (
         <GoalCard goal={goal} currentTrendKg={last.trendKg} slopePerWeek={slope} onEdit={() => setGoalSheet(true)} />
       ) : (
@@ -88,16 +80,6 @@ export function WeightDetail() {
           load();
         }}
       />
-    </View>
-  );
-}
-
-function Stat({ label, value, date, highlight }: { label: string; value: string; date?: string; highlight?: boolean }) {
-  return (
-    <View style={[styles.stat, highlight && styles.statHighlight]}>
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={styles.statValue}>{value}</Text>
-      {date && <Text style={styles.statDate}>{date}</Text>}
     </View>
   );
 }
