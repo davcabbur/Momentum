@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { formatDate, parseDmy } from '@/bodyweight/format';
-import { addDays, estimateTargetDate, estimateTargetWeight, suggestGoal } from '@/bodyweight/goal';
+import { estimateTargetDate, estimateTargetWeight, suggestGoal } from '@/bodyweight/goal';
 import { Brand } from '@/constants/theme';
-import { setGoal, setProfile, upsertWeight } from '@/db/bodyweight-repo';
+import { setGoal, setLevel, setProfile, upsertWeight } from '@/db/bodyweight-repo';
 import { kcalForTarget } from '@/nutrition/kcal';
 import { DateField } from '@/ui/DateField';
 
@@ -27,7 +27,13 @@ const ACTIVITIES = [
   { key: 'very_high', label: 'Muy alto', desc: 'Trabajo físico + deporte' },
 ];
 
-const STEPS = ['Sobre ti', 'Peso inicial', 'Tu etapa', 'Tu actividad', 'Tu objetivo'];
+const LEVELS = [
+  { key: 'principiante', label: 'Principiante', desc: 'Menos de ~6 meses entrenando' },
+  { key: 'intermedio', label: 'Intermedio', desc: 'Entrenas con constancia y progresas con esfuerzo' },
+  { key: 'avanzado', label: 'Avanzado', desc: 'Años de entreno, cerca de tu techo' },
+];
+
+const STEPS = ['Sobre ti', 'Peso inicial', 'Tu etapa', 'Tu actividad', 'Tu nivel', 'Tu objetivo'];
 
 function num(s: string): number {
   return parseFloat(s.replace(',', '.'));
@@ -44,6 +50,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const [dateStr, setDateStr] = useState(formatDate(todayIso));
   const [stage, setStage] = useState<string | null>(null);
   const [activity, setActivity] = useState<string | null>(null);
+  const [level, setLvl] = useState<string | null>(null);
   const [target, setTarget] = useState('');
   const [targetDateStr, setTargetDateStr] = useState('');
   const [weightTouched, setWeightTouched] = useState(false);
@@ -106,7 +113,8 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     initial > 0 && startIso !== null,
     stage !== null,
     activity !== null,
-    num(target) > 0 && targetIsoParsed !== null,
+    level !== null,
+    true, // objetivo es opcional: puedes empezar sin meta de peso
   ];
   const canNext = valid[step];
   const isLast = step === STEPS.length - 1;
@@ -114,7 +122,6 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   async function finish() {
     setSaving(true);
     const startFinal = startIso ?? todayIso;
-    const targetFinal = targetIsoParsed ?? addDays(startFinal, 84);
     await setProfile({
       sex: sex!,
       age: Math.round(Number(age)),
@@ -122,8 +129,11 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       stage: stage!,
       activityLevel: activity!,
     });
+    if (level) await setLevel(level);
     await upsertWeight(startFinal, initial);
-    await setGoal(num(target), initial, startFinal, targetFinal);
+    if (num(target) > 0 && targetIsoParsed) {
+      await setGoal(num(target), initial, startFinal, targetIsoParsed);
+    }
     onDone();
   }
 
@@ -185,10 +195,22 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       )}
 
       {step === 4 && (
+        <View style={styles.optionList}>
+          {LEVELS.map((o) => (
+            <Pressable key={o.key} style={[styles.option, level === o.key && styles.optionOn]} onPress={() => setLvl(o.key)}>
+              <Text style={styles.optionLabel}>{o.label}</Text>
+              <Text style={styles.optionDesc}>{o.desc}</Text>
+            </Pressable>
+          ))}
+          <Text style={styles.help}>Ajusta las series/reps recomendadas y el RIR objetivo. Podrás cambiarlo en Ajustes.</Text>
+        </View>
+      )}
+
+      {step === 5 && (
         <>
           <Text style={styles.help}>
-            Cambia el peso y la fecha se ajusta sola (y al revés). Si fijas ambos a tu gusto, te calculo las kcal/día
-            realistas para lograrlo.
+            Opcional: fija peso y fecha objetivo y te calculo las kcal/día realistas. Puedes dejarlo en blanco y empezar
+            solo registrando tu peso (lo defines luego cuando quieras).
           </Text>
           <Text style={[styles.label, { marginTop: 8 }]}>Peso objetivo (kg)</Text>
           <TextInput value={target} onChangeText={onChangeTarget} keyboardType="decimal-pad" placeholder="kg" placeholderTextColor={Brand.textMuted} style={styles.input} />
