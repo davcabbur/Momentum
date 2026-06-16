@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { addDays } from '@/bodyweight/goal';
 import { computeTrend } from '@/bodyweight/trend';
@@ -9,6 +9,8 @@ import { Brand } from '@/constants/theme';
 import { getGoal, getProfile, listWeights, setLevel, setProfile } from '@/db/bodyweight-repo';
 import { weightGoal } from '@/db/schema';
 import { reapplyLevelToRoutine } from '@/db/routine-repo';
+import { getSetting, setSetting } from '@/db/settings-repo';
+import { cancelReminders, ensureNotificationPermission, scheduleDailyReminder } from '@/lib/notifications';
 import { type Level } from '@/training/levels';
 import { SetGoalSheet } from '@/ui/SetGoalSheet';
 
@@ -51,6 +53,8 @@ export function AjustesScreen() {
   const [trendKg, setTrendKg] = useState(75);
   const [goalSheet, setGoalSheet] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [reminderOn, setReminderOn] = useState(false);
+  const [reminderHour, setReminderHour] = useState(9);
 
   const load = useCallback(async () => {
     const p = await getProfile();
@@ -66,6 +70,9 @@ export function AjustesScreen() {
     const ws = await listWeights();
     const tr = computeTrend(ws);
     if (tr.length) setTrendKg(tr[tr.length - 1].trendKg);
+    setReminderOn((await getSetting('reminder_on')) === '1');
+    const h = await getSetting('reminder_hour');
+    setReminderHour(h ? Number(h) : 9);
   }, []);
 
   useFocusEffect(
@@ -89,6 +96,30 @@ export function AjustesScreen() {
   async function pickLevel(l: string) {
     setLvl(l);
     await setLevel(l);
+  }
+
+  async function toggleReminder(on: boolean) {
+    if (on) {
+      const ok = await ensureNotificationPermission();
+      if (!ok) {
+        Alert.alert('Permiso necesario', 'Activa las notificaciones del sistema para recibir recordatorios.');
+        return;
+      }
+      await scheduleDailyReminder(reminderHour);
+      await setSetting('reminder_on', '1');
+      setReminderOn(true);
+    } else {
+      await cancelReminders();
+      await setSetting('reminder_on', '0');
+      setReminderOn(false);
+    }
+  }
+
+  async function changeHour(delta: number) {
+    const h = Math.max(5, Math.min(23, reminderHour + delta));
+    setReminderHour(h);
+    await setSetting('reminder_hour', String(h));
+    if (reminderOn) await scheduleDailyReminder(h);
   }
 
   function confirmReapply() {
@@ -183,6 +214,28 @@ export function AjustesScreen() {
         </Pressable>
       </View>
 
+      {/* Recordatorios */}
+      <Text style={styles.section}>Recordatorios</Text>
+      <View style={styles.card}>
+        <View style={styles.switchRow}>
+          <Text style={styles.switchLbl}>Recordatorio diario</Text>
+          <Switch value={reminderOn} onValueChange={toggleReminder} trackColor={{ true: Brand.accentStrong, false: Brand.cardBorder }} />
+        </View>
+        {reminderOn && (
+          <View style={styles.hourRow}>
+            <Text style={styles.note}>A las</Text>
+            <Pressable style={styles.hourBtn} onPress={() => changeHour(-1)}>
+              <Text style={styles.hourBtnTxt}>−</Text>
+            </Pressable>
+            <Text style={styles.hourVal}>{String(reminderHour).padStart(2, '0')}:00</Text>
+            <Pressable style={styles.hourBtn} onPress={() => changeHour(1)}>
+              <Text style={styles.hourBtnTxt}>+</Text>
+            </Pressable>
+          </View>
+        )}
+        <Text style={styles.note}>Un aviso al día para pesarte y registrar tu progreso. Quítalo cuando quieras.</Text>
+      </View>
+
       {/* Glosario */}
       <Text style={styles.section}>Aprende</Text>
       <Pressable style={styles.linkRow} onPress={() => router.push('/glosario')}>
@@ -231,6 +284,12 @@ const styles = StyleSheet.create({
   secondary: { borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
   secondaryTxt: { color: Brand.accent, fontWeight: '700' },
   note: { color: Brand.textMuted, fontSize: 12 },
+  switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  switchLbl: { color: Brand.text, fontSize: 15, fontWeight: '600' },
+  hourRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  hourBtn: { width: 40, height: 40, borderRadius: 10, backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  hourBtnTxt: { color: Brand.accent, fontSize: 22, fontWeight: '700' },
+  hourVal: { color: Brand.text, fontSize: 18, fontWeight: '800', minWidth: 64, textAlign: 'center' },
   linkRow: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   linkTxt: { color: Brand.text, fontSize: 15, fontWeight: '600' },
 });

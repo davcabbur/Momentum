@@ -57,6 +57,13 @@
       "when": 1781604481082,
       "tag": "0007_living_sunfire",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1781605081863,
+      "tag": "0008_even_greymalkin",
+      "breakpoints": true
     }
   ]
 }

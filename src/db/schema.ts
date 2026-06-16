@@ -92,6 +92,12 @@ export const foodEntry = sqliteTable('food_entry', {
   barcode: text('barcode'), // código de barras si vino del escáner (nullable)
 });
 
+/** Ajustes simples clave-valor (recordatorios, preferencias…). */
+export const appSetting = sqliteTable('app_setting', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+});
+
 /** Caché local de productos escaneados (Open Food Facts) para reusarlos offline. */
 export const foodProduct = sqliteTable('food_product', {
   barcode: text('barcode').primaryKey(),
