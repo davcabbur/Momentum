@@ -150,6 +150,16 @@ export async function lastSessionDate(): Promise<string | null> {
   return rows[0]?.date ?? null;
 }
 
+/** routineDayId de la sesión más reciente (para sugerir el siguiente día). */
+export async function lastSessionDayId(): Promise<number | null> {
+  const rows = await db
+    .select({ dayId: workoutSession.routineDayId })
+    .from(workoutSession)
+    .orderBy(desc(workoutSession.date), desc(workoutSession.id))
+    .limit(1);
+  return rows[0]?.dayId ?? null;
+}
+
 /** Historial completo (una fila por serie), ordenado por fecha, para construir el progreso. */
 export async function getHistoryRows(): Promise<HistoryRow[]> {
   return db

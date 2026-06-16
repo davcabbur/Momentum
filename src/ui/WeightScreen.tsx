@@ -19,6 +19,7 @@ import { weightGoal } from '@/db/schema';
 import { AddWeightSheet } from '@/ui/AddWeightSheet';
 import { KcalSummaryCard } from '@/ui/KcalSummaryCard';
 import { Loading } from '@/ui/Loading';
+import { NextWorkoutCard } from '@/ui/NextWorkoutCard';
 import { Onboarding } from '@/ui/Onboarding';
 import { SetGoalSheet } from '@/ui/SetGoalSheet';
 import { WeightChart } from '@/ui/WeightChart';
@@ -110,6 +111,7 @@ export function WeightScreen() {
         </Pressable>
       </View>
 
+      <NextWorkoutCard />
       <KcalSummaryCard onPress={() => router.push('/nutricion')} />
 
       <View style={styles.header}>

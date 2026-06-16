@@ -110,6 +110,24 @@ export async function removeExerciseFromDay(rdeId: number): Promise<void> {
   await db.delete(routineDayExercise).where(eq(routineDayExercise.id, rdeId));
 }
 
+/** Mueve un ejercicio arriba (-1) o abajo (+1) en su día, intercambiando el orden con el vecino. */
+export async function moveDayExercise(rdeId: number, dir: -1 | 1): Promise<void> {
+  const row = (await db.select().from(routineDayExercise).where(eq(routineDayExercise.id, rdeId)))[0];
+  if (!row) return;
+  const siblings = await db
+    .select()
+    .from(routineDayExercise)
+    .where(eq(routineDayExercise.routineDayId, row.routineDayId))
+    .orderBy(asc(routineDayExercise.orderIdx));
+  const i = siblings.findIndex((s) => s.id === rdeId);
+  const j = i + dir;
+  if (j < 0 || j >= siblings.length) return;
+  const a = siblings[i];
+  const b = siblings[j];
+  await db.update(routineDayExercise).set({ orderIdx: b.orderIdx }).where(eq(routineDayExercise.id, a.id));
+  await db.update(routineDayExercise).set({ orderIdx: a.orderIdx }).where(eq(routineDayExercise.id, b.id));
+}
+
 /** Reaplica el esquema por defecto (según nivel) a todos los ejercicios de la rutina actual. */
 export async function reapplyLevelToRoutine(level: Level): Promise<void> {
   const r = await getActiveRoutine();

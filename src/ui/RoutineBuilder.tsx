@@ -10,6 +10,7 @@ import {
   getActiveRoutine,
   listDayExercises,
   listDays,
+  moveDayExercise,
   removeExerciseFromDay,
   type DayExercise,
   type RoutineDay,
@@ -225,6 +226,14 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
               <Pressable style={styles.menuBtn} onPress={() => { setEditEx(menuEx); setMenuEx(null); }}>
                 <Text style={styles.menuBtnTxt}>Editar series/reps</Text>
               </Pressable>
+              <View style={styles.moveRow}>
+                <Pressable style={[styles.menuBtn, styles.moveBtn]} onPress={async () => { const id = menuEx.rdeId; setMenuEx(null); await moveDayExercise(id, -1); load(); }}>
+                  <Text style={styles.menuBtnTxt}>↑ Subir</Text>
+                </Pressable>
+                <Pressable style={[styles.menuBtn, styles.moveBtn]} onPress={async () => { const id = menuEx.rdeId; setMenuEx(null); await moveDayExercise(id, 1); load(); }}>
+                  <Text style={styles.menuBtnTxt}>↓ Bajar</Text>
+                </Pressable>
+              </View>
               <Pressable
                 style={styles.menuBtn}
                 onPress={async () => {
@@ -290,6 +299,8 @@ const styles = StyleSheet.create({
   menuTitle: { color: Brand.text, fontSize: 16, fontWeight: '800', padding: 8 },
   menuBtn: { padding: 14, borderRadius: 10, backgroundColor: Brand.surface },
   menuBtnTxt: { color: Brand.text, fontSize: 15, fontWeight: '600' },
+  moveRow: { flexDirection: 'row', gap: 6 },
+  moveBtn: { flex: 1, alignItems: 'center' },
   menuCancel: { padding: 14, alignItems: 'center' },
   menuCancelTxt: { color: Brand.textMuted },
 });
