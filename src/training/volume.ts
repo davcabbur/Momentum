@@ -101,17 +101,18 @@ export function weeklyMuscleVolume(items: VolumeItem[]): Record<string, number> 
 /** Estado del volumen semanal planificado de un músculo (para la rutina). */
 export function muscleVolumeStatus(muscleGroup: string, weeklySets: number): VolumeWarning {
   const { min, max } = weeklyVolumeRange(muscleGroup);
+  const n = weeklySets % 1 === 0 ? `${weeklySets}` : weeklySets.toFixed(1).replace('.', ',');
   if (weeklySets > max) {
     return {
       level: 'warn',
-      text: `${weeklySets} series/sem es bastante para este músculo (lo habitual es ${min}–${max}). Vigila la recuperación; más no siempre es mejor.`,
+      text: `${n} series/sem es bastante para este músculo (lo habitual es ${min}–${max}). Vigila la recuperación; más no siempre es mejor.`,
     };
   }
   if (weeklySets > 0 && weeklySets < min) {
     return {
       level: 'info',
-      text: `${weeklySets} series/sem; para crecer suele ir bien ${min}–${max}. Si es a propósito (recuperar, mantener), perfecto.`,
+      text: `${n} series/sem; para crecer suele ir bien ${min}–${max}. Si es a propósito (recuperar, mantener), perfecto.`,
     };
   }
-  return { level: 'ok', text: `${weeklySets} series/sem · en rango (${min}–${max}).` };
+  return { level: 'ok', text: `${n} series/sem · en rango (${min}–${max}).` };
 }

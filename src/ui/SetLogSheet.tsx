@@ -5,7 +5,7 @@ import Body from 'react-native-body-highlighter';
 
 import { Brand } from '@/constants/theme';
 import { getProfile } from '@/db/bodyweight-repo';
-import { deleteSet, getLastPerformance, listSets, upsertSet, type SetLog } from '@/db/workout-repo';
+import { deleteSet, getLastPerformance, getOrCreateSession, listSets, upsertSet, type SetLog } from '@/db/workout-repo';
 import { muscleView } from '@/training/muscle-map';
 import { exerciseInfo } from '@/training/exercise-info';
 import { schemeForLevel, type Level } from '@/training/levels';
@@ -27,19 +27,23 @@ const TYPES = [
 
 interface Props {
   visible: boolean;
-  sessionId: number;
+  sessionId: number | null;
+  dayId: number;
+  date: string;
   exerciseId: number;
   exerciseName: string;
   muscleGroup?: string;
   targetSets?: number | null;
   repMin?: number | null;
   repMax?: number | null;
+  onSessionCreated?: (id: number) => void;
   onClose: () => void;
 }
 
 type Editing = { setNumber: number; weightKg: number; reps: number; rir: number | null; setType: string; exists: boolean };
 
-export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, muscleGroup, targetSets, repMin, repMax, onClose }: Props) {
+export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerciseName, muscleGroup, targetSets, repMin, repMax, onSessionCreated, onClose }: Props) {
+  const [sid, setSid] = useState<number | null>(sessionId);
   const [sets, setSets] = useState<SetLog[]>([]);
   const [last, setLast] = useState<{ date: string; sets: SetLog[] } | null>(null);
   const [target, setTarget] = useState('');
@@ -57,9 +61,9 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, musc
 
   const load = useCallback(async () => {
     if (!visible || !exerciseId) return;
-    const fetched = await listSets(sessionId, exerciseId);
+    const fetched = sid != null ? await listSets(sid, exerciseId) : [];
     setSets(fetched);
-    const lp = await getLastPerformance(exerciseId, sessionId);
+    const lp = await getLastPerformance(exerciseId, sid ?? -1);
     setLast(lp);
     const prof = await getProfile();
     const lvl = (prof?.level as Level) ?? 'intermedio';
@@ -86,7 +90,12 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, musc
         exists: false,
       });
     }
-  }, [visible, sessionId, exerciseId, targetSets, repMin, repMax]);
+  }, [visible, sid, exerciseId, targetSets, repMin, repMax]);
+
+  // Al (re)abrir para un ejercicio, sincroniza la sesión con la del padre.
+  useEffect(() => {
+    setSid(sessionId);
+  }, [sessionId, exerciseId, visible]);
 
   useEffect(() => {
     load();
@@ -124,8 +133,14 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, musc
 
   async function save() {
     if (!editing) return;
+    let cur = sid;
+    if (cur == null) {
+      cur = await getOrCreateSession(date, dayId);
+      setSid(cur);
+      onSessionCreated?.(cur);
+    }
     await upsertSet({
-      sessionId,
+      sessionId: cur,
       exerciseId,
       setNumber: editing.setNumber,
       weightKg: editing.weightKg,
@@ -136,15 +151,15 @@ export function SetLogSheet({ visible, sessionId, exerciseId, exerciseName, musc
     const wasWarmup = editing.setType === 'warmup';
     setEditing(null);
     if (!wasWarmup) setRestLeft(restGoal);
-    load();
+    setSets(await listSets(cur, exerciseId));
   }
 
   async function removeSet() {
-    if (!editing) return;
+    if (!editing || sid == null) return;
     const existing = sets.find((s) => s.setNumber === editing.setNumber);
     if (existing) await deleteSet(existing.id);
     setEditing(null);
-    load();
+    setSets(await listSets(sid, exerciseId));
   }
 
   return (

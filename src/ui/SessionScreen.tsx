@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
 import { Brand } from '@/constants/theme';
 import { listDayExercises, type DayExercise } from '@/db/routine-repo';
-import { getOrCreateSession, listSets } from '@/db/workout-repo';
+import { findSession, listSets } from '@/db/workout-repo';
 import { SetLogSheet } from '@/ui/SetLogSheet';
 
 function today(): string {
@@ -23,12 +23,14 @@ export function SessionScreen({ dayId, dayName, onBack }: Props) {
   const [openItem, setOpenItem] = useState<DayExercise | null>(null);
 
   const load = useCallback(async () => {
-    const sid = await getOrCreateSession(today(), dayId);
+    const sid = await findSession(today(), dayId);
     setSessionId(sid);
     const exs = await listDayExercises(dayId);
     setExercises(Array.isArray(exs) ? exs : []);
     const c: Record<number, number> = {};
-    for (const e of exs) c[e.exercise.id] = (await listSets(sid, e.exercise.id)).length;
+    if (sid != null) {
+      for (const e of exs) c[e.exercise.id] = (await listSets(sid, e.exercise.id)).length;
+    }
     setCounts(c);
   }, [dayId]);
 
@@ -49,22 +51,23 @@ export function SessionScreen({ dayId, dayName, onBack }: Props) {
           <Text style={styles.exMeta}>{counts[e.exercise.id] ? `${counts[e.exercise.id]} series ✓` : 'registrar ›'}</Text>
         </Pressable>
       ))}
-      {sessionId != null && (
-        <SetLogSheet
-          visible={openItem != null}
-          sessionId={sessionId}
-          exerciseId={openItem?.exercise.id ?? 0}
-          exerciseName={openItem?.exercise.name ?? ''}
-          muscleGroup={openItem?.exercise.muscleGroup}
-          targetSets={openItem?.targetSets ?? null}
-          repMin={openItem?.repMin ?? null}
-          repMax={openItem?.repMax ?? null}
-          onClose={() => {
-            setOpenItem(null);
-            load();
-          }}
-        />
-      )}
+      <SetLogSheet
+        visible={openItem != null}
+        sessionId={sessionId}
+        dayId={dayId}
+        date={today()}
+        exerciseId={openItem?.exercise.id ?? 0}
+        exerciseName={openItem?.exercise.name ?? ''}
+        muscleGroup={openItem?.exercise.muscleGroup}
+        targetSets={openItem?.targetSets ?? null}
+        repMin={openItem?.repMin ?? null}
+        repMax={openItem?.repMax ?? null}
+        onSessionCreated={(id) => setSessionId(id)}
+        onClose={() => {
+          setOpenItem(null);
+          load();
+        }}
+      />
     </ScrollView>
   );
 }

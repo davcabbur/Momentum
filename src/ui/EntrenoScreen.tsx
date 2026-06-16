@@ -5,8 +5,9 @@ import { daysBetween } from '@/bodyweight/goal';
 import { Brand } from '@/constants/theme';
 import { seedExercises } from '@/db/exercise-repo';
 import { getActiveRoutine, listDays, type RoutineDay } from '@/db/routine-repo';
-import { lastSessionDate } from '@/db/workout-repo';
+import { deleteEmptySessions, lastSessionDate } from '@/db/workout-repo';
 import { welcomeBackAdvice } from '@/training/intelligence';
+import { Loading } from '@/ui/Loading';
 import { RoutineBuilder } from '@/ui/RoutineBuilder';
 import { SessionScreen } from '@/ui/SessionScreen';
 
@@ -25,6 +26,7 @@ export function EntrenoScreen() {
 
   const load = useCallback(async () => {
     await seedExercises();
+    await deleteEmptySessions();
     const r = await getActiveRoutine();
     setRoutineId(r?.id ?? null);
     const ds = r ? await listDays(r.id) : [];
@@ -38,7 +40,7 @@ export function EntrenoScreen() {
     load();
   }, [load]);
 
-  if (!loaded) return <View style={styles.screen} />;
+  if (!loaded) return <Loading />;
   if (view === 'builder') return <RoutineBuilder onDone={() => { setView('home'); load(); }} />;
   if (typeof view === 'object') {
     return <SessionScreen dayId={view.dayId} dayName={view.dayName} onBack={() => { setView('home'); load(); }} />;

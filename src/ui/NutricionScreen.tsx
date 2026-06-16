@@ -11,6 +11,7 @@ import { estimateRealTdee } from '@/nutrition/tdee-estimate';
 import { liveKcalPlan, proteinTarget, type LiveKcalPlan } from '@/nutrition/kcal';
 import { dietBreakAdvice } from '@/training/intelligence';
 import { ComidaHoy } from '@/ui/ComidaHoy';
+import { Loading } from '@/ui/Loading';
 
 const STAGE_LABEL: Record<string, string> = {
   definicion: 'Definición',
@@ -111,7 +112,7 @@ export function NutricionScreen() {
     }, []),
   );
 
-  if (!s) return <View style={styles.screen} />;
+  if (!s) return <Loading />;
 
   const trackMsg = (p: LiveKcalPlan): { color: string; text: string } => {
     switch (p.track) {

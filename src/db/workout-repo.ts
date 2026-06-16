@@ -17,6 +17,24 @@ export async function getOrCreateSession(date: string, routineDayId: number): Pr
   return res[0].id;
 }
 
+/** Busca la sesión de ese día+fecha SIN crearla (null si no existe). */
+export async function findSession(date: string, routineDayId: number): Promise<number | null> {
+  const rows = await db
+    .select({ id: workoutSession.id })
+    .from(workoutSession)
+    .where(and(eq(workoutSession.date, date), eq(workoutSession.routineDayId, routineDayId)));
+  return rows[0]?.id ?? null;
+}
+
+/** Borra las sesiones que se quedaron sin ninguna serie (p. ej. abriste un día y no registraste). */
+export async function deleteEmptySessions(): Promise<void> {
+  const sessions = await db.select({ id: workoutSession.id }).from(workoutSession);
+  for (const s of sessions) {
+    const sets = await db.select({ id: setLog.id }).from(setLog).where(eq(setLog.sessionId, s.id)).limit(1);
+    if (sets.length === 0) await db.delete(workoutSession).where(eq(workoutSession.id, s.id));
+  }
+}
+
 export async function listSets(sessionId: number, exerciseId: number): Promise<SetLog[]> {
   return db
     .select()

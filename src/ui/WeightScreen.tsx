@@ -18,6 +18,7 @@ import { deleteWeights, getGoal, listWeights } from '@/db/bodyweight-repo';
 import { weightGoal } from '@/db/schema';
 import { AddWeightSheet } from '@/ui/AddWeightSheet';
 import { KcalSummaryCard } from '@/ui/KcalSummaryCard';
+import { Loading } from '@/ui/Loading';
 import { Onboarding } from '@/ui/Onboarding';
 import { SetGoalSheet } from '@/ui/SetGoalSheet';
 import { WeightChart } from '@/ui/WeightChart';
@@ -59,7 +60,7 @@ export function WeightScreen() {
 
   // Primer arranque: aún cargando.
   if (!loaded) {
-    return <View style={styles.screen} />;
+    return <Loading />;
   }
   // Sin pesajes todavía → onboarding paso a paso.
   if (!last) {
