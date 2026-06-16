@@ -38,9 +38,9 @@ export function WeightScreen() {
         </Pressable>
       </View>
 
+      <NextWorkoutCard />
       <WeightSummaryCard />
       <KcalSummaryCard onPress={() => router.push('/nutricion')} />
-      <NextWorkoutCard />
     </ScrollView>
   );
 }
