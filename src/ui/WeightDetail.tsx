@@ -33,7 +33,7 @@ export function WeightDetail() {
     <View>
       <Text style={styles.h2}>Peso corporal</Text>
       <View style={styles.card}>
-        <WeightChart points={points} goalKg={goal?.targetKg} width={width - 14 * 2 - 12 * 2} height={220} />
+        <WeightChart points={points} goalKg={goal?.targetKg} width={width - 14 * 2 - 12 * 2} height={320} />
       </View>
     </View>
   );
