@@ -1,4 +1,4 @@
-import { asc, eq } from 'drizzle-orm';
+import { asc, eq, gte } from 'drizzle-orm';
 
 import type { Macros } from '@/nutrition/macros';
 import { db } from './client';
@@ -25,6 +25,14 @@ export async function listFoodEntries(date: string): Promise<FoodEntry[]> {
 
 export async function deleteFoodEntry(id: number): Promise<void> {
   await db.delete(foodEntry).where(eq(foodEntry.id, id));
+}
+
+/** Kcal totales por día (solo días con algo registrado), desde fromDate inclusive. */
+export async function intakeByDay(fromDate: string): Promise<{ date: string; kcal: number }[]> {
+  const rows = await db.select({ date: foodEntry.date, kcal: foodEntry.kcal }).from(foodEntry).where(gte(foodEntry.date, fromDate));
+  const map = new Map<string, number>();
+  for (const r of rows) map.set(r.date, (map.get(r.date) ?? 0) + r.kcal);
+  return [...map.entries()].map(([date, kcal]) => ({ date, kcal }));
 }
 
 /** Caché de productos escaneados: lee uno por código de barras. */

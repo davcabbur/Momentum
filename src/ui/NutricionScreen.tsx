@@ -2,10 +2,12 @@ import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { daysBetween } from '@/bodyweight/goal';
+import { addDays, daysBetween } from '@/bodyweight/goal';
 import { computeTrend, trendSlopePerWeek } from '@/bodyweight/trend';
 import { Brand } from '@/constants/theme';
 import { getGoal, getProfile, listWeights } from '@/db/bodyweight-repo';
+import { intakeByDay } from '@/db/food-repo';
+import { estimateRealTdee } from '@/nutrition/tdee-estimate';
 import { liveKcalPlan, proteinTarget, type LiveKcalPlan } from '@/nutrition/kcal';
 import { dietBreakAdvice } from '@/training/intelligence';
 import { ComidaHoy } from '@/ui/ComidaHoy';
@@ -36,6 +38,7 @@ interface State {
   hasGoal: boolean;
   trendKg: number | null;
   dietBreak: string | null;
+  realTdee: number | null; // gasto real estimado por ingesta vs cambio de peso
   missing: string | null; // qué falta para poder calcular
 }
 
@@ -81,8 +84,25 @@ export function NutricionScreen() {
           dietBreak = dietBreakAdvice('definicion', weeks)?.text ?? null;
         }
 
+        // Gasto real estimado: ingesta media de ~14 días vs cambio de peso de tendencia.
+        let realTdee: number | null = null;
+        const fromDate = addDays(today(), -14);
+        const intake = await intakeByDay(fromDate);
+        if (intake.length > 0 && trend.length >= 2) {
+          const avgIntakeKcal = intake.reduce((a, d) => a + d.kcal, 0) / intake.length;
+          const windowTrend = trend.filter((p) => p.date >= fromDate);
+          const past = windowTrend[0] ?? trend[0];
+          const span = daysBetween(past.date, trend[trend.length - 1].date);
+          realTdee = estimateRealTdee({
+            avgIntakeKcal,
+            weightChangeKg: trend[trend.length - 1].trendKg - past.trendKg,
+            spanDays: span,
+            loggedDays: intake.length,
+          });
+        }
+
         if (active) {
-          setS({ plan, protein, stage: prof?.stage ?? null, hasGoal: goal != null && goal.targetDate != null, trendKg, dietBreak, missing });
+          setS({ plan, protein, stage: prof?.stage ?? null, hasGoal: goal != null && goal.targetDate != null, trendKg, dietBreak, realTdee, missing });
         }
       })();
       return () => {
@@ -137,6 +157,19 @@ export function NutricionScreen() {
             <Text style={styles.big}>≈ {kcal(s.plan.tdee)} kcal/día</Text>
             <Text style={styles.note}>Lo que gastas al día (TDEE) con tu peso de tendencia y tu actividad. Comer alrededor de esto mantiene tu peso.</Text>
           </View>
+
+          {s.realTdee != null && (
+            <View style={[styles.card, { borderColor: Brand.info }]}>
+              <Text style={styles.cardLbl}>Gasto real estimado</Text>
+              <Text style={[styles.big, { color: Brand.info }]}>≈ {kcal(s.realTdee)} kcal/día</Text>
+              <Text style={styles.note}>
+                Calculado con lo que comes y cómo cambia tu peso estas semanas (más fiable que la fórmula).{' '}
+                {Math.abs(s.realTdee - s.plan.tdee) >= 100
+                  ? `La estimación teórica era ~${kcal(s.plan.tdee)} kcal; tu cuerpo parece gastar ${s.realTdee > s.plan.tdee ? 'más' : 'menos'}.`
+                  : 'Coincide con la estimación teórica.'}
+              </Text>
+            </View>
+          )}
 
           {s.hasGoal ? (
             <View style={styles.card}>
