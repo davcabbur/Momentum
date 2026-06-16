@@ -98,17 +98,17 @@ export function WeightSummaryCard() {
         </Pressable>
       </View>
 
-      {goal && (
-        <View style={styles.barsCard}>
-          <Bar label="Progreso" pct={progressPct} color={Brand.accent} />
-          {timePct != null && <Bar label="Tiempo" pct={timePct} color="#5b8fd4" />}
-        </View>
-      )}
-
       {insight && (
         <View style={styles.insight}>
           <Text style={styles.insightH}>{insight.title}</Text>
           <Text style={styles.insightP}>{insight.body}</Text>
+        </View>
+      )}
+
+      {goal && (
+        <View style={styles.barsCard}>
+          <Bar label="Progreso" pct={progressPct} color={Brand.accent} />
+          {timePct != null && <Bar label="Tiempo" pct={timePct} color="#5b8fd4" />}
         </View>
       )}
 
