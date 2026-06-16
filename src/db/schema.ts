@@ -65,6 +65,7 @@ export const workoutSession = sqliteTable('workout_session', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   date: text('date').notNull(), // YYYY-MM-DD
   routineDayId: integer('routine_day_id').notNull(),
+  note: text('note'), // nota libre de la sesión (nullable)
 });
 
 export const setLog = sqliteTable('set_log', {

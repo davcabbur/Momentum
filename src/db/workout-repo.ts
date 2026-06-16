@@ -97,6 +97,7 @@ export interface SessionSummary {
   sessionId: number;
   date: string;
   dayName: string | null;
+  note: string | null;
   totalSets: number;
   totalVolume: number;
   exercises: SessionExercise[];
@@ -109,6 +110,7 @@ export async function listSessions(limit = 60): Promise<SessionSummary[]> {
       sessionId: workoutSession.id,
       date: workoutSession.date,
       dayName: routineDay.name,
+      note: workoutSession.note,
       exName: exercise.name,
       weightKg: setLog.weightKg,
       reps: setLog.reps,
@@ -125,7 +127,7 @@ export async function listSessions(limit = 60): Promise<SessionSummary[]> {
   for (const r of rows) {
     let s = byId.get(r.sessionId);
     if (!s) {
-      s = { sessionId: r.sessionId, date: r.date, dayName: r.dayName, totalSets: 0, totalVolume: 0, exercises: [] };
+      s = { sessionId: r.sessionId, date: r.date, dayName: r.dayName, note: r.note, totalSets: 0, totalVolume: 0, exercises: [] };
       byId.set(r.sessionId, s);
     }
     let ex = s.exercises.find((e) => e.name === r.exName);
@@ -148,6 +150,17 @@ export async function lastSessionDate(): Promise<string | null> {
     .orderBy(desc(workoutSession.date))
     .limit(1);
   return rows[0]?.date ?? null;
+}
+
+/** Lee la nota de una sesión. */
+export async function getSessionNote(sessionId: number): Promise<string | null> {
+  const rows = await db.select({ note: workoutSession.note }).from(workoutSession).where(eq(workoutSession.id, sessionId));
+  return rows[0]?.note ?? null;
+}
+
+/** Guarda (o limpia) la nota de una sesión. */
+export async function setSessionNote(sessionId: number, note: string): Promise<void> {
+  await db.update(workoutSession).set({ note: note.trim() || null }).where(eq(workoutSession.id, sessionId));
 }
 
 /** routineDayId de la sesión más reciente (para sugerir el siguiente día). */

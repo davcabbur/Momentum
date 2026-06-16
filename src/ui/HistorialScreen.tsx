@@ -58,6 +58,7 @@ export function HistorialScreen() {
               </View>
               <Ionicons name={isOpen ? 'chevron-up' : 'chevron-down'} size={18} color={Brand.textMuted} />
             </Pressable>
+            {isOpen && s.note && <Text style={styles.note}>📝 {s.note}</Text>}
             {isOpen &&
               s.exercises.map((ex, i) => (
                 <View key={i} style={styles.exBlock}>
@@ -85,6 +86,7 @@ const styles = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center' },
   date: { color: Brand.text, fontSize: 15, fontWeight: '700' },
   sub: { color: Brand.textMuted, fontSize: 12, marginTop: 2 },
+  note: { color: Brand.info, fontSize: 13, marginTop: 8, fontStyle: 'italic', lineHeight: 18 },
   exBlock: { marginTop: 10, borderTopWidth: 1, borderTopColor: Brand.cardBorder, paddingTop: 8 },
   exName: { color: Brand.text, fontSize: 14, fontWeight: '600' },
   exSets: { color: Brand.textMuted, fontSize: 13, marginTop: 2 },
