@@ -85,3 +85,10 @@ export const EXERCISE_META: Record<string, ExMeta> = {
 export function exerciseMeta(name: string): ExMeta | null {
   return EXERCISE_META[name] ?? null;
 }
+
+/** Ejercicios donde tu propio peso es la carga (para 1RM/volumen: peso corporal + lastre). */
+const BODYWEIGHT_LOADED = new Set(['Dominadas', 'Fondos']);
+
+export function isBodyweightLoaded(name: string): boolean {
+  return BODYWEIGHT_LOADED.has(name);
+}

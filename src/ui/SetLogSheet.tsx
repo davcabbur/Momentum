@@ -4,11 +4,13 @@ import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, Vibration, View 
 import Body from 'react-native-body-highlighter';
 
 import { Brand } from '@/constants/theme';
+import { computeTrend } from '@/bodyweight/trend';
 import { GLOSSARY } from '@/education/glossary';
-import { getProfile } from '@/db/bodyweight-repo';
+import { getProfile, listWeights } from '@/db/bodyweight-repo';
 import { deleteSet, getLastPerformance, getOrCreateSession, listSets, upsertSet, type SetLog } from '@/db/workout-repo';
 import { muscleView } from '@/training/muscle-map';
 import { exerciseInfo } from '@/training/exercise-info';
+import { isBodyweightLoaded } from '@/training/exercise-meta';
 import { schemeForLevel, type Level } from '@/training/levels';
 import { progressionHint, type ProgressionHint } from '@/training/progression';
 import { recommendedRestSeconds } from '@/training/rest';
@@ -65,10 +67,12 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
   const [showHow, setShowHow] = useState(true);
   const [restGoal, setRestGoal] = useState(120);
   const [restLeft, setRestLeft] = useState(0);
+  const [bodyweight, setBodyweight] = useState<number | null>(null);
   const restRunning = useRef(false);
 
   const info = exerciseInfo(exerciseName);
   const mv = muscleView(muscleGroup ?? '');
+  const bwLoaded = isBodyweightLoaded(exerciseName);
   const workSets = sets.filter((s) => s.setType !== 'warmup').length;
   const volWarn = exerciseSetWarning(workSets, schemeSets);
 
@@ -78,6 +82,10 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
     setSets(fetched);
     const lp = await getLastPerformance(exerciseId, sid ?? -1);
     setLast(lp);
+    const ws = await listWeights();
+    const tr = computeTrend(ws);
+    const bw = tr.length ? Math.round(tr[tr.length - 1].trendKg) : null;
+    setBodyweight(bw);
     const prof = await getProfile();
     const lvl = (prof?.level as Level) ?? 'intermedio';
     const sc = schemeForLevel(lvl);
@@ -94,9 +102,10 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
     if (fetched.length === 0) {
       const prev = lp?.sets[0];
       const up = h?.ready && h.suggestedWeightKg != null;
+      const base = bwLoaded ? bw ?? 20 : 20;
       setEditing({
         setNumber: 1,
-        weightKg: up ? h!.suggestedWeightKg! : prev?.weightKg ?? 20,
+        weightKg: up ? h!.suggestedWeightKg! : prev?.weightKg ?? base,
         reps: up ? lo : prev?.reps ?? 8,
         rir: 2,
         setType: 'normal',
@@ -136,9 +145,10 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
     const lastSame = last?.sets.find((s) => s.setNumber === n);
     const todayPrev = sets[sets.length - 1];
     const up = hint?.ready && hint.suggestedWeightKg != null && !todayPrev;
+    const base = bwLoaded ? bodyweight ?? 20 : 20;
     setEditing({
       setNumber: n,
-      weightKg: up ? hint!.suggestedWeightKg! : lastSame?.weightKg ?? todayPrev?.weightKg ?? 20,
+      weightKg: up ? hint!.suggestedWeightKg! : lastSame?.weightKg ?? todayPrev?.weightKg ?? base,
       reps: lastSame?.reps ?? todayPrev?.reps ?? 8,
       rir: 2,
       setType: 'normal',
@@ -228,6 +238,11 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
             )}
 
             <Text style={styles.target}>🎯 {target}</Text>
+            {bwLoaded && (
+              <Text style={styles.bwNote}>
+                El peso incluye tu peso corporal{bodyweight ? ` (~${bodyweight} kg)` : ''}. Súbelo si usas lastre.
+              </Text>
+            )}
             {last && (
               <Text style={styles.last}>Última vez: {last.sets.map((s) => `${s.weightKg}×${s.reps}`).join('  ')}</Text>
             )}
@@ -356,6 +371,7 @@ const styles = StyleSheet.create({
   cue: { color: Brand.text, fontSize: 13, lineHeight: 19 },
   target: { color: Brand.accent, fontSize: 13, fontWeight: '700', marginTop: 2 },
   last: { color: Brand.textMuted, fontSize: 12, marginTop: 4 },
+  bwNote: { color: Brand.info, fontSize: 12, marginTop: 4, lineHeight: 17 },
   hint: { color: Brand.textMuted, fontSize: 12, marginTop: 4 },
   hintReady: { color: Brand.good, fontWeight: '700' },
   warn: { color: '#fbbf24', fontSize: 12, marginTop: 6, lineHeight: 18 },
