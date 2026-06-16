@@ -14,7 +14,7 @@ import { formatDate, formatDelta, formatKg, friendlyMonth } from '@/bodyweight/f
 import { weightInsight } from '@/bodyweight/insight';
 import { computeTrend, trendSlopePerWeek, type TrendPoint } from '@/bodyweight/trend';
 import { Brand } from '@/constants/theme';
-import { deleteWeights, getGoal, listWeights } from '@/db/bodyweight-repo';
+import { getGoal, listWeights } from '@/db/bodyweight-repo';
 import { weightGoal } from '@/db/schema';
 import { AddWeightSheet } from '@/ui/AddWeightSheet';
 import { KcalSummaryCard } from '@/ui/KcalSummaryCard';
@@ -31,25 +31,18 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function shortDate(iso: string): string {
-  const [, m, d] = iso.split('-');
-  return `${d}/${m}`;
-}
-
 export function WeightScreen() {
   const router = useRouter();
   const [points, setPoints] = useState<TrendPoint[]>([]);
   const [goal, setGoal] = useState<Goal | null>(null);
   const [editing, setEditing] = useState<Editing | null>(null);
   const [goalSheet, setGoalSheet] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loaded, setLoaded] = useState(false);
 
   const load = useCallback(async () => {
     const ws = await listWeights();
     setPoints(computeTrend(ws, 0.1));
     setGoal(await getGoal());
-    setSelected(new Set());
     setLoaded(true);
   }, []);
 
@@ -71,8 +64,6 @@ export function WeightScreen() {
   const slope = trendSlopePerWeek(points, 14);
   const todayStr = today();
   const todayExists = points.some((p) => p.date === todayStr);
-  const history = [...points].reverse(); // más reciente primero
-  const allSelected = history.length > 0 && selected.size === history.length;
   const insight = weightInsight({
     slopePerWeek: slope,
     currentTrendKg: last.trendKg,
@@ -82,24 +73,6 @@ export function WeightScreen() {
 
   function openToday() {
     setEditing({ date: todayStr, kg: last?.weightKg ?? 75, isExisting: todayExists });
-  }
-
-  function toggleSelected(date: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(date)) next.delete(date);
-      else next.add(date);
-      return next;
-    });
-  }
-
-  function toggleAll() {
-    setSelected(allSelected ? new Set() : new Set(history.map((p) => p.date)));
-  }
-
-  async function deleteSelected() {
-    await deleteWeights([...selected]);
-    load();
   }
 
   return (
@@ -162,37 +135,7 @@ export function WeightScreen() {
         </View>
       )}
 
-      {/* Historial: seleccionar para borrar en lote, o tocar "editar". */}
-      <Text style={styles.histTitle}>Historial</Text>
-      <View style={styles.card}>
-        <View style={styles.histToolbar}>
-          <Pressable onPress={toggleAll}>
-            <Text style={styles.selectAll}>{allSelected ? '✕ Quitar selección' : '☑ Seleccionar todo'}</Text>
-          </Pressable>
-          {selected.size > 0 && (
-            <Pressable style={styles.delBtn} onPress={deleteSelected}>
-              <Text style={styles.delBtnTxt}>🗑 Borrar ({selected.size})</Text>
-            </Pressable>
-          )}
-        </View>
-        {history.map((p, i) => {
-          const isSel = selected.has(p.date);
-          return (
-            <View key={p.date} style={[styles.histRow, i < history.length - 1 && styles.histRowBorder]}>
-              <Pressable style={styles.checkHit} onPress={() => toggleSelected(p.date)}>
-                <View style={[styles.checkbox, isSel && styles.checkboxOn]}>
-                  {isSel && <Text style={styles.checkMark}>✓</Text>}
-                </View>
-              </Pressable>
-              <Text style={styles.histDate}>{shortDate(p.date)}</Text>
-              <Text style={styles.histKg}>{formatKg(p.weightKg)}</Text>
-              <Pressable onPress={() => setEditing({ date: p.date, kg: p.weightKg, isExisting: true })}>
-                <Text style={styles.histEdit}>editar</Text>
-              </Pressable>
-            </View>
-          );
-        })}
-      </View>
+      <Text style={styles.histHint}>Tu historial de pesajes está en la pestaña Progreso.</Text>
 
       <AddWeightSheet
         visible={editing !== null}
@@ -347,6 +290,7 @@ const styles = StyleSheet.create({
   insightH: { color: Brand.info, fontWeight: '700', marginBottom: 4 },
   insightP: { color: '#b9c4d0', fontSize: 12 },
   histTitle: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', marginTop: 4 },
+  histHint: { color: Brand.textMuted, fontSize: 12, fontStyle: 'italic', textAlign: 'center', marginTop: 4 },
   histToolbar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, marginBottom: 4, borderBottomWidth: 1, borderBottomColor: Brand.cardBorder },
   selectAll: { color: Brand.accent, fontSize: 12, fontWeight: '600' },
   delBtn: { backgroundColor: '#3b1f22', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },

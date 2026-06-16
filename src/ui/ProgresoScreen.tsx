@@ -8,6 +8,7 @@ import { getHistoryRows } from '@/db/workout-repo';
 import { buildProgress, type ExerciseProgress } from '@/training/progression';
 import { detectStall, deloadAdvice } from '@/training/intelligence';
 import { LineChart } from './LineChart';
+import { WeightHistory } from './WeightHistory';
 
 function fmt(n: number): string {
   return String(Math.round(n * 10) / 10).replace('.', ',');
@@ -80,6 +81,8 @@ export function ProgresoScreen() {
           </View>
         );
       })}
+
+      <WeightHistory />
     </ScrollView>
   );
 }
