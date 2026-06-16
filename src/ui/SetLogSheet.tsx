@@ -7,12 +7,13 @@ import { Brand } from '@/constants/theme';
 import { computeTrend } from '@/bodyweight/trend';
 import { GLOSSARY } from '@/education/glossary';
 import { getProfile, listWeights } from '@/db/bodyweight-repo';
-import { deleteSet, getLastPerformance, getOrCreateSession, listSets, upsertSet, type SetLog } from '@/db/workout-repo';
+import { deleteSet, exerciseE1rmHistory, getLastPerformance, getOrCreateSession, listSets, upsertSet, type SetLog } from '@/db/workout-repo';
 import { muscleView } from '@/training/muscle-map';
 import { exerciseInfo } from '@/training/exercise-info';
 import { isBodyweightLoaded } from '@/training/exercise-meta';
 import { schemeForLevel, type Level } from '@/training/levels';
 import { progressionHint, type ProgressionHint } from '@/training/progression';
+import { detectStall } from '@/training/intelligence';
 import { recommendedRestSeconds } from '@/training/rest';
 import { exerciseSetWarning } from '@/training/volume';
 
@@ -68,6 +69,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
   const [restGoal, setRestGoal] = useState(120);
   const [restLeft, setRestLeft] = useState(0);
   const [bodyweight, setBodyweight] = useState<number | null>(null);
+  const [deload, setDeload] = useState<{ sessions: number; weight: number | null } | null>(null);
   const restRunning = useRef(false);
 
   const info = exerciseInfo(exerciseName);
@@ -98,6 +100,17 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
     setRestGoal(recommendedRestSeconds(hi));
     const h = lp ? progressionHint(lp.sets, { sets: setsN, repMin: lo, repMax: hi }) : null;
     setHint(h);
+    // Estancamiento → ofrecer descarga (deload) esta sesión.
+    const e1rms = await exerciseE1rmHistory(exerciseId);
+    const stall = detectStall(e1rms);
+    if (stall.stalled && !h?.ready) {
+      const work = (lp?.sets ?? []).filter((s) => s.setType !== 'warmup');
+      const maxW = work.length ? Math.max(...work.map((s) => s.weightKg)) : 0;
+      const weight = !bwLoaded && maxW > 0 ? Math.round((maxW * 0.9) / 2.5) * 2.5 : null;
+      setDeload({ sessions: stall.sessionsSincePR, weight });
+    } else {
+      setDeload(null);
+    }
     // Serie 1 ya abierta para anotar al entrar. Si toca subir peso, pre-rellena lo sugerido.
     if (fetched.length === 0) {
       const prev = lp?.sets[0];
@@ -254,6 +267,23 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
             )}
             {volWarn.level === 'warn' && <Text style={styles.warn}>{volWarn.text}</Text>}
 
+            {deload && (
+              <View style={styles.deloadBox}>
+                <Text style={styles.deloadTxt}>
+                  🔋 {deload.sessions} sesiones sin batir tu marca. Buen momento para una descarga:{' '}
+                  {deload.weight != null
+                    ? `baja a ~${String(deload.weight).replace('.', ',')} kg y`
+                    : 'baja algo el peso o quita una serie y'}{' '}
+                  sube el RIR a 3. Volverás más fuerte.
+                </Text>
+                {deload.weight != null && (
+                  <Pressable style={styles.deloadBtn} onPress={() => setEditing((e) => (e ? { ...e, weightKg: deload.weight!, rir: 3 } : e))}>
+                    <Text style={styles.deloadBtnTxt}>Aplicar descarga</Text>
+                  </Pressable>
+                )}
+              </View>
+            )}
+
             {restLeft > 0 && (
               <View style={styles.restBox}>
                 <Ionicons name="timer-outline" size={20} color={Brand.good} />
@@ -375,6 +405,10 @@ const styles = StyleSheet.create({
   hint: { color: Brand.textMuted, fontSize: 12, marginTop: 4 },
   hintReady: { color: Brand.good, fontWeight: '700' },
   warn: { color: '#fbbf24', fontSize: 12, marginTop: 6, lineHeight: 18 },
+  deloadBox: { backgroundColor: '#2a2412', borderColor: '#5c4d1e', borderWidth: 1, borderRadius: 12, padding: 12, marginTop: 8, gap: 8 },
+  deloadTxt: { color: '#fbbf24', fontSize: 12, lineHeight: 18 },
+  deloadBtn: { backgroundColor: '#5c4d1e', borderRadius: 9, paddingVertical: 8, alignItems: 'center' },
+  deloadBtnTxt: { color: '#fde68a', fontWeight: '800', fontSize: 13 },
   restBox: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#15251c', borderRadius: 12, padding: 12, marginTop: 8 },
   restTime: { color: Brand.good, fontSize: 16, fontWeight: '800', flex: 1 },
   restBtn: { backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 9, paddingVertical: 6, paddingHorizontal: 12 },

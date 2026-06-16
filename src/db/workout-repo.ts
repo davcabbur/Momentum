@@ -2,7 +2,7 @@ import { and, asc, desc, eq } from 'drizzle-orm';
 
 import { db } from './client';
 import { exercise, routineDay, setLog, workoutSession } from './schema';
-import type { HistoryRow } from '@/training/progression';
+import { bestOneRepMax, type HistoryRow } from '@/training/progression';
 
 export type SetLog = typeof setLog.$inferSelect;
 
@@ -150,6 +150,24 @@ export async function lastSessionDate(): Promise<string | null> {
     .orderBy(desc(workoutSession.date))
     .limit(1);
   return rows[0]?.date ?? null;
+}
+
+/** 1RM estimado por sesión de un ejercicio (orden cronológico), para detectar estancamiento. */
+export async function exerciseE1rmHistory(exerciseId: number): Promise<number[]> {
+  const rows = await db
+    .select({ sessionId: setLog.sessionId, weightKg: setLog.weightKg, reps: setLog.reps, setType: setLog.setType })
+    .from(setLog)
+    .innerJoin(workoutSession, eq(setLog.sessionId, workoutSession.id))
+    .where(eq(setLog.exerciseId, exerciseId))
+    .orderBy(asc(workoutSession.date), asc(workoutSession.id));
+  const bySession = new Map<number, { weightKg: number; reps: number }[]>();
+  for (const r of rows) {
+    if (r.setType === 'warmup') continue;
+    const arr = bySession.get(r.sessionId) ?? [];
+    arr.push({ weightKg: r.weightKg, reps: r.reps });
+    bySession.set(r.sessionId, arr);
+  }
+  return [...bySession.values()].map((sets) => bestOneRepMax(sets));
 }
 
 /** Lee la nota de una sesión. */
