@@ -2,12 +2,14 @@ import { useCallback, useState } from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { formatDelta, formatKg } from '@/bodyweight/format';
-import { computeTrend, trendSlopePerWeek, type TrendPoint } from '@/bodyweight/trend';
+import { goalProgressPct } from '@/bodyweight/goal';
+import { formatDate, formatKg } from '@/bodyweight/format';
+import { computeTrend, type TrendPoint } from '@/bodyweight/trend';
 import { Brand } from '@/constants/theme';
 import { getGoal, listWeights } from '@/db/bodyweight-repo';
 import { weightGoal } from '@/db/schema';
 import { AddWeightSheet } from '@/ui/AddWeightSheet';
+import { ProgressRing } from '@/ui/ProgressRing';
 
 type Goal = typeof weightGoal.$inferSelect;
 
@@ -15,7 +17,7 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-/** Resumen compacto de peso para Inicio: actual + tendencia + añadir. Toca para ver el detalle en Progreso. */
+/** Resumen de peso para Inicio: Inicio / Actual (anillo de progreso) / Objetivo. */
 export function WeightSummaryCard() {
   const router = useRouter();
   const [points, setPoints] = useState<TrendPoint[]>([]);
@@ -36,28 +38,48 @@ export function WeightSummaryCard() {
   const last = points.at(-1);
   if (!last) return null;
 
-  const slope = trendSlopePerWeek(points, 14);
   const todayStr = today();
   const todayExists = points.some((p) => p.date === todayStr);
-  const remaining = goal ? Math.abs(goal.targetKg - last.trendKg) : null;
+  const pct = goal ? goalProgressPct({ startKg: goal.startKg, currentTrendKg: last.trendKg, goalKg: goal.targetKg }) : 0;
+
+  const ring = (
+    <ProgressRing pct={pct}>
+      <Text style={styles.ringLbl}>Actual</Text>
+      <Text style={styles.ringKg}>{formatKg(last.weightKg)}</Text>
+    </ProgressRing>
+  );
 
   return (
     <View style={styles.card}>
-      <View style={styles.row}>
-        <Pressable style={{ flex: 1 }} onPress={() => router.navigate('/progreso')}>
-          <Text style={styles.lbl}>Peso corporal</Text>
-          <Text style={styles.big}>{formatKg(last.weightKg)}</Text>
-          <Text style={styles.sub}>
-            Tendencia {formatKg(last.trendKg)}
-            {points.length >= 2 ? ` · ${formatDelta(slope)}/sem` : ''}
-            {remaining != null ? ` · faltan ${formatKg(remaining)}` : ''}
-          </Text>
-          <Text style={styles.link}>Ver progreso ›</Text>
-        </Pressable>
-        <Pressable style={styles.add} onPress={() => setAdding(true)}>
-          <Text style={styles.addTxt}>＋</Text>
-        </Pressable>
-      </View>
+      {goal ? (
+        <View style={styles.cols}>
+          <View style={styles.side}>
+            <Text style={styles.colLbl}>Inicio</Text>
+            <Text style={styles.colKg}>{formatKg(goal.startKg)}</Text>
+            <Text style={styles.colDate}>{formatDate(goal.startDate)}</Text>
+          </View>
+          {ring}
+          <View style={styles.side}>
+            <Text style={styles.colLbl}>Objetivo</Text>
+            <Text style={styles.colKg}>{formatKg(goal.targetKg)}</Text>
+            <Text style={styles.colDate}>{goal.targetDate ? formatDate(goal.targetDate) : '—'}</Text>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.centerOnly}>
+          {ring}
+          <Pressable onPress={() => router.navigate('/progreso')}>
+            <Text style={styles.link}>🎯 Definir un objetivo de peso</Text>
+          </Pressable>
+        </View>
+      )}
+
+      <Pressable style={styles.enter} onPress={() => setAdding(true)}>
+        <Text style={styles.enterTxt}>＋ Entrar peso</Text>
+      </Pressable>
+      <Pressable onPress={() => router.navigate('/progreso')}>
+        <Text style={styles.link}>Ver progreso ›</Text>
+      </Pressable>
 
       <AddWeightSheet
         visible={adding}
@@ -74,12 +96,16 @@ export function WeightSummaryCard() {
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  lbl: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700' },
-  big: { color: Brand.text, fontSize: 28, fontWeight: '800', marginTop: 2 },
-  sub: { color: Brand.textMuted, fontSize: 12, marginTop: 2 },
-  link: { color: Brand.accent, fontSize: 12, fontWeight: '700', marginTop: 6 },
-  add: { width: 44, height: 44, borderRadius: 12, backgroundColor: Brand.accentStrong, alignItems: 'center', justifyContent: 'center' },
-  addTxt: { color: '#fff', fontSize: 24, fontWeight: '700', lineHeight: 26 },
+  card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 16, padding: 16, gap: 10 },
+  cols: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  centerOnly: { alignItems: 'center', gap: 10 },
+  side: { alignItems: 'center', flex: 1, gap: 4 },
+  colLbl: { color: Brand.accent, fontSize: 13, fontWeight: '700' },
+  colKg: { color: Brand.text, fontSize: 16, fontWeight: '800' },
+  colDate: { color: Brand.textMuted, fontSize: 11 },
+  ringLbl: { color: Brand.accent, fontSize: 13, fontWeight: '700' },
+  ringKg: { color: Brand.text, fontSize: 24, fontWeight: '800', marginTop: 2 },
+  enter: { backgroundColor: Brand.accentStrong, borderRadius: 12, paddingVertical: 13, alignItems: 'center', marginTop: 2 },
+  enterTxt: { color: '#fff', fontWeight: '800', fontSize: 15 },
+  link: { color: Brand.accent, fontSize: 12, fontWeight: '700', textAlign: 'center' },
 });
