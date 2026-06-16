@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, Vibration, View } from 'react-native';
 import Body from 'react-native-body-highlighter';
 
 import { Brand } from '@/constants/theme';
+import { GLOSSARY } from '@/education/glossary';
 import { getProfile } from '@/db/bodyweight-repo';
 import { deleteSet, getLastPerformance, getOrCreateSession, listSets, upsertSet, type SetLog } from '@/db/workout-repo';
 import { muscleView } from '@/training/muscle-map';
@@ -15,6 +16,17 @@ import { exerciseSetWarning } from '@/training/volume';
 
 function mmss(secs: number): string {
   return `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+}
+
+function showTerm(key: string) {
+  const t = GLOSSARY.find((g) => g.key === key);
+  if (t) Alert.alert(t.title, t.body);
+}
+
+function showTipos() {
+  const top = GLOSSARY.find((g) => g.key === 'topset')?.body ?? '';
+  const back = GLOSSARY.find((g) => g.key === 'backoff')?.body ?? '';
+  Alert.alert('Tipos de serie', `Top set: ${top}\n\nBack-off: ${back}\n\nCalent.: serie suave de aproximación; no cuenta para el volumen.`);
 }
 
 const RIRS = [0, 1, 2, 3, 4];
@@ -53,6 +65,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
   const [showHow, setShowHow] = useState(true);
   const [restGoal, setRestGoal] = useState(120);
   const [restLeft, setRestLeft] = useState(0);
+  const restRunning = useRef(false);
 
   const info = exerciseInfo(exerciseName);
   const mv = muscleView(muscleGroup ?? '');
@@ -107,6 +120,16 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
     const id = setInterval(() => setRestLeft((r) => (r <= 1 ? 0 : r - 1)), 1000);
     return () => clearInterval(id);
   }, [restLeft > 0]);
+
+  // Vibra una vez al terminar el descanso.
+  useEffect(() => {
+    if (restLeft > 0) {
+      restRunning.current = true;
+    } else if (restRunning.current) {
+      restRunning.current = false;
+      Vibration.vibrate(500);
+    }
+  }, [restLeft]);
 
   function openNew() {
     const n = sets.length + 1;
@@ -274,7 +297,10 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
                     <Text style={styles.stepTxt}>+</Text>
                   </Pressable>
                 </View>
-                <Text style={styles.lbl}>RIR</Text>
+                <Pressable style={styles.lblRow} onPress={() => showTerm('rir')}>
+                  <Text style={styles.lbl}>RIR</Text>
+                  <Ionicons name="information-circle-outline" size={14} color={Brand.accent} />
+                </Pressable>
                 <View style={styles.chips}>
                   {RIRS.map((r) => (
                     <Pressable
@@ -285,7 +311,10 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
                     </Pressable>
                   ))}
                 </View>
-                <Text style={styles.lbl}>Tipo de serie</Text>
+                <Pressable style={styles.lblRow} onPress={showTipos}>
+                  <Text style={styles.lbl}>Tipo de serie</Text>
+                  <Ionicons name="information-circle-outline" size={14} color={Brand.accent} />
+                </Pressable>
                 <View style={styles.chips}>
                   {TYPES.map((t) => (
                     <Pressable
@@ -348,7 +377,8 @@ const styles = StyleSheet.create({
   stepVal: { alignItems: 'center', flexDirection: 'row', gap: 4 },
   stepValTxt: { color: Brand.text, fontSize: 24, fontWeight: '800' },
   stepUnit: { color: Brand.textMuted, fontSize: 12 },
-  lbl: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', marginTop: 4 },
+  lbl: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase' },
+  lblRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   chips: { flexDirection: 'row', gap: 6 },
   chip: { flex: 1, backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 9, paddingVertical: 8, alignItems: 'center' },
   chipOn: { borderColor: Brand.accentStrong, backgroundColor: '#241f3a' },
