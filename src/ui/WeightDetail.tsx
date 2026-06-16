@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { computeTrend, type TrendPoint } from '@/bodyweight/trend';
 import { Brand } from '@/constants/theme';
@@ -12,6 +12,7 @@ type Goal = typeof weightGoal.$inferSelect;
 
 /** Gráfica de peso en Progreso (el objetivo y el mensaje viven en Inicio). */
 export function WeightDetail() {
+  const { width } = useWindowDimensions();
   const [points, setPoints] = useState<TrendPoint[]>([]);
   const [goal, setGoal] = useState<Goal | null>(null);
 
@@ -32,7 +33,7 @@ export function WeightDetail() {
     <View>
       <Text style={styles.h2}>Peso corporal</Text>
       <View style={styles.card}>
-        <WeightChart points={points} goalKg={goal?.targetKg} />
+        <WeightChart points={points} goalKg={goal?.targetKg} width={width - 14 * 2 - 12 * 2} height={220} />
       </View>
     </View>
   );
