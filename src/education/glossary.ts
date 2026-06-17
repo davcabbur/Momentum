@@ -156,4 +156,9 @@ export const GLOSSARY: GlossaryTerm[] = [
     title: 'Periodización lineal',
     body: 'Bajar las reps a la vez que subes el peso semana a semana (p. ej. 5→4→3→2→1) y luego una semana de descarga. Clásico para ganar fuerza en los básicos.',
   },
+  {
+    key: 'elegir-ejercicio',
+    title: 'Cómo elegir un buen ejercicio',
+    body: 'Tres claves: que estire el músculo con buena tensión, que se sienta bien (sin dolor, suave) y que sea fácil de progresar (añadir peso o reps). Si falla alguna, suele haber opciones mejores.',
+  },
 ];
