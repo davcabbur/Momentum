@@ -194,13 +194,6 @@ export function NutricionScreen() {
             </View>
           )}
 
-          {s.protein != null && (
-            <View style={styles.card}>
-              <Text style={styles.cardLbl}>Proteína</Text>
-              <Text style={styles.big}>≈ {s.protein} g/día</Text>
-              <Text style={styles.note}>Proteína alta siempre: protege el músculo en déficit y lo construye en superávit. Repártela entre tus comidas.</Text>
-            </View>
-          )}
 
           {s.dietBreak && (
             <View style={[styles.card, { borderColor: Brand.info }]}>
