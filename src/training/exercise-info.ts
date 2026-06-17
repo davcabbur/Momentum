@@ -90,12 +90,12 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Peso muerto con barra trap': { howTo: ['Dentro de la barra hexagonal; torso más erguido → más cuádriceps.', 'Bisagra y empuje del suelo; lumbar neutra.', 'Alternativa más amable para la espalda.'] },
   'Peso muerto piernas rígidas': { howTo: ['Caderas altas y rodillas casi rectas; bisagra de cadera.', '~50–60% del top set; estira isquios sin forzar el rango al inicio.', 'Controla la negativa.'] },
   'Curl nórdico': { howTo: ['Tobillos fijos; baja resistiendo al máximo (negativa).', 'Empuja con las manos abajo para volver arriba.', 'Isquios; muy duro, empieza con asistencia.'] },
-  'Curl femoral': { howTo: ['Aísla isquios; rango completo.', 'Aprieta arriba, baja lento.', 'No arquees la lumbar.'] },
+  'Curl femoral': { howTo: ['Empuja las caderas contra el banco (no las dejes subir).', 'Rango completo; parciales en el estiramiento al final del set.', 'Tumbado también trabaja el sartorio; alterna con el sentado en la semana.'] },
   'Curl femoral sentado': { howTo: ['Mejor que tumbado: más estiramiento del isquio.', 'Torso adelante hasta notar tensión antes de empezar.', 'Puntas hacia dentro = isquio interno; hacia fuera = externo.'] },
   'Extensión cuádriceps': { howTo: ['El único donde el recto femoral se estira y contrae (cadera fija).', 'Recline el asiento atrás → más estiramiento y crecimiento (estudio).', 'Sube y aprieta arriba; bajada controlada.'] },
   'Zancadas': { howTo: ['Baja lento, cuida la alineación de la rodilla.', 'Paso largo = más glúteo.', 'Elige la variante donde controles el equilibrio.'] },
   'Sentadilla búlgara': { howTo: ['Pie trasero elevado; baja recto.', 'Torso algo inclinado = más glúteo.', 'Controla el equilibrio.'] },
-  'Gemelo de pie': { howTo: ['Superficie elevada para más rango.', 'Sube y aprieta arriba; baja estirando.', 'Puntas rectas por defecto.'] },
+  'Gemelo de pie': { howTo: ['Superficie elevada; baja a un estiramiento profundo (lo que más crece).', 'Sube sobre los metatarsos, sin rebotes; control.', 'Truco: aguanta 30 s en el estiramiento al final del último set.'] },
   'Gemelo en prensa': { howTo: ['Sentado en la prensa, empuja con la punta; rango completo.', 'Aprieta arriba y estira abajo.', 'Puntas fuera = gemelo interno; dentro = externo; rectas = ambos.'] },
   'Gemelo sentado': { howTo: ['Rodilla flexionada → trabaja el sóleo; rango completo.', 'Aprieta arriba, estira abajo; reps altas.', 'Complementa al gemelo de pie (rodilla recta = gastrocnemio).'] },
   // Glúteo
@@ -106,7 +106,7 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Hiperextensión 45°': { howTo: ['Extiende la cadera; redondea un poco la espalda alta para sentir el glúteo.', 'Aprieta arriba sin hiperextender la lumbar.', 'Progresa con reps o sujetando un disco al pecho.'] },
   'Puente de glúteo': { howTo: ['En el suelo; aprieta los glúteos arriba.', 'Core firme; no arquees la lumbar.', 'En casa: con mancuerna sobre la cadera.'] },
   'Patada de glúteo': { howTo: ['En polea: patada en diagonal/abducción (no vertical).', 'Estabiliza el torso.', 'Aprieta el glúteo arriba.'] },
-  'Abducción de cadera': { howTo: ['Máquina; inclina el torso algo adelante para estirar.', 'Trabaja en el rango 90–45°.', 'Control en la vuelta.'] },
+  'Abducción de cadera': { howTo: ['Inclinada al frente → glúteo mayor; en puente/caderas extendidas → glúteo medio.', 'Rango 90–45°; aprieta hacia fuera.', 'No vayas ligero: progresa de verdad (casi al fallo).'] },
   // Core
   'Crunch': { howTo: ['Recorrido completo: acerca las costillas a las caderas.', 'Flexiona la columna, no tires del cuello.', 'Añade peso para progresar.'] },
   'Crunch declinado': { howTo: ['Disco en el pecho; redondea la lumbar al subir (no flexiones solo la cadera).', 'Aprieta el abdomen; baja con control.', 'Progresa añadiendo peso o reps.'] },
