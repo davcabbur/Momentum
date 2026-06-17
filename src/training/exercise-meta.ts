@@ -45,6 +45,7 @@ export const EXERCISE_META: Record<string, ExMeta> = {
   'Remo barra': { region: 'horizontal', equipment: 'barbell', compound: true },
   Dominadas: { region: 'vertical', equipment: 'bodyweight', compound: true },
   'Remo Gironda': { region: 'dorsal-bajo', equipment: 'cable', compound: true },
+  'Remo en máquina': { region: 'horizontal', equipment: 'machine', compound: true },
   Pullover: { region: 'dorsal-bajo', equipment: 'dumbbell', compound: false },
   'Encogimiento de hombros': { region: 'trapecio', equipment: 'dumbbell', compound: false },
   'Face pull': { region: 'posterior', equipment: 'cable', compound: false },
@@ -56,6 +57,7 @@ export const EXERCISE_META: Record<string, ExMeta> = {
   'Curl concentrado': { region: 'corta', equipment: 'dumbbell', compound: false },
   'Curl martillo': { region: 'braquial', equipment: 'dumbbell', compound: false },
   'Curl predicador': { region: 'corta', equipment: 'machine', compound: false },
+  'Curl con barra Z': { region: 'corta', equipment: 'barbell', compound: false },
   'Curl Bayesiano': { region: 'larga', equipment: 'cable', compound: false },
   // Pierna
   Sentadilla: { region: 'cuadriceps', equipment: 'barbell', compound: true },

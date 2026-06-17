@@ -39,6 +39,7 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Remo barra': { howTo: ['Torso a 30–45°, lumbar dentro (sin "modo trucha").', 'Lleva la barra al abdomen; codos en flecha.', 'Sin balanceo.'] },
   'Dominadas': { howTo: ['Misma técnica que el jalón: codos a las costillas.', 'Recorrido completo: estira abajo, pecho a la barra.', 'Core en tensión, no cruces las piernas.'] },
   'Remo Gironda': { howTo: ['Agarre cerrado/neutro; lleva al ombligo en horizontal.', 'Codos pegados; saca pecho al final.', 'Dorso recto.'] },
+  'Remo en máquina': { howTo: ['Apoya el pecho en el respaldo (sin balanceo).', 'Tira llevando los codos atrás y aprieta las escápulas.', 'Varía el agarre entre series (ancho/cerrado/neutro) para toda la espalda.'] },
   'Pullover': { howTo: ['Estira los dorsales arriba con control.', 'Codos semifijos; lleva la mancuerna por encima.', 'Siente el estiramiento.'] },
   'Encogimiento de hombros': { howTo: ['Sube los hombros recto (sin rotar).', 'Ligera inclinación adelante; manos algo separadas.', 'Aprieta el trapecio arriba.'] },
   'Face pull': { howTo: ['Polea a la cara; tira llevando los codos atrás.', 'Brazos rectos (sin rotación) para alinear la fuerza.', 'Aprieta el deltoides posterior.'] },
@@ -49,7 +50,8 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Curl inclinado': { howTo: ['Brazo por detrás del cuerpo → cabeza larga.', 'Mantén la supinación desde el inicio.', 'Estira abajo, control.'] },
   'Curl concentrado': { howTo: ['Codo clavado (brazo por delante → cabeza corta).', 'Bajada lenta, sin balanceo.', 'Aprieta arriba.'] },
   'Curl martillo': { howTo: ['Agarre neutro → braquial (engorda el brazo).', 'Arco hacia delante, brazos rectos.', 'Bajada controlada.'] },
-  'Curl predicador': { howTo: ['Brazo apoyado por delante; no despegues el codo.', 'Estira abajo con control.', 'Barra Z si te molesta la muñeca.'] },
+  'Curl predicador': { howTo: ['Brazo apoyado por delante; no despegues el codo.', 'Estira abajo con control.', 'La mitad baja (estirada) es la que más crece.'] },
+  'Curl con barra Z': { howTo: ['Barra Z para cuidar las muñecas; supina al subir.', 'Algo de impulso de cadera al inicio vale; controla la bajada.', 'Úsalo pesado a 6–8 reps (sobrecarga progresiva).'] },
   'Curl Bayesiano': { howTo: ['En polea, brazo por detrás del cuerpo → cabeza larga.', 'Tensión constante; supina desde el inicio.', 'Estira en el punto bajo.'] },
   // Pierna
   'Sentadilla': { howTo: ['Profunda (más rango = más glúteo).', 'Rodillas siguen la punta de los pies; core firme.', 'Principiante: hack o prensa, más estables.'] },

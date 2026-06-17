@@ -106,4 +106,19 @@ export const GLOSSARY: GlossaryTerm[] = [
     title: 'Periodización',
     body: 'Variar volumen e intensidad por fases (p. ej. volumen moderado → fase intensa de poco volumen → fase de mucho volumen) y meter una semana de descarga. Ayuda a no estancarse.',
   },
+  {
+    key: 'dropset',
+    title: 'Drop set (serie descendente)',
+    body: 'Al llegar al fallo, bajas el peso ~20–30% y sigues sin descanso para exprimir más fibras. Úsalo al final y con moderación (genera fatiga).',
+  },
+  {
+    key: 'feeder',
+    title: 'Series de aproximación',
+    body: 'Series ligeras que suben de peso poco a poco antes de tu serie fuerte: preparan el músculo y te ayudan a elegir el peso. También llamadas "feeder sets".',
+  },
+  {
+    key: 'variar-agarre',
+    title: 'Variar el agarre y el ángulo',
+    body: 'Cambiar el agarre (ancho/cerrado/neutro) o la dirección del tirón entre series trabaja la espalda y los hombros desde más ángulos, para un desarrollo más completo.',
+  },
 ];
