@@ -5,6 +5,7 @@ export type Exercise = typeof exercise.$inferSelect;
 
 const STARTER: { name: string; muscleGroup: string; pattern: string }[] = [
   { name: 'Press inclinado', muscleGroup: 'pecho', pattern: 'empuje' },
+  { name: 'Press inclinado con barra', muscleGroup: 'pecho', pattern: 'empuje' },
   { name: 'Press banca', muscleGroup: 'pecho', pattern: 'empuje' },
   { name: 'Press plano mancuerna', muscleGroup: 'pecho', pattern: 'empuje' },
   { name: 'Aperturas', muscleGroup: 'pecho', pattern: 'empuje' },
@@ -14,6 +15,7 @@ const STARTER: { name: string; muscleGroup: string; pattern: string }[] = [
   { name: 'Press Larson', muscleGroup: 'pecho', pattern: 'empuje' },
   { name: 'Press militar', muscleGroup: 'hombro', pattern: 'empuje' },
   { name: 'Elevaciones laterales', muscleGroup: 'hombro', pattern: 'empuje' },
+  { name: 'Elevación frontal con disco', muscleGroup: 'hombro', pattern: 'empuje' },
   { name: 'Pájaros', muscleGroup: 'hombro', pattern: 'tiron' },
   { name: 'Press hombro en máquina', muscleGroup: 'hombro', pattern: 'empuje' },
   { name: 'Press militar con barra', muscleGroup: 'hombro', pattern: 'empuje' },
@@ -26,6 +28,7 @@ const STARTER: { name: string; muscleGroup: string; pattern: string }[] = [
   { name: 'Extensión tríceps sobre la cabeza', muscleGroup: 'triceps', pattern: 'empuje' },
   { name: 'Patada de tríceps', muscleGroup: 'triceps', pattern: 'empuje' },
   { name: 'Extensión tríceps unilateral', muscleGroup: 'triceps', pattern: 'empuje' },
+  { name: 'Flexiones diamante', muscleGroup: 'triceps', pattern: 'empuje' },
   { name: 'Jalón al pecho', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Remo mancuerna', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Remo barra', muscleGroup: 'espalda', pattern: 'tiron' },

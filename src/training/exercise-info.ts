@@ -11,6 +11,7 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   // Pecho
   'Press inclinado': { howTo: ['Banco a 25–40° (no 45°, eso ya es hombro).', 'Retrae las escápulas y baja al pecho superior.', 'Empuja recto sin chocar arriba; no bloquees del todo los codos.'] },
   'Press banca': { howTo: ['Escápulas atrás y pies firmes en el suelo.', 'Baja la barra al pecho medio con control; codos ~45°.', 'Empuja sin rebotar; no bloquees los codos del todo.'] },
+  'Press inclinado con barra': { howTo: ['Banco 25–40°; barra al pecho superior, en línea con el hombro.', 'Agarre algo más cerrado = más pecho superior y tríceps.', 'No empujes la barra hacia delante; sube recta o algo atrás.'] },
   'Press plano mancuerna': { howTo: ['Escápulas atrás; mancuernas a la altura del pecho.', 'Baja hasta notar estiramiento, codos ~45°.', 'Empuja en diagonal hacia dentro, sin chocarlas.'] },
   'Aperturas': { howTo: ['Codos semiflexionados y fijos todo el recorrido.', 'Abre hasta estirar (brazos algo por detrás del hombro).', 'Junta apretando el pecho, sin chocar las mancuernas.'] },
   'Fondos': { howTo: ['Inclina el torso adelante para cargar más pecho.', 'Hombros bajos, cuerpo en "flecha"; baja con control.', 'Sube sin bloquear; descanso 1,5–2 min.'] },
@@ -20,6 +21,7 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   // Hombro
   'Press militar': { howTo: ['Nunca bloquees los codos arriba del todo.', 'De pie: escápulas atrás, pecho fuera, rodillas algo flexionadas.', 'Respaldo poco inclinado (más = se vuelve pecho).'] },
   'Elevaciones laterales': { howTo: ['Sube hasta la línea de los hombros, codos algo flexionados.', 'Lidera con el codo, no con la mano.', 'Baja lento; mejor sentado/apoyado para no balancear.'] },
+  'Elevación frontal con disco': { howTo: ['Gira el disco como un volante (rotación interna) al subir → más deltoides medio.', 'Sube a la altura de los ojos; controla la bajada.', 'Si molesta el hombro, cámbiala por la elevación en Y.'] },
   'Pájaros': { howTo: ['Pecho apoyado o torso inclinado.', 'Brazos algo flexionados; abre en forma de "T".', 'Aprieta el deltoides posterior, sin tirar de trapecio.'] },
   'Press hombro en máquina': { howTo: ['Ajusta el asiento: agarres a la altura de los hombros.', 'Empuja sin bloquear; bajada controlada.', 'Ideal si tienes hombros delicados.'] },
   'Press militar con barra': { howTo: ['Barra desde las clavículas; aprieta glúteos y core.', 'Cabeza algo atrás para dejar pasar la barra.', 'Sube en línea recta; no arquees la lumbar.'] },
@@ -33,6 +35,7 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Extensión tríceps sobre la cabeza': { howTo: ['Polea a la cintura; da un paso adelante e inclina.', 'Codos juntos en "V", rango amplio.', 'Enfatiza la cabeza larga.'] },
   'Patada de tríceps': { howTo: ['Codo fijo detrás del cuerpo, brazo en "V".', 'Solo mueve el antebrazo; torso quieto.', 'Aprieta arriba.'] },
   'Extensión tríceps unilateral': { howTo: ['Mancuerna sentado o polea; tensión en la negativa.', 'Solo se mueve el antebrazo.', 'Rango completo, control.'] },
+  'Flexiones diamante': { howTo: ['Manos juntas en diamante bajo el pecho → más tríceps.', 'Cuerpo recto; baja controlando, no te dejes caer.', 'Genial como serie final al fallo (AMRAP).'] },
   // Espalda
   'Jalón al pecho': { howTo: ['Tira llevando los codos a los dorsales, no con los brazos.', 'Agarre medio/neutro; baja la barra al pecho alto.', '"Baja la barra", no "súbete tú"; controla la subida.'] },
   'Remo mancuerna': { howTo: ['Codo pegado al torso, negativa lenta.', 'Recorrido completo; no te pares a la mitad.', 'Torso estable, sin balanceo.'] },

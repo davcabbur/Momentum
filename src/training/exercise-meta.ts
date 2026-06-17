@@ -16,6 +16,7 @@ export interface ExMeta {
 export const EXERCISE_META: Record<string, ExMeta> = {
   // Pecho
   'Press inclinado': { region: 'superior', equipment: 'dumbbell', compound: true },
+  'Press inclinado con barra': { region: 'superior', equipment: 'barbell', compound: true },
   'Press banca': { region: 'medio', equipment: 'barbell', compound: true },
   'Press plano mancuerna': { region: 'medio', equipment: 'dumbbell', compound: true },
   Aperturas: { region: 'estiramiento', equipment: 'dumbbell', compound: false },
@@ -28,6 +29,7 @@ export const EXERCISE_META: Record<string, ExMeta> = {
   'Press Arnold': { region: 'anterior', equipment: 'dumbbell', compound: true },
   'Elevación en Y en polea': { region: 'lateral', equipment: 'cable', compound: false },
   'Elevaciones laterales': { region: 'lateral', equipment: 'dumbbell', compound: false },
+  'Elevación frontal con disco': { region: 'anterior', equipment: 'dumbbell', compound: false },
   Pájaros: { region: 'posterior', equipment: 'dumbbell', compound: false },
   'Press hombro en máquina': { region: 'anterior', equipment: 'machine', compound: true },
   'Press militar con barra': { region: 'anterior', equipment: 'barbell', compound: true },
@@ -39,6 +41,7 @@ export const EXERCISE_META: Record<string, ExMeta> = {
   'Extensión tríceps sobre la cabeza': { region: 'larga', equipment: 'cable', compound: false },
   'Patada de tríceps': { region: 'aislamiento', equipment: 'dumbbell', compound: false },
   'Extensión tríceps unilateral': { region: 'larga', equipment: 'dumbbell', compound: false },
+  'Flexiones diamante': { region: 'lateral-media', equipment: 'bodyweight', compound: false },
   // Espalda
   'Jalón al pecho': { region: 'vertical', equipment: 'cable', compound: true },
   'Remo mancuerna': { region: 'horizontal', equipment: 'dumbbell', compound: true },

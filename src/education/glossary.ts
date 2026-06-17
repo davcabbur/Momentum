@@ -131,4 +131,19 @@ export const GLOSSARY: GlossaryTerm[] = [
     title: 'Orientación de los pies',
     body: 'En curl femoral y gemelos, girar la punta cambia el énfasis: hacia fuera trabaja más la parte interna; hacia dentro, la externa; rectas, ambas por igual.',
   },
+  {
+    key: 'excentrica',
+    title: 'Excéntrica (fase negativa)',
+    body: 'La parte en la que bajas el peso. Controlarla (o hacerla lenta, 3–5 s) ayuda a sentir el músculo y a crecer; dejarse caer desaprovecha la serie.',
+  },
+  {
+    key: 'tension-constante',
+    title: 'Tensión constante',
+    body: 'Mantener el músculo bajo carga todo el recorrido (sin bloquear arriba ni soltar abajo). Ayuda a mantener el foco en el músculo objetivo.',
+  },
+  {
+    key: 'amrap',
+    title: 'Serie al fallo (AMRAP)',
+    body: '"Tantas reps como puedas" hasta el fallo con buena técnica. Va bien como última serie de un ejercicio, sin nada después que interfiera.',
+  },
 ];
