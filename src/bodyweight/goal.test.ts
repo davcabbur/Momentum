@@ -7,27 +7,24 @@ import {
   suggestGoal,
   estimateTargetDate,
   estimateTargetWeight,
-  weighInProgress,
+  weighInSegments,
 } from './goal';
 
-test('weighInProgress: definición (objetivo bajar), perder al ritmo previsto → verde 100%', () => {
-  const r = weighInProgress({ change: -1, days: 7, plannedRatePerWeek: -1 });
-  expect(r.toward).toBe(true);
-  expect(r.pct).toBe(100);
+test('weighInSegments: bajar el objetivo semanal completo → verde 5/5', () => {
+  expect(weighInSegments({ change: -1, plannedRatePerWeek: -1 })).toEqual({ toward: true, segments: 5 });
 });
 
-test('weighInProgress: perder la mitad del ritmo → verde 50%', () => {
-  expect(weighInProgress({ change: -0.5, days: 7, plannedRatePerWeek: -1 }).pct).toBe(50);
+test('weighInSegments: bajar un poco → pocos segmentos', () => {
+  expect(weighInSegments({ change: -0.1, plannedRatePerWeek: -1 }).segments).toBe(1);
+  expect(weighInSegments({ change: -0.5, plannedRatePerWeek: -1 }).segments).toBe(3);
 });
 
-test('weighInProgress: subir cuando el objetivo es bajar → rojo, % por magnitud', () => {
-  const r = weighInProgress({ change: 0.5, days: 7, plannedRatePerWeek: -1 });
-  expect(r.toward).toBe(false);
-  expect(r.pct).toBe(50);
+test('weighInSegments: subir cuando el objetivo es bajar → 1 rojo', () => {
+  expect(weighInSegments({ change: 1, plannedRatePerWeek: -1 })).toEqual({ toward: false, segments: 1 });
 });
 
-test('weighInProgress: sin cambio → vacío', () => {
-  expect(weighInProgress({ change: 0, days: 7, plannedRatePerWeek: -1 })).toEqual({ toward: true, pct: 0 });
+test('weighInSegments: sin cambio → vacío', () => {
+  expect(weighInSegments({ change: 0, plannedRatePerWeek: -1 })).toEqual({ toward: true, segments: 0 });
 });
 
 test('estima días al objetivo cuando se progresa en la dirección correcta', () => {

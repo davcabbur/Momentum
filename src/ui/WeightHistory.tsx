@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { daysBetween, weighInProgress } from '@/bodyweight/goal';
+import { daysBetween, weighInSegments } from '@/bodyweight/goal';
 import { formatKg } from '@/bodyweight/format';
 import { Brand } from '@/constants/theme';
 import { getGoal, listWeights } from '@/db/bodyweight-repo';
@@ -60,10 +60,7 @@ export function WeightHistory() {
       {entries.map((e, i) => {
         const diff = e.weightKg - initialKg;
         const prev = entries[i + 1] ?? (goal ? { date: goal.startDate, weightKg: goal.startKg } : null);
-        const bar =
-          planned != null && prev
-            ? weighInProgress({ change: e.weightKg - prev.weightKg, days: daysBetween(prev.date, e.date), plannedRatePerWeek: planned })
-            : null;
+        const bar = planned != null && prev ? weighInSegments({ change: e.weightKg - prev.weightKg, plannedRatePerWeek: planned }) : null;
         return (
           <View key={e.date} style={styles.card}>
             <View style={styles.wcol}>
@@ -72,8 +69,7 @@ export function WeightHistory() {
             </View>
             <View style={styles.segments}>
               {[0, 1, 2, 3, 4].map((s) => {
-                const lit = bar ? Math.min(5, Math.ceil(bar.pct / 20)) : 0;
-                const on = s < lit;
+                const on = bar ? s < bar.segments : false;
                 return <View key={s} style={[styles.seg, { backgroundColor: on ? (bar?.toward ? Brand.good : '#f87171') : Brand.track }]} />;
               })}
             </View>

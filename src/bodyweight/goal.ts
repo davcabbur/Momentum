@@ -33,21 +33,22 @@ function clampPct(x: number): number {
 }
 
 /**
- * Valora un pesaje frente al anterior: ¿va hacia el objetivo y a qué ritmo?
- * - toward: true si el cambio va en la dirección del objetivo (verde), false si en contra (rojo).
- * - pct: magnitud 0..100 respecto al ritmo semanal estipulado (100 = al ritmo previsto o más).
- * En mantenimiento (ritmo previsto ~0): toward = mantenerse dentro del margen de referencia.
+ * Valora un pesaje frente al anterior, en 5 segmentos (0..5):
+ * - toward: true si el cambio va hacia el objetivo (verde), false si en contra (rojo).
+ * - segments verde: 1..5 según la magnitud del cambio respecto al objetivo SEMANAL
+ *   (bajar el objetivo de la semana = 5; un poquito = 1).
+ * - en contra (te alejas del objetivo): siempre 1 segmento (rojo).
  */
-export function weighInProgress(p: { change: number; days: number; plannedRatePerWeek: number }): {
+export function weighInSegments(p: { change: number; plannedRatePerWeek: number }): {
   toward: boolean;
-  pct: number;
+  segments: number;
 } {
-  if (p.days <= 0 || p.change === 0) return { toward: true, pct: 0 };
-  const actualRate = p.change / (p.days / 7);
+  if (p.change === 0) return { toward: true, segments: 0 };
+  const toward = p.plannedRatePerWeek === 0 ? Math.abs(p.change) <= 0.2 : Math.sign(p.change) === Math.sign(p.plannedRatePerWeek);
+  if (!toward) return { toward: false, segments: 1 };
   const ref = Math.abs(p.plannedRatePerWeek) || 0.5;
-  const toward = p.plannedRatePerWeek === 0 ? Math.abs(actualRate) <= ref : Math.sign(actualRate) === Math.sign(p.plannedRatePerWeek);
-  const pct = Math.max(0, Math.min(100, (Math.abs(actualRate) / ref) * 100));
-  return { toward, pct };
+  const segments = Math.max(1, Math.min(5, Math.ceil((Math.abs(p.change) * 5) / ref)));
+  return { toward: true, segments };
 }
 
 /** % del camino recorrido del peso inicial al objetivo (0..100). */
