@@ -161,4 +161,9 @@ export const GLOSSARY: GlossaryTerm[] = [
     title: 'Cómo elegir un buen ejercicio',
     body: 'Tres claves: que estire el músculo con buena tensión, que se sienta bien (sin dolor, suave) y que sea fácil de progresar (añadir peso o reps). Si falla alguna, suele haber opciones mejores.',
   },
+  {
+    key: 'supinacion',
+    title: 'Supinación',
+    body: 'Girar la palma hacia arriba; activa el bíceps. En los curls ayuda pensar en "empujar con los meñiques". Agarre neutro (martillo) trabaja más el braquial.',
+  },
 ];
