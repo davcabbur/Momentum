@@ -55,6 +55,7 @@ export const EXERCISE_META: Record<string, ExMeta> = {
   'Jalón unilateral arrodillado': { region: 'vertical', equipment: 'cable', compound: false },
   'Remo mancuerna': { region: 'horizontal', equipment: 'dumbbell', compound: true },
   'Remo barra': { region: 'horizontal', equipment: 'barbell', compound: true },
+  'Remo Pendlay': { region: 'horizontal', equipment: 'barbell', compound: true },
   Dominadas: { region: 'vertical', equipment: 'bodyweight', compound: true },
   'Remo Gironda': { region: 'dorsal-bajo', equipment: 'cable', compound: true },
   'Remo en máquina': { region: 'horizontal', equipment: 'machine', compound: true },

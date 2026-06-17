@@ -17,6 +17,7 @@ const COMPOUNDS = new Set([
   'Jalón al pecho',
   'Remo mancuerna',
   'Remo barra',
+  'Remo Pendlay',
   'Dominadas',
   'Remo Gironda',
   'Remo en máquina',

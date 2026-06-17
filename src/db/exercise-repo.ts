@@ -41,6 +41,7 @@ const STARTER: { name: string; muscleGroup: string; pattern: string }[] = [
   { name: 'Jalón unilateral arrodillado', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Remo mancuerna', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Remo barra', muscleGroup: 'espalda', pattern: 'tiron' },
+  { name: 'Remo Pendlay', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Dominadas', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Remo Gironda', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Remo en máquina', muscleGroup: 'espalda', pattern: 'tiron' },
