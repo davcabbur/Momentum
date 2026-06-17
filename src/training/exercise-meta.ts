@@ -40,6 +40,7 @@ export const EXERCISE_META: Record<string, ExMeta> = {
   'Aperturas inversas': { region: 'posterior', equipment: 'machine', compound: false },
   // Tríceps
   'Press francés': { region: 'lateral-media', equipment: 'barbell', compound: false },
+  'Press cerrado en banca': { region: 'lateral-media', equipment: 'barbell', compound: true },
   'Extensión tríceps polea': { region: 'lateral-media', equipment: 'cable', compound: false },
   'Extensión tríceps sobre la cabeza': { region: 'larga', equipment: 'cable', compound: false },
   'Patada de tríceps': { region: 'aislamiento', equipment: 'dumbbell', compound: false },

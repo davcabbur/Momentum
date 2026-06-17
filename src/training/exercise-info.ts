@@ -33,7 +33,8 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Press Arnold': { howTo: ['Empieza con las palmas hacia ti y gíralas a la vez que subes.', 'Aprieta glúteos y empuja con los talones (como un press militar).', 'Trabaja anterior + lateral; 8–10 reps cargando con cabeza.'] },
   'Elevación en Y en polea': { howTo: ['Cruza el brazo por delante del cuerpo abajo (estira el deltoides).', 'Sube en diagonal hacia fuera y arriba (forma de "Y"), no al frente.', 'Como "desenvainar una espada": tirón lateral, no elevación frontal.'] },
   // Tríceps
-  'Press francés': { howTo: ['Codos quietos apuntando arriba.', 'Baja la barra a la frente/detrás con control.', 'Extiende sin abrir los codos.'] },
+  'Press francés': { howTo: ['Codos quietos apuntando arriba.', 'Baja la barra a la frente/detrás con control (arco atrás = más estiramiento).', 'Extiende sin abrir los codos. (Favorito con barra Z.)'] },
+  'Press cerrado en banca': { howTo: ['Agarre a la anchura de hombros; codos algo pegados.', 'Baja al pecho bajo; gran sobrecarga progresiva (cabezas lateral y media).', 'El tríceps largo se trabaja menos → combínalo con extensión overhead.'] },
   'Extensión tríceps polea': { howTo: ['Cuerpo recto, brazos pegados al torso.', 'Extiende abajo y aguanta; muñecas rectas.', 'Trabaja las cabezas lateral y media.'] },
   'Extensión tríceps sobre la cabeza': { howTo: ['Polea a la cintura; da un paso adelante e inclina.', 'Codos juntos en "V", rango amplio.', 'Enfatiza la cabeza larga.'] },
   'Patada de tríceps': { howTo: ['Codo fijo detrás del cuerpo, brazo en "V".', 'Solo mueve el antebrazo; torso quieto.', 'Aprieta arriba.'] },

@@ -27,6 +27,7 @@ const STARTER: { name: string; muscleGroup: string; pattern: string }[] = [
   { name: 'Press Arnold', muscleGroup: 'hombro', pattern: 'empuje' },
   { name: 'Aperturas inversas', muscleGroup: 'hombro', pattern: 'tiron' },
   { name: 'Press francés', muscleGroup: 'triceps', pattern: 'empuje' },
+  { name: 'Press cerrado en banca', muscleGroup: 'triceps', pattern: 'empuje' },
   { name: 'Extensión tríceps polea', muscleGroup: 'triceps', pattern: 'empuje' },
   { name: 'Extensión tríceps sobre la cabeza', muscleGroup: 'triceps', pattern: 'empuje' },
   { name: 'Patada de tríceps', muscleGroup: 'triceps', pattern: 'empuje' },

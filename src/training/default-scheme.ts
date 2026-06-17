@@ -11,6 +11,7 @@ const COMPOUNDS = new Set([
   'Press Larson',
   'Press militar',
   'Press Arnold',
+  'Press cerrado en banca',
   'Press hombro en máquina',
   'Press militar con barra',
   'Jalón al pecho',
