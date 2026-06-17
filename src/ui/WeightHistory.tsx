@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { goalProgressPct } from '@/bodyweight/goal';
+import { daysBetween, weighInProgress } from '@/bodyweight/goal';
 import { formatKg } from '@/bodyweight/format';
 import { Brand } from '@/constants/theme';
 import { getGoal, listWeights } from '@/db/bodyweight-repo';
@@ -22,16 +22,6 @@ function diffTxt(d: number): string {
 function shortDate(iso: string): string {
   const [, m, d] = iso.split('-');
   return `${d}/${m}`;
-}
-
-/** Mezcla rojo→verde según el progreso (0..1). */
-function progressColor(t: number): string {
-  const a = [248, 113, 113]; // rojo
-  const b = [52, 211, 153]; // verde
-  const r = Math.round(a[0] + (b[0] - a[0]) * t);
-  const g = Math.round(a[1] + (b[1] - a[1]) * t);
-  const bl = Math.round(a[2] + (b[2] - a[2]) * t);
-  return `rgb(${r}, ${g}, ${bl})`;
 }
 
 /** Historial de pesajes: cada entrada con peso, diferencia, barra de progreso, fecha y editar. */
@@ -56,13 +46,24 @@ export function WeightHistory() {
   if (entries.length === 0) return null;
 
   const initialKg = goal?.startKg ?? entries[entries.length - 1].weightKg;
+  // Ritmo semanal estipulado (kg/sem): negativo si el objetivo es bajar.
+  const planned =
+    goal && goal.targetDate
+      ? (goal.targetKg - goal.startKg) / (daysBetween(goal.startDate, goal.targetDate) / 7)
+      : goal
+        ? Math.sign(goal.targetKg - goal.startKg) * 0.5
+        : null;
 
   return (
     <View>
       <Text style={styles.title}>Historial de peso</Text>
-      {entries.map((e) => {
+      {entries.map((e, i) => {
         const diff = e.weightKg - initialKg;
-        const pct = goal ? goalProgressPct({ startKg: goal.startKg, currentTrendKg: e.weightKg, goalKg: goal.targetKg }) : null;
+        const prev = entries[i + 1] ?? (goal ? { date: goal.startDate, weightKg: goal.startKg } : null);
+        const bar =
+          planned != null && prev
+            ? weighInProgress({ change: e.weightKg - prev.weightKg, days: daysBetween(prev.date, e.date), plannedRatePerWeek: planned })
+            : null;
         return (
           <View key={e.date} style={styles.card}>
             <View style={styles.wcol}>
@@ -70,7 +71,7 @@ export function WeightHistory() {
               <Text style={styles.diff}>{diffTxt(diff)}</Text>
             </View>
             <View style={styles.track}>
-              {pct != null && <View style={[styles.fill, { width: `${pct}%`, backgroundColor: progressColor(pct / 100) }]} />}
+              {bar && <View style={[styles.fill, { width: `${bar.pct}%`, backgroundColor: bar.toward ? Brand.good : '#f87171' }]} />}
             </View>
             <Text style={styles.date}>{shortDate(e.date)}</Text>
             <Pressable style={styles.editBtn} hitSlop={8} onPress={() => setEditing(e)}>

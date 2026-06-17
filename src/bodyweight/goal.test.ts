@@ -7,7 +7,28 @@ import {
   suggestGoal,
   estimateTargetDate,
   estimateTargetWeight,
+  weighInProgress,
 } from './goal';
+
+test('weighInProgress: definición (objetivo bajar), perder al ritmo previsto → verde 100%', () => {
+  const r = weighInProgress({ change: -1, days: 7, plannedRatePerWeek: -1 });
+  expect(r.toward).toBe(true);
+  expect(r.pct).toBe(100);
+});
+
+test('weighInProgress: perder la mitad del ritmo → verde 50%', () => {
+  expect(weighInProgress({ change: -0.5, days: 7, plannedRatePerWeek: -1 }).pct).toBe(50);
+});
+
+test('weighInProgress: subir cuando el objetivo es bajar → rojo, % por magnitud', () => {
+  const r = weighInProgress({ change: 0.5, days: 7, plannedRatePerWeek: -1 });
+  expect(r.toward).toBe(false);
+  expect(r.pct).toBe(50);
+});
+
+test('weighInProgress: sin cambio → vacío', () => {
+  expect(weighInProgress({ change: 0, days: 7, plannedRatePerWeek: -1 })).toEqual({ toward: true, pct: 0 });
+});
 
 test('estima días al objetivo cuando se progresa en la dirección correcta', () => {
   // faltan 1 kg, perdiendo 0,25 kg/semana → 28 días

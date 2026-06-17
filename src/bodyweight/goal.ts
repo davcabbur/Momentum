@@ -32,6 +32,24 @@ function clampPct(x: number): number {
   return Math.max(0, Math.min(100, x));
 }
 
+/**
+ * Valora un pesaje frente al anterior: ¿va hacia el objetivo y a qué ritmo?
+ * - toward: true si el cambio va en la dirección del objetivo (verde), false si en contra (rojo).
+ * - pct: magnitud 0..100 respecto al ritmo semanal estipulado (100 = al ritmo previsto o más).
+ * En mantenimiento (ritmo previsto ~0): toward = mantenerse dentro del margen de referencia.
+ */
+export function weighInProgress(p: { change: number; days: number; plannedRatePerWeek: number }): {
+  toward: boolean;
+  pct: number;
+} {
+  if (p.days <= 0 || p.change === 0) return { toward: true, pct: 0 };
+  const actualRate = p.change / (p.days / 7);
+  const ref = Math.abs(p.plannedRatePerWeek) || 0.5;
+  const toward = p.plannedRatePerWeek === 0 ? Math.abs(actualRate) <= ref : Math.sign(actualRate) === Math.sign(p.plannedRatePerWeek);
+  const pct = Math.max(0, Math.min(100, (Math.abs(actualRate) / ref) * 100));
+  return { toward, pct };
+}
+
 /** % del camino recorrido del peso inicial al objetivo (0..100). */
 export function goalProgressPct(p: { startKg: number; currentTrendKg: number; goalKg: number }): number {
   const total = p.startKg - p.goalKg;
