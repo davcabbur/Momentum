@@ -16,6 +16,9 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Aperturas': { howTo: ['Codos semiflexionados y fijos todo el recorrido.', 'Abre hasta estirar (brazos algo por detrás del hombro).', 'Junta apretando el pecho, sin chocar las mancuernas.'] },
   'Fondos': { howTo: ['Inclina el torso adelante para cargar más pecho.', 'Hombros bajos, cuerpo en "flecha"; baja con control.', 'Sube sin bloquear; descanso 1,5–2 min.'] },
   'Cruces en polea': { howTo: ['Poleas altas; ligera inclinación al frente.', 'Codos semiflexionados fijos; junta abajo apretando.', 'Tensión constante: controla la vuelta.'] },
+  'Press de pecho en máquina': { howTo: ['Te bloquea el patrón → gran conexión y bombeo; estira bien abajo.', 'Empuja sin bloquear del todo; controla la vuelta.', 'Seguro para ir al fallo (de los mejores para pecho).'] },
+  'Contractora de pecho': { howTo: ['Pecho apoyado; junta los brazos apretando el pecho.', 'Codos algo flexionados y fijos; estira atrás al volver.', 'Estable y fácil de progresar.'] },
+  'Press cruzado en polea': { howTo: ['Un brazo; presiona cruzando por delante, pasando la línea media.', 'Llega a la contracción final del pecho (que casi ningún ejercicio alcanza).', 'Tensión constante; controla la vuelta.'] },
   'Press declinado': { howTo: ['Banco declinado; baja al pecho inferior.', 'Codos ~45°, control en la bajada.', 'Alternativa "amable" a los fondos.'] },
   'Press Larson': { howTo: ['Como el press banca pero con las piernas en el banco (sin empuje de piernas).', 'Aísla más pecho/hombro/tríceps; agarre algo cerrado = más recorrido.', 'Tempo controlado 1–2 s; suele hacerse a ~75% de tu top set.'] },
   // Hombro

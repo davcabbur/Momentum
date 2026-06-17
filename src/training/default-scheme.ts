@@ -3,6 +3,7 @@ import { type Level } from './levels';
 const COMPOUNDS = new Set([
   'Press inclinado',
   'Press inclinado con barra',
+  'Press de pecho en máquina',
   'Press banca',
   'Press plano mancuerna',
   'Fondos',
@@ -38,6 +39,8 @@ const COMPOUNDS = new Set([
 
 const ISOLATION = new Set([
   'Aperturas',
+  'Contractora de pecho',
+  'Press cruzado en polea',
   'Elevación frontal con disco',
   'Flexiones diamante',
   'Cruces en polea',
