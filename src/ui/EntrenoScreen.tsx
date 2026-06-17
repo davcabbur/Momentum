@@ -107,6 +107,14 @@ export function EntrenoScreen() {
             <Ionicons name="create-outline" size={16} color={Brand.textMuted} />
             <Text style={styles.editTxt}>Editar rutina</Text>
           </Pressable>
+
+          <View style={styles.info}>
+            <Ionicons name="information-circle-outline" size={18} color={Brand.info} />
+            <Text style={styles.infoTxt}>
+              Al registrar, el peso es el total que levantas, incluida la barra (p. ej. barra 20 kg + 20 kg de discos = 40 kg).
+              En dominadas y fondos ya cuenta tu peso corporal.
+            </Text>
+          </View>
         </>
       )}
     </ScrollView>
@@ -134,4 +142,6 @@ const styles = StyleSheet.create({
   dayGo: { color: Brand.accent, fontWeight: '700' },
   edit: { padding: 12, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6, marginTop: 4 },
   editTxt: { color: Brand.textMuted },
+  info: { flexDirection: 'row', gap: 8, backgroundColor: '#1a2330', borderRadius: 12, padding: 12 },
+  infoTxt: { color: '#b9c4d0', fontSize: 12, lineHeight: 18, flex: 1 },
 });
