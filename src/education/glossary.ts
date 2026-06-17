@@ -121,4 +121,14 @@ export const GLOSSARY: GlossaryTerm[] = [
     title: 'Variar el agarre y el ángulo',
     body: 'Cambiar el agarre (ancho/cerrado/neutro) o la dirección del tirón entre series trabaja la espalda y los hombros desde más ángulos, para un desarrollo más completo.',
   },
+  {
+    key: 'pausa',
+    title: 'Repeticiones con pausa',
+    body: 'Parar 1–2 s en la parte baja (estirada) sin rebote y luego subir explosivo. Quita la energía elástica: más difícil con menos peso, y mejora técnica y profundidad.',
+  },
+  {
+    key: 'orientacion-pies',
+    title: 'Orientación de los pies',
+    body: 'En curl femoral y gemelos, girar la punta cambia el énfasis: hacia fuera trabaja más la parte interna; hacia dentro, la externa; rectas, ambas por igual.',
+  },
 ];

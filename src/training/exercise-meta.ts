@@ -61,15 +61,18 @@ export const EXERCISE_META: Record<string, ExMeta> = {
   'Curl Bayesiano': { region: 'larga', equipment: 'cable', compound: false },
   // Pierna
   Sentadilla: { region: 'cuadriceps', equipment: 'barbell', compound: true },
+  'Sentadilla con pausa': { region: 'cuadriceps', equipment: 'barbell', compound: true },
   'Hack squat': { region: 'cuadriceps', equipment: 'machine', compound: true },
   Prensa: { region: 'cuadriceps', equipment: 'machine', compound: true },
   'Peso muerto rumano': { region: 'isquios', equipment: 'barbell', compound: true },
   'Curl femoral': { region: 'isquios', equipment: 'machine', compound: false },
+  'Curl femoral sentado': { region: 'isquios', equipment: 'machine', compound: false },
   'Extensión cuádriceps': { region: 'cuadriceps', equipment: 'machine', compound: false },
   Zancadas: { region: 'accesorio', equipment: 'dumbbell', compound: true },
   'Sentadilla búlgara': { region: 'accesorio', equipment: 'dumbbell', compound: true },
   // Gemelo
   'Gemelo de pie': { region: 'gemelo', equipment: 'machine', compound: false },
+  'Gemelo en prensa': { region: 'gemelo', equipment: 'machine', compound: false },
   // Glúteo
   'Hip thrust': { region: 'mayor', equipment: 'barbell', compound: true },
   'Hip thrust en máquina': { region: 'mayor', equipment: 'machine', compound: true },
@@ -81,6 +84,7 @@ export const EXERCISE_META: Record<string, ExMeta> = {
   'Abducción de cadera': { region: 'medio', equipment: 'machine', compound: false },
   // Core
   Crunch: { region: 'recto', equipment: 'bodyweight', compound: false },
+  'Crunch declinado': { region: 'recto', equipment: 'bodyweight', compound: false },
   'Elevación de piernas': { region: 'inferior', equipment: 'bodyweight', compound: false },
   'Rotación de torso': { region: 'oblicuos', equipment: 'cable', compound: false },
   Plancha: { region: 'total', equipment: 'bodyweight', compound: false },

@@ -55,14 +55,17 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Curl Bayesiano': { howTo: ['En polea, brazo por detrás del cuerpo → cabeza larga.', 'Tensión constante; supina desde el inicio.', 'Estira en el punto bajo.'] },
   // Pierna
   'Sentadilla': { howTo: ['Profunda (más rango = más glúteo).', 'Rodillas siguen la punta de los pies; core firme.', 'Principiante: hack o prensa, más estables.'] },
+  'Sentadilla con pausa': { howTo: ['Pausa de 1–2 s abajo (sin rebote) y explota hacia arriba.', 'Barra recta sobre el medio del pie; ~75% de tu top set.', 'Asegura profundidad y técnica con menos carga.'] },
   'Hack squat': { howTo: ['Espalda apoyada; baja profundo.', 'Rodillas hacia las puntas.', 'Empuja con todo el pie.'] },
   'Prensa': { howTo: ['Pies a la anchura de hombros; baja con control.', 'No bloquees las rodillas arriba.', 'No despegues la lumbar del respaldo.'] },
   'Peso muerto rumano': { howTo: ['Enfoca isquios: estira en la bajada.', 'Barra cerca de las piernas; caderas atrás.', 'Sube empujando las caderas; lumbar neutra.'] },
   'Curl femoral': { howTo: ['Aísla isquios; rango completo.', 'Aprieta arriba, baja lento.', 'No arquees la lumbar.'] },
+  'Curl femoral sentado': { howTo: ['Mejor que tumbado: más estiramiento del isquio.', 'Torso adelante hasta notar tensión antes de empezar.', 'Puntas hacia dentro = isquio interno; hacia fuera = externo.'] },
   'Extensión cuádriceps': { howTo: ['Sube y aprieta el cuádriceps arriba.', 'Bajada controlada.', 'Ajusta el respaldo a tu rodilla.'] },
   'Zancadas': { howTo: ['Baja lento, cuida la alineación de la rodilla.', 'Paso largo = más glúteo.', 'Elige la variante donde controles el equilibrio.'] },
   'Sentadilla búlgara': { howTo: ['Pie trasero elevado; baja recto.', 'Torso algo inclinado = más glúteo.', 'Controla el equilibrio.'] },
   'Gemelo de pie': { howTo: ['Superficie elevada para más rango.', 'Sube y aprieta arriba; baja estirando.', 'Puntas rectas por defecto.'] },
+  'Gemelo en prensa': { howTo: ['Sentado en la prensa, empuja con la punta; rango completo.', 'Aprieta arriba y estira abajo.', 'Puntas fuera = gemelo interno; dentro = externo; rectas = ambos.'] },
   // Glúteo
   'Hip thrust': { howTo: ['Piernas a ≤90°, pies planos, torso recto.', 'Aprieta los glúteos arriba; core en tensión.', 'No curves la lumbar. Progresa subiendo peso (5–15 reps).'] },
   'Hip thrust en máquina': { howTo: ['Cinturón sobre la cadera; pies planos.', 'Empuja con los talones y aprieta el glúteo arriba.', 'Más cómodo y estable que con barra; gran progresión de peso.'] },
@@ -74,6 +77,7 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Abducción de cadera': { howTo: ['Máquina; inclina el torso algo adelante para estirar.', 'Trabaja en el rango 90–45°.', 'Control en la vuelta.'] },
   // Core
   'Crunch': { howTo: ['Recorrido completo: acerca las costillas a las caderas.', 'Flexiona la columna, no tires del cuello.', 'Añade peso para progresar.'] },
+  'Crunch declinado': { howTo: ['Disco en el pecho; redondea la lumbar al subir (no flexiones solo la cadera).', 'Aprieta el abdomen; baja con control.', 'Progresa añadiendo peso o reps.'] },
   'Elevación de piernas': { howTo: ['Sube las piernas con control, sin balanceo.', 'Mantén el core en tensión.', 'Colgado o tumbado.'] },
   'Rotación de torso': { howTo: ['Trabaja oblicuos; gira desde el tronco.', 'Control, sin tirones.', 'Mantén la cadera estable.'] },
   'Plancha': { howTo: ['Cuerpo recto, glúteos y core apretados.', 'No hundas la cadera.', 'Respira y aguanta el tiempo objetivo.'] },
