@@ -38,11 +38,14 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Flexiones diamante': { howTo: ['Manos juntas en diamante bajo el pecho → más tríceps.', 'Cuerpo recto; baja controlando, no te dejes caer.', 'Genial como serie final al fallo (AMRAP).'] },
   // Espalda
   'Jalón al pecho': { howTo: ['Tira llevando los codos a los dorsales, no con los brazos.', 'Agarre medio/neutro; baja la barra al pecho alto.', '"Baja la barra", no "súbete tú"; controla la subida.'] },
+  'Jalón unilateral arrodillado': { howTo: ['Medio arrodillado, mano libre apoyada en la rodilla (base estable).', 'Para en la línea media (más atrás el dorsal pierde palanca).', 'Antebrazo en línea con el cable; controla la negativa.'] },
   'Remo mancuerna': { howTo: ['Codo pegado al torso, negativa lenta.', 'Recorrido completo; no te pares a la mitad.', 'Torso estable, sin balanceo.'] },
   'Remo barra': { howTo: ['Torso a 30–45°, lumbar dentro (sin "modo trucha").', 'Lleva la barra al abdomen; codos en flecha.', 'Sin balanceo.'] },
   'Dominadas': { howTo: ['Misma técnica que el jalón: codos a las costillas.', 'Recorrido completo: estira abajo, pecho a la barra.', 'Core en tensión, no cruces las piernas.'] },
   'Remo Gironda': { howTo: ['Agarre cerrado/neutro; lleva al ombligo en horizontal.', 'Codos pegados; saca pecho al final.', 'Dorso recto.'] },
   'Remo en máquina': { howTo: ['Apoya el pecho en el respaldo (sin balanceo).', 'Tira llevando los codos atrás y aprieta las escápulas.', 'Varía el agarre entre series (ancho/cerrado/neutro) para toda la espalda.'] },
+  'Remo croc': { howTo: ['Remo con mancuerna algo más erguido, con "trampa controlada".', 'Usa algo de impulso abajo (la espalda es fuerte ahí), pero controla la negativa.', 'Permite cargar más y llegar al fallo real del dorsal.'] },
+  'Encogimiento en polea': { howTo: ['Encoge hacia arriba y hacia dentro (el trapecio superior abre en horizontal).', 'Cómodo y sin cargar discos; aprieta arriba.', 'Sin balancear.'] },
   'Pullover': { howTo: ['Estira los dorsales arriba con control.', 'Codos semifijos; lleva la mancuerna por encima.', 'Siente el estiramiento.'] },
   'Encogimiento de hombros': { howTo: ['Sube los hombros recto (sin rotar).', 'Ligera inclinación adelante; manos algo separadas.', 'Aprieta el trapecio arriba.'] },
   'Face pull': { howTo: ['Polea a la cara; tira llevando los codos atrás.', 'Brazos rectos (sin rotación) para alinear la fuerza.', 'Aprieta el deltoides posterior.'] },
@@ -56,6 +59,7 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Curl predicador': { howTo: ['Brazo apoyado por delante; no despegues el codo.', 'Estira abajo con control.', 'La mitad baja (estirada) es la que más crece.'] },
   'Curl con barra Z': { howTo: ['Barra Z para cuidar las muñecas; supina al subir.', 'Algo de impulso de cadera al inicio vale; controla la bajada.', 'Úsalo pesado a 6–8 reps (sobrecarga progresiva).'] },
   'Curl Bayesiano': { howTo: ['En polea, brazo por detrás del cuerpo → cabeza larga.', 'Tensión constante; supina desde el inicio.', 'Estira en el punto bajo.'] },
+  'Curl overhead en polea': { howTo: ['Arrodillado, brazo a la altura del hombro y curl hacia la cabeza.', 'Sesga la cabeza larga (el "pico" del bíceps).', 'Tensión constante; control en la bajada.'] },
   // Pierna
   'Sentadilla': { howTo: ['Profunda (más rango = más glúteo).', 'Rodillas siguen la punta de los pies; core firme.', 'Principiante: hack o prensa, más estables.'] },
   'Sentadilla con pausa': { howTo: ['Pausa de 1–2 s abajo (sin rebote) y explota hacia arriba.', 'Barra recta sobre el medio del pie; ~75% de tu top set.', 'Asegura profundidad y técnica con menos carga.'] },

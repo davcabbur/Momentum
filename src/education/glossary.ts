@@ -146,4 +146,9 @@ export const GLOSSARY: GlossaryTerm[] = [
     title: 'Serie al fallo (AMRAP)',
     body: '"Tantas reps como puedas" hasta el fallo con buena técnica. Va bien como última serie de un ejercicio, sin nada después que interfiera.',
   },
+  {
+    key: 'trampa-controlada',
+    title: 'Trampa controlada (body english)',
+    body: 'Usar un poco de impulso para mover más peso y llegar al fallo real del músculo, controlando siempre la bajada. Útil de vez en cuando (sobre todo en espalda), no en todo.',
+  },
 ];
