@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { Brand } from '@/constants/theme';
-import { addFoodEntry } from '@/db/food-repo';
+import { addFoodEntry, listKnownFoods } from '@/db/food-repo';
 import { portionMacros, type Macros } from '@/nutrition/macros';
+import { searchProducts } from '@/nutrition/openfoodfacts';
 
 function num(s: string): number {
   return parseFloat(s.replace(',', '.')) || 0;
@@ -31,6 +32,9 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
   const [carb, setCarb] = useState('');
   const [fat, setFat] = useState('');
   const [barcode, setBarcode] = useState<string | null>(null);
+  const [known, setKnown] = useState<{ name: string; per100: Macros }[]>([]);
+  const [offResults, setOffResults] = useState<{ name: string; per100: Macros }[]>([]);
+  const [searching, setSearching] = useState(false);
 
   function reset() {
     setName('');
@@ -58,10 +62,54 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
     }
   }, [visible, prefill]);
 
+  useEffect(() => {
+    if (visible) listKnownFoods().then(setKnown);
+  }, [visible]);
+
+  // Búsqueda por nombre en Open Food Facts (con debounce).
+  useEffect(() => {
+    const term = name.trim();
+    if (!visible || term.length < 3) {
+      setOffResults([]);
+      setSearching(false);
+      return;
+    }
+    let active = true;
+    setSearching(true);
+    const id = setTimeout(async () => {
+      const res = await searchProducts(term);
+      if (active) {
+        setOffResults(res);
+        setSearching(false);
+      }
+    }, 450);
+    return () => {
+      active = false;
+      clearTimeout(id);
+    };
+  }, [name, visible]);
+
   const g = num(grams);
   const per100 = { kcal: num(kcal), protein: num(prot), carbs: num(carb), fat: num(fat) };
   const preview = portionMacros(per100, g);
   const canSave = name.trim().length > 0 && g > 0 && num(kcal) > 0;
+
+  const q = name.trim().toLowerCase();
+  const localMatches = q.length >= 1 ? known.filter((k) => k.name.toLowerCase().includes(q) && k.name.toLowerCase() !== q) : [];
+  const localNames = new Set(localMatches.map((k) => k.name.toLowerCase()));
+  const offMatches = offResults.filter((o) => o.name.toLowerCase() !== q && !localNames.has(o.name.toLowerCase()));
+  const suggestions = [
+    ...localMatches.map((k) => ({ ...k, fromDb: false })),
+    ...offMatches.map((o) => ({ ...o, fromDb: true })),
+  ].slice(0, 8);
+
+  function pick(s: { name: string; per100: Macros }) {
+    setName(s.name);
+    setKcal(String(s.per100.kcal));
+    setProt(String(s.per100.protein));
+    setCarb(String(s.per100.carbs));
+    setFat(String(s.per100.fat));
+  }
 
   async function save() {
     if (!canSave) return;
@@ -88,6 +136,20 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
 
             <Text style={styles.lbl}>Nombre</Text>
             <TextInput value={name} onChangeText={setName} placeholder="p. ej. Avena" placeholderTextColor={Brand.textMuted} style={styles.input} />
+            {(suggestions.length > 0 || searching) && (
+              <View style={styles.suggBox}>
+                {suggestions.map((s) => (
+                  <Pressable key={(s.fromDb ? 'off:' : 'mio:') + s.name} style={styles.sugg} onPress={() => pick(s)}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.suggName}>{s.name}</Text>
+                      <Text style={styles.suggSrc}>{s.fromDb ? 'Open Food Facts' : 'Ya registrado'}</Text>
+                    </View>
+                    <Text style={styles.suggMacro}>{s.per100.kcal} kcal/100 g</Text>
+                  </Pressable>
+                ))}
+                {searching && <Text style={styles.suggSearching}>Buscando en Open Food Facts…</Text>}
+              </View>
+            )}
 
             <Text style={styles.lbl}>Ración (gramos)</Text>
             <TextInput value={grams} onChangeText={setGrams} keyboardType="decimal-pad" placeholder="g" placeholderTextColor={Brand.textMuted} style={styles.input} />
@@ -137,6 +199,12 @@ const styles = StyleSheet.create({
   lbl: { color: Brand.textMuted, fontSize: 12, marginTop: 8 },
   section: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 14 },
   input: { color: Brand.text, fontSize: 18, fontWeight: '700', backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, marginTop: 4 },
+  suggBox: { backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, marginTop: 6, overflow: 'hidden' },
+  sugg: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: Brand.cardBorder },
+  suggName: { color: Brand.text, fontSize: 14, fontWeight: '600' },
+  suggSrc: { color: Brand.textMuted, fontSize: 10, marginTop: 1 },
+  suggMacro: { color: Brand.textMuted, fontSize: 12, marginLeft: 8 },
+  suggSearching: { color: Brand.textMuted, fontSize: 12, fontStyle: 'italic', padding: 12 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 },
   field: { flexBasis: '47%', flexGrow: 1 },
   fieldLbl: { color: Brand.textMuted, fontSize: 12 },

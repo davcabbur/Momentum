@@ -1,4 +1,4 @@
-import { asc, eq, gte } from 'drizzle-orm';
+import { asc, desc, eq, gte } from 'drizzle-orm';
 
 import type { Macros } from '@/nutrition/macros';
 import { db } from './client';
@@ -33,6 +33,36 @@ export async function intakeByDay(fromDate: string): Promise<{ date: string; kca
   const map = new Map<string, number>();
   for (const r of rows) map.set(r.date, (map.get(r.date) ?? 0) + r.kcal);
   return [...map.entries()].map(([date, kcal]) => ({ date, kcal }));
+}
+
+/** Alimentos conocidos (registrados o escaneados) con sus valores por 100 g, para autocompletar. */
+export async function listKnownFoods(): Promise<{ name: string; per100: Macros }[]> {
+  const entries = await db.select().from(foodEntry).orderBy(desc(foodEntry.id));
+  const products = await db.select().from(foodProduct);
+  const out: { name: string; per100: Macros }[] = [];
+  const seen = new Set<string>();
+  for (const e of entries) {
+    const key = e.name.toLowerCase();
+    if (seen.has(key) || !e.grams || e.grams <= 0) continue;
+    seen.add(key);
+    const f = 100 / e.grams;
+    out.push({
+      name: e.name,
+      per100: {
+        kcal: Math.round(e.kcal * f),
+        protein: Math.round(e.protein * f * 10) / 10,
+        carbs: Math.round(e.carbs * f * 10) / 10,
+        fat: Math.round(e.fat * f * 10) / 10,
+      },
+    });
+  }
+  for (const p of products) {
+    const key = p.name.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ name: p.name, per100: { kcal: p.kcal100, protein: p.protein100, carbs: p.carbs100, fat: p.fat100 } });
+  }
+  return out;
 }
 
 /** Caché de productos escaneados: lee uno por código de barras. */
