@@ -10,7 +10,7 @@ import { getProfile, listWeights } from '@/db/bodyweight-repo';
 import { deleteSet, exerciseE1rmHistory, getLastPerformance, getOrCreateSession, listSets, upsertSet, type SetLog } from '@/db/workout-repo';
 import { muscleView } from '@/training/muscle-map';
 import { exerciseInfo } from '@/training/exercise-info';
-import { isBodyweightLoaded } from '@/training/exercise-meta';
+import { exerciseMeta, isBodyweightLoaded } from '@/training/exercise-meta';
 import { schemeForLevel, type Level } from '@/training/levels';
 import { progressionHint, type ProgressionHint } from '@/training/progression';
 import { detectStall } from '@/training/intelligence';
@@ -75,6 +75,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
   const info = exerciseInfo(exerciseName);
   const mv = muscleView(muscleGroup ?? '');
   const bwLoaded = isBodyweightLoaded(exerciseName);
+  const isBarbell = exerciseMeta(exerciseName)?.equipment === 'barbell';
   const workSets = sets.filter((s) => s.setType !== 'warmup').length;
   const volWarn = exerciseSetWarning(workSets, schemeSets);
 
@@ -219,6 +220,9 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
               <Text style={styles.bwNote}>
                 El peso incluye tu peso corporal{bodyweight ? ` (~${bodyweight} kg)` : ''}. Súbelo si usas lastre.
               </Text>
+            )}
+            {isBarbell && !bwLoaded && (
+              <Text style={styles.bwNote}>Anota el peso total, incluida la barra (p. ej. barra 20 kg + 20 kg discos = 40 kg).</Text>
             )}
 
             {/* Técnica (mapa muscular + cómo hacerlo), plegado por defecto. */}
