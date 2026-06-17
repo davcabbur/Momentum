@@ -21,6 +21,8 @@ const COMPOUNDS = new Set([
   'Zancadas',
   'Sentadilla búlgara',
   'Hip thrust',
+  'Hip thrust en máquina',
+  'Subida al cajón',
 ]);
 
 const ISOLATION = new Set([
@@ -54,6 +56,8 @@ const ISOLATION = new Set([
   'Rotación de torso',
   'Plancha',
   'Puente de glúteo',
+  'Hip thrust unilateral',
+  'Hiperextensión 45°',
   'Patada de glúteo',
   'Abducción de cadera',
   'Colgarse en barra',

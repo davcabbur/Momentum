@@ -67,7 +67,11 @@ export const EXERCISE_META: Record<string, ExMeta> = {
   'Gemelo de pie': { region: 'gemelo', equipment: 'machine', compound: false },
   // Glúteo
   'Hip thrust': { region: 'mayor', equipment: 'barbell', compound: true },
+  'Hip thrust en máquina': { region: 'mayor', equipment: 'machine', compound: true },
+  'Hip thrust unilateral': { region: 'medio', equipment: 'dumbbell', compound: false },
   'Puente de glúteo': { region: 'mayor', equipment: 'bodyweight', compound: true },
+  'Subida al cajón': { region: 'medio', equipment: 'dumbbell', compound: true },
+  'Hiperextensión 45°': { region: 'mayor', equipment: 'bodyweight', compound: false },
   'Patada de glúteo': { region: 'medio', equipment: 'cable', compound: false },
   'Abducción de cadera': { region: 'medio', equipment: 'machine', compound: false },
   // Core

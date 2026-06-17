@@ -59,7 +59,11 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Sentadilla búlgara': { howTo: ['Pie trasero elevado; baja recto.', 'Torso algo inclinado = más glúteo.', 'Controla el equilibrio.'] },
   'Gemelo de pie': { howTo: ['Superficie elevada para más rango.', 'Sube y aprieta arriba; baja estirando.', 'Puntas rectas por defecto.'] },
   // Glúteo
-  'Hip thrust': { howTo: ['Piernas a ≤90°, pies planos, torso recto.', 'Aprieta los glúteos arriba; core en tensión.', 'No curves la lumbar.'] },
+  'Hip thrust': { howTo: ['Piernas a ≤90°, pies planos, torso recto.', 'Aprieta los glúteos arriba; core en tensión.', 'No curves la lumbar. Progresa subiendo peso (5–15 reps).'] },
+  'Hip thrust en máquina': { howTo: ['Cinturón sobre la cadera; pies planos.', 'Empuja con los talones y aprieta el glúteo arriba.', 'Más cómodo y estable que con barra; gran progresión de peso.'] },
+  'Hip thrust unilateral': { howTo: ['Una pierna; controla el equilibrio (enfatiza el glúteo superior).', '12–15 reps por lado, sin ir pesado.', 'Corrige descompensaciones izquierda/derecha.'] },
+  'Subida al cajón': { howTo: ['Cajón a la altura de la rodilla o algo más alto.', 'Sube empujando con el talón, sin impulso de la otra pierna.', 'Inclínate algo al frente para cargar más glúteo que cuádriceps.'] },
+  'Hiperextensión 45°': { howTo: ['Extiende la cadera; redondea un poco la espalda alta para sentir el glúteo.', 'Aprieta arriba sin hiperextender la lumbar.', 'Progresa con reps o sujetando un disco al pecho.'] },
   'Puente de glúteo': { howTo: ['En el suelo; aprieta los glúteos arriba.', 'Core firme; no arquees la lumbar.', 'En casa: con mancuerna sobre la cadera.'] },
   'Patada de glúteo': { howTo: ['En polea: patada en diagonal/abducción (no vertical).', 'Estabiliza el torso.', 'Aprieta el glúteo arriba.'] },
   'Abducción de cadera': { howTo: ['Máquina; inclina el torso algo adelante para estirar.', 'Trabaja en el rango 90–45°.', 'Control en la vuelta.'] },
