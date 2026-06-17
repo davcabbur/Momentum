@@ -72,6 +72,10 @@ export const EXERCISE_META: Record<string, ExMeta> = {
   'Hack squat': { region: 'cuadriceps', equipment: 'machine', compound: true },
   Prensa: { region: 'cuadriceps', equipment: 'machine', compound: true },
   'Peso muerto rumano': { region: 'isquios', equipment: 'barbell', compound: true },
+  'Peso muerto': { region: 'isquios', equipment: 'barbell', compound: true },
+  'Peso muerto con barra trap': { region: 'cuadriceps', equipment: 'barbell', compound: true },
+  'Peso muerto piernas rígidas': { region: 'isquios', equipment: 'barbell', compound: true },
+  'Curl nórdico': { region: 'isquios', equipment: 'bodyweight', compound: false },
   'Curl femoral': { region: 'isquios', equipment: 'machine', compound: false },
   'Curl femoral sentado': { region: 'isquios', equipment: 'machine', compound: false },
   'Extensión cuádriceps': { region: 'cuadriceps', equipment: 'machine', compound: false },
@@ -80,6 +84,7 @@ export const EXERCISE_META: Record<string, ExMeta> = {
   // Gemelo
   'Gemelo de pie': { region: 'gemelo', equipment: 'machine', compound: false },
   'Gemelo en prensa': { region: 'gemelo', equipment: 'machine', compound: false },
+  'Gemelo sentado': { region: 'soleo', equipment: 'machine', compound: false },
   // Glúteo
   'Hip thrust': { region: 'mayor', equipment: 'barbell', compound: true },
   'Hip thrust en máquina': { region: 'mayor', equipment: 'machine', compound: true },

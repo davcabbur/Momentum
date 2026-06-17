@@ -151,4 +151,9 @@ export const GLOSSARY: GlossaryTerm[] = [
     title: 'Trampa controlada (body english)',
     body: 'Usar un poco de impulso para mover más peso y llegar al fallo real del músculo, controlando siempre la bajada. Útil de vez en cuando (sobre todo en espalda), no en todo.',
   },
+  {
+    key: 'periodizacion-lineal',
+    title: 'Periodización lineal',
+    body: 'Bajar las reps a la vez que subes el peso semana a semana (p. ej. 5→4→3→2→1) y luego una semana de descarga. Clásico para ganar fuerza en los básicos.',
+  },
 ];

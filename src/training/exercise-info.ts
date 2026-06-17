@@ -66,6 +66,10 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Hack squat': { howTo: ['Espalda apoyada; baja profundo.', 'Rodillas hacia las puntas.', 'Empuja con todo el pie.'] },
   'Prensa': { howTo: ['Pies a la anchura de hombros; baja con control.', 'No bloquees las rodillas arriba.', 'No despegues la lumbar del respaldo.'] },
   'Peso muerto rumano': { howTo: ['Enfoca isquios: estira en la bajada.', 'Barra cerca de las piernas; caderas atrás.', 'Sube empujando las caderas; lumbar neutra.'] },
+  'Peso muerto': { howTo: ['Bisagra de cadera; barra pegada y recta sobre el medio del pie.', 'Pecho arriba, lumbar neutra; sube empujando el suelo.', 'Top set pesado (RPE 8–9); muy fatigante, dosifícalo.'] },
+  'Peso muerto con barra trap': { howTo: ['Dentro de la barra hexagonal; torso más erguido → más cuádriceps.', 'Bisagra y empuje del suelo; lumbar neutra.', 'Alternativa más amable para la espalda.'] },
+  'Peso muerto piernas rígidas': { howTo: ['Caderas altas y rodillas casi rectas; bisagra de cadera.', '~50–60% del top set; estira isquios sin forzar el rango al inicio.', 'Controla la negativa.'] },
+  'Curl nórdico': { howTo: ['Tobillos fijos; baja resistiendo al máximo (negativa).', 'Empuja con las manos abajo para volver arriba.', 'Isquios; muy duro, empieza con asistencia.'] },
   'Curl femoral': { howTo: ['Aísla isquios; rango completo.', 'Aprieta arriba, baja lento.', 'No arquees la lumbar.'] },
   'Curl femoral sentado': { howTo: ['Mejor que tumbado: más estiramiento del isquio.', 'Torso adelante hasta notar tensión antes de empezar.', 'Puntas hacia dentro = isquio interno; hacia fuera = externo.'] },
   'Extensión cuádriceps': { howTo: ['Sube y aprieta el cuádriceps arriba.', 'Bajada controlada.', 'Ajusta el respaldo a tu rodilla.'] },
@@ -73,6 +77,7 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Sentadilla búlgara': { howTo: ['Pie trasero elevado; baja recto.', 'Torso algo inclinado = más glúteo.', 'Controla el equilibrio.'] },
   'Gemelo de pie': { howTo: ['Superficie elevada para más rango.', 'Sube y aprieta arriba; baja estirando.', 'Puntas rectas por defecto.'] },
   'Gemelo en prensa': { howTo: ['Sentado en la prensa, empuja con la punta; rango completo.', 'Aprieta arriba y estira abajo.', 'Puntas fuera = gemelo interno; dentro = externo; rectas = ambos.'] },
+  'Gemelo sentado': { howTo: ['Rodilla flexionada → trabaja el sóleo; rango completo.', 'Aprieta arriba, estira abajo; reps altas.', 'Complementa al gemelo de pie (rodilla recta = gastrocnemio).'] },
   // Glúteo
   'Hip thrust': { howTo: ['Piernas a ≤90°, pies planos, torso recto.', 'Aprieta los glúteos arriba; core en tensión.', 'No curves la lumbar. Progresa subiendo peso (5–15 reps).'] },
   'Hip thrust en máquina': { howTo: ['Cinturón sobre la cadera; pies planos.', 'Empuja con los talones y aprieta el glúteo arriba.', 'Más cómodo y estable que con barra; gran progresión de peso.'] },
