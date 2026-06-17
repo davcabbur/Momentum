@@ -65,14 +65,16 @@ export function WeightHistory() {
         const pct = goal ? goalProgressPct({ startKg: goal.startKg, currentTrendKg: e.weightKg, goalKg: goal.targetKg }) : null;
         return (
           <View key={e.date} style={styles.card}>
-            <Text style={styles.kg}>{formatKg(e.weightKg)}</Text>
-            <Text style={styles.diff}>{diffTxt(diff)}</Text>
+            <View style={styles.wcol}>
+              <Text style={styles.kg}>{formatKg(e.weightKg)}</Text>
+              <Text style={styles.diff}>{diffTxt(diff)}</Text>
+            </View>
             <View style={styles.track}>
               {pct != null && <View style={[styles.fill, { width: `${pct}%`, backgroundColor: progressColor(pct / 100) }]} />}
             </View>
             <Text style={styles.date}>{shortDate(e.date)}</Text>
             <Pressable style={styles.editBtn} hitSlop={8} onPress={() => setEditing(e)}>
-              <Ionicons name="create-outline" size={18} color={Brand.accent} />
+              <Ionicons name="pencil" size={18} color={Brand.accent} />
             </Pressable>
           </View>
         );
@@ -95,8 +97,9 @@ export function WeightHistory() {
 const styles = StyleSheet.create({
   title: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 4, marginBottom: 6 },
   card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  kg: { color: Brand.text, fontSize: 15, fontWeight: '800', minWidth: 64 },
-  diff: { color: Brand.textMuted, fontSize: 12, minWidth: 44 },
+  wcol: { minWidth: 70 },
+  kg: { color: Brand.text, fontSize: 16, fontWeight: '800' },
+  diff: { color: Brand.textMuted, fontSize: 12, marginTop: 1 },
   track: { flex: 1, height: 7, backgroundColor: Brand.track, borderRadius: 99, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: 99 },
   date: { color: Brand.textMuted, fontSize: 12, minWidth: 38, textAlign: 'right' },
