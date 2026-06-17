@@ -65,7 +65,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
   const [schemeSets, setSchemeSets] = useState(3);
   const [hint, setHint] = useState<ProgressionHint | null>(null);
   const [editing, setEditing] = useState<Editing | null>(null);
-  const [showHow, setShowHow] = useState(true);
+  const [showHow, setShowHow] = useState(false);
   const [restGoal, setRestGoal] = useState(120);
   const [restLeft, setRestLeft] = useState(0);
   const [bodyweight, setBodyweight] = useState<number | null>(null);
@@ -214,47 +214,35 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
         <Pressable style={styles.sheet} onPress={() => {}}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text style={styles.title}>{exerciseName}</Text>
-
-            {mv ? (
-              <View style={styles.bodyBox}>
-                <Body
-                  data={[{ slug: mv.slug, intensity: 1 }]}
-                  side={mv.side}
-                  gender="male"
-                  colors={[Brand.accent]}
-                  defaultFill="#2e2e3a"
-                  border="none"
-                  scale={0.62}
-                />
-                <Text style={styles.bodyCaption}>Músculo principal: {muscleGroup}</Text>
-              </View>
-            ) : (
-              <View style={styles.imagePlaceholder}>
-                <Ionicons name="barbell-outline" size={34} color={Brand.textMuted} />
-                <Text style={styles.placeholderTxt}>{muscleGroup ?? 'ejercicio'}</Text>
-              </View>
-            )}
-
-            {info && (
-              <View style={styles.howBox}>
-                <Pressable style={styles.howHead} onPress={() => setShowHow((v) => !v)}>
-                  <Text style={styles.howTitle}>Cómo hacerlo</Text>
-                  <Ionicons name={showHow ? 'chevron-up' : 'chevron-down'} size={16} color={Brand.accent} />
-                </Pressable>
-                {showHow &&
-                  info.howTo.map((cue, i) => (
-                    <Text key={i} style={styles.cue}>
-                      • {cue}
-                    </Text>
-                  ))}
-              </View>
-            )}
-
             <Text style={styles.target}>🎯 {target}</Text>
             {bwLoaded && (
               <Text style={styles.bwNote}>
                 El peso incluye tu peso corporal{bodyweight ? ` (~${bodyweight} kg)` : ''}. Súbelo si usas lastre.
               </Text>
+            )}
+
+            {/* Técnica (mapa muscular + cómo hacerlo), plegado por defecto. */}
+            {(mv || info) && (
+              <View style={styles.howBox}>
+                <Pressable style={styles.howHead} onPress={() => setShowHow((v) => !v)}>
+                  <Text style={styles.howTitle}>Cómo hacerlo {muscleGroup ? `· ${muscleGroup}` : ''}</Text>
+                  <Ionicons name={showHow ? 'chevron-up' : 'chevron-down'} size={16} color={Brand.accent} />
+                </Pressable>
+                {showHow && (
+                  <>
+                    {mv && (
+                      <View style={styles.bodyBox}>
+                        <Body data={[{ slug: mv.slug, intensity: 1 }]} side={mv.side} gender="male" colors={[Brand.accent]} defaultFill="#2e2e3a" border="none" scale={0.5} />
+                      </View>
+                    )}
+                    {info?.howTo.map((cue, i) => (
+                      <Text key={i} style={styles.cue}>
+                        • {cue}
+                      </Text>
+                    ))}
+                  </>
+                )}
+              </View>
             )}
             {last && (
               <Text style={styles.last}>Última vez: {last.sets.map((s) => `${s.weightKg}×${s.reps}`).join('  ')}</Text>
