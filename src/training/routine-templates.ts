@@ -7,18 +7,20 @@ export interface RoutineTemplate {
 }
 
 /** Ejercicios por defecto por tipo de día (nombres del catálogo inicial). */
+// Ejercicios por defecto por día, elegidos con las tier-lists (S/A): compuestos primero,
+// cubriendo las regiones de cada músculo. Editables después por el usuario.
 const DAY_EXERCISES: Record<string, string[]> = {
-  empuje: ['Press inclinado', 'Press banca', 'Press militar', 'Elevaciones laterales', 'Press francés'],
-  tiron: ['Jalón al pecho', 'Remo mancuerna', 'Remo barra', 'Curl bíceps'],
-  pierna: ['Sentadilla', 'Zancadas', 'Peso muerto rumano', 'Hip thrust', 'Curl femoral', 'Gemelo de pie'],
-  torso: ['Press inclinado', 'Jalón al pecho', 'Press militar', 'Curl bíceps', 'Press francés'],
-  fullbody: ['Press inclinado', 'Jalón al pecho', 'Sentadilla', 'Press militar', 'Curl bíceps'],
-  // 4 esenciales por región: inclinado (superior), banca (medio), aperturas (aísla), fondos (inferior)
-  pecho: ['Press inclinado', 'Press banca', 'Aperturas', 'Fondos'],
-  espalda: ['Jalón al pecho', 'Remo mancuerna', 'Remo Gironda', 'Encogimiento de hombros', 'Face pull'],
-  hombro: ['Press militar', 'Elevaciones laterales', 'Pájaros'],
-  brazo: ['Curl inclinado', 'Curl martillo', 'Curl inverso', 'Extensión tríceps polea', 'Extensión tríceps sobre la cabeza'],
-  core: ['Crunch', 'Elevación de piernas', 'Rotación de torso'],
+  empuje: ['Press inclinado', 'Press de pecho en máquina', 'Press militar', 'Elevaciones laterales en polea', 'Extensión tríceps sobre la cabeza'],
+  tiron: ['Jalón al pecho', 'Remo en máquina', 'Remo Gironda', 'Face pull', 'Curl predicador', 'Curl martillo'],
+  pierna: ['Sentadilla', 'Extensión cuádriceps', 'Peso muerto rumano', 'Curl femoral sentado', 'Hip thrust', 'Gemelo de pie'],
+  torso: ['Press inclinado', 'Jalón al pecho', 'Remo en máquina', 'Elevaciones laterales en polea', 'Extensión tríceps sobre la cabeza', 'Curl predicador'],
+  fullbody: ['Sentadilla', 'Press inclinado', 'Remo en máquina', 'Press militar', 'Curl martillo'],
+  // Músculo por día: cubre las regiones con los mejores de cada tier-list.
+  pecho: ['Press inclinado', 'Press de pecho en máquina', 'Contractora de pecho', 'Fondos'],
+  espalda: ['Jalón al pecho', 'Remo en máquina', 'Remo Gironda', 'Pullover en polea', 'Face pull'],
+  hombro: ['Press militar', 'Elevaciones laterales en polea', 'Elevación lateral inclinada', 'Cruce inverso en polea'],
+  brazo: ['Curl predicador', 'Curl martillo', 'Curl con barra Z', 'Extensión tríceps sobre la cabeza', 'Extensión tríceps polea'],
+  core: ['Crunch declinado', 'Elevación de piernas', 'Rotación de torso'],
 };
 
 export function exercisesForType(type: string): string[] {
