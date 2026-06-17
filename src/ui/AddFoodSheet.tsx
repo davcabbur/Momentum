@@ -100,12 +100,19 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
               <Field label="Grasa" value={fat} onChange={setFat} />
             </View>
 
-            <Text style={styles.preview}>
-              Ración: {preview.kcal} kcal · P {preview.protein} · C {preview.carbs} · G {preview.fat}
-            </Text>
+            {/* Macros ajustados a la ración (en vivo según los gramos). */}
+            <View style={styles.portion}>
+              <Text style={styles.portionLbl}>Tu ración · {g > 0 ? g : 0} g</Text>
+              <Text style={styles.portionKcal}>{preview.kcal} kcal</Text>
+              <View style={styles.portionRow}>
+                <Text style={styles.portionMacro}>P {preview.protein} g</Text>
+                <Text style={styles.portionMacro}>C {preview.carbs} g</Text>
+                <Text style={styles.portionMacro}>G {preview.fat} g</Text>
+              </View>
+            </View>
 
             <Pressable style={[styles.save, !canSave && styles.saveOff]} disabled={!canSave} onPress={save}>
-              <Text style={styles.saveTxt}>Añadir</Text>
+              <Text style={styles.saveTxt}>Añadir ración ({g > 0 ? g : 0} g)</Text>
             </Pressable>
           </ScrollView>
         </Pressable>
@@ -134,7 +141,11 @@ const styles = StyleSheet.create({
   field: { flexBasis: '47%', flexGrow: 1 },
   fieldLbl: { color: Brand.textMuted, fontSize: 12 },
   fieldInput: { color: Brand.text, fontSize: 16, fontWeight: '700', backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 9, marginTop: 4 },
-  preview: { color: Brand.accent, fontSize: 13, fontWeight: '700', marginTop: 12 },
+  portion: { backgroundColor: Brand.surface, borderColor: Brand.accentStrong, borderWidth: 1, borderRadius: 12, padding: 14, marginTop: 14, alignItems: 'center', gap: 4 },
+  portionLbl: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700' },
+  portionKcal: { color: Brand.good, fontSize: 24, fontWeight: '800' },
+  portionRow: { flexDirection: 'row', gap: 16 },
+  portionMacro: { color: Brand.text, fontSize: 13, fontWeight: '700' },
   save: { backgroundColor: Brand.accentStrong, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 12 },
   saveOff: { opacity: 0.4 },
   saveTxt: { color: '#fff', fontWeight: '800', fontSize: 15 },
