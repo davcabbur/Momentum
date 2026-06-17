@@ -1,9 +1,10 @@
 import { useCallback, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { goalProgressPct } from '@/bodyweight/goal';
-import { formatDate, formatKg } from '@/bodyweight/format';
+import { formatKg } from '@/bodyweight/format';
 import { Brand } from '@/constants/theme';
 import { getGoal, listWeights } from '@/db/bodyweight-repo';
 import { weightGoal } from '@/db/schema';
@@ -15,7 +16,12 @@ type Entry = { date: string; weightKg: number };
 function diffTxt(d: number): string {
   const v = Math.round(d * 10) / 10;
   const sign = v > 0 ? '+' : v < 0 ? '−' : '';
-  return `${sign}${Math.abs(v).toFixed(1).replace('.', ',')} kg`;
+  return `${sign}${Math.abs(v).toFixed(1).replace('.', ',')}`;
+}
+
+function shortDate(iso: string): string {
+  const [, m, d] = iso.split('-');
+  return `${d}/${m}`;
 }
 
 /** Mezcla rojo→verde según el progreso (0..1). */
@@ -60,20 +66,14 @@ export function WeightHistory() {
         return (
           <View key={e.date} style={styles.card}>
             <Text style={styles.kg}>{formatKg(e.weightKg)}</Text>
-            <Text style={styles.diff}>{diffTxt(diff)} desde el inicio</Text>
-
-            {pct != null && (
-              <View style={styles.track}>
-                <View style={[styles.fill, { width: `${pct}%`, backgroundColor: progressColor(pct / 100) }]} />
-              </View>
-            )}
-
-            <View style={styles.bottom}>
-              <Text style={styles.date}>{formatDate(e.date)}</Text>
-              <Pressable style={styles.editBtn} onPress={() => setEditing(e)}>
-                <Text style={styles.editTxt}>Editar</Text>
-              </Pressable>
+            <Text style={styles.diff}>{diffTxt(diff)}</Text>
+            <View style={styles.track}>
+              {pct != null && <View style={[styles.fill, { width: `${pct}%`, backgroundColor: progressColor(pct / 100) }]} />}
             </View>
+            <Text style={styles.date}>{shortDate(e.date)}</Text>
+            <Pressable style={styles.editBtn} hitSlop={8} onPress={() => setEditing(e)}>
+              <Ionicons name="create-outline" size={18} color={Brand.accent} />
+            </Pressable>
           </View>
         );
       })}
@@ -94,13 +94,11 @@ export function WeightHistory() {
 
 const styles = StyleSheet.create({
   title: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 4, marginBottom: 6 },
-  card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, marginBottom: 8 },
-  kg: { color: Brand.text, fontSize: 22, fontWeight: '800' },
-  diff: { color: Brand.textMuted, fontSize: 13, marginTop: 2 },
-  track: { height: 8, backgroundColor: Brand.track, borderRadius: 99, overflow: 'hidden', marginTop: 10 },
+  card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 8 },
+  kg: { color: Brand.text, fontSize: 15, fontWeight: '800', minWidth: 64 },
+  diff: { color: Brand.textMuted, fontSize: 12, minWidth: 44 },
+  track: { flex: 1, height: 7, backgroundColor: Brand.track, borderRadius: 99, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: 99 },
-  bottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
-  date: { color: Brand.textMuted, fontSize: 13 },
-  editBtn: { borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 9, paddingVertical: 6, paddingHorizontal: 14 },
-  editTxt: { color: Brand.accent, fontWeight: '700', fontSize: 13 },
+  date: { color: Brand.textMuted, fontSize: 12, minWidth: 38, textAlign: 'right' },
+  editBtn: { padding: 2 },
 });
