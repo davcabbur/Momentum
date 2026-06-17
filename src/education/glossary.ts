@@ -86,4 +86,24 @@ export const GLOSSARY: GlossaryTerm[] = [
     title: 'Proteína',
     body: 'El macronutriente que construye y protege el músculo. Conviene tomarla alta (≈1,8–2,2 g por kg de peso) y repartida en el día, sobre todo en déficit.',
   },
+  {
+    key: 'piramide',
+    title: 'Calentamiento piramidal',
+    body: 'Series de aproximación subiendo peso y bajando reps antes de tu serie fuerte (top set). Prepara músculos y articulaciones sin acumular fatiga.',
+  },
+  {
+    key: 'parciales',
+    title: 'Repeticiones parciales',
+    body: 'Hacer solo una parte del recorrido: la mitad estirada (la más efectiva) o la más dura. Útiles al final para exprimir un músculo cuando ya no puedes con reps completas.',
+  },
+  {
+    key: 'estiramiento-series',
+    title: 'Estiramiento entre series',
+    body: 'Mantener el músculo estirado ~30 s (a un 7/10, sin dolor) mientras descansas. Hay evidencia de que añade algo de crecimiento sin alargar el entreno.',
+  },
+  {
+    key: 'periodizacion',
+    title: 'Periodización',
+    body: 'Variar volumen e intensidad por fases (p. ej. volumen moderado → fase intensa de poco volumen → fase de mucho volumen) y meter una semana de descarga. Ayuda a no estancarse.',
+  },
 ];

@@ -22,8 +22,11 @@ export const EXERCISE_META: Record<string, ExMeta> = {
   Fondos: { region: 'inferior', equipment: 'bodyweight', compound: true },
   'Cruces en polea': { region: 'estiramiento', equipment: 'cable', compound: false },
   'Press declinado': { region: 'inferior', equipment: 'barbell', compound: true },
+  'Press Larson': { region: 'medio', equipment: 'barbell', compound: true },
   // Hombro
   'Press militar': { region: 'anterior', equipment: 'dumbbell', compound: true },
+  'Press Arnold': { region: 'anterior', equipment: 'dumbbell', compound: true },
+  'Elevación en Y en polea': { region: 'lateral', equipment: 'cable', compound: false },
   'Elevaciones laterales': { region: 'lateral', equipment: 'dumbbell', compound: false },
   Pájaros: { region: 'posterior', equipment: 'dumbbell', compound: false },
   'Press hombro en máquina': { region: 'anterior', equipment: 'machine', compound: true },

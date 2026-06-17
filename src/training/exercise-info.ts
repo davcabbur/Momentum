@@ -16,6 +16,7 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Fondos': { howTo: ['Inclina el torso adelante para cargar más pecho.', 'Hombros bajos, cuerpo en "flecha"; baja con control.', 'Sube sin bloquear; descanso 1,5–2 min.'] },
   'Cruces en polea': { howTo: ['Poleas altas; ligera inclinación al frente.', 'Codos semiflexionados fijos; junta abajo apretando.', 'Tensión constante: controla la vuelta.'] },
   'Press declinado': { howTo: ['Banco declinado; baja al pecho inferior.', 'Codos ~45°, control en la bajada.', 'Alternativa "amable" a los fondos.'] },
+  'Press Larson': { howTo: ['Como el press banca pero con las piernas en el banco (sin empuje de piernas).', 'Aísla más pecho/hombro/tríceps; agarre algo cerrado = más recorrido.', 'Tempo controlado 1–2 s; suele hacerse a ~75% de tu top set.'] },
   // Hombro
   'Press militar': { howTo: ['Nunca bloquees los codos arriba del todo.', 'De pie: escápulas atrás, pecho fuera, rodillas algo flexionadas.', 'Respaldo poco inclinado (más = se vuelve pecho).'] },
   'Elevaciones laterales': { howTo: ['Sube hasta la línea de los hombros, codos algo flexionados.', 'Lidera con el codo, no con la mano.', 'Baja lento; mejor sentado/apoyado para no balancear.'] },
@@ -24,6 +25,8 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Press militar con barra': { howTo: ['Barra desde las clavículas; aprieta glúteos y core.', 'Cabeza algo atrás para dejar pasar la barra.', 'Sube en línea recta; no arquees la lumbar.'] },
   'Elevaciones laterales en polea': { howTo: ['Polea a la altura de la cadera, ángulo 90° brazo-cable.', 'Tensión constante incluso en la parte baja.', 'Rango amplio; leve inclinación del torso.'] },
   'Aperturas inversas': { howTo: ['Máquina: brazos en "T", resistencia constante.', 'Aprieta el deltoides posterior.', 'Controla la vuelta.'] },
+  'Press Arnold': { howTo: ['Empieza con las palmas hacia ti y gíralas a la vez que subes.', 'Aprieta glúteos y empuja con los talones (como un press militar).', 'Trabaja anterior + lateral; 8–10 reps cargando con cabeza.'] },
+  'Elevación en Y en polea': { howTo: ['Cruza el brazo por delante del cuerpo abajo (estira el deltoides).', 'Sube en diagonal hacia fuera y arriba (forma de "Y"), no al frente.', 'Como "desenvainar una espada": tirón lateral, no elevación frontal.'] },
   // Tríceps
   'Press francés': { howTo: ['Codos quietos apuntando arriba.', 'Baja la barra a la frente/detrás con control.', 'Extiende sin abrir los codos.'] },
   'Extensión tríceps polea': { howTo: ['Cuerpo recto, brazos pegados al torso.', 'Extiende abajo y aguanta; muñecas rectas.', 'Trabaja las cabezas lateral y media.'] },
