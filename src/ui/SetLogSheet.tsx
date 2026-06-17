@@ -10,7 +10,7 @@ import { getProfile, listWeights } from '@/db/bodyweight-repo';
 import { deleteSet, exerciseE1rmHistory, getLastPerformance, getOrCreateSession, listSets, upsertSet, type SetLog } from '@/db/workout-repo';
 import { muscleView } from '@/training/muscle-map';
 import { exerciseInfo } from '@/training/exercise-info';
-import { isBodyweightLoaded } from '@/training/exercise-meta';
+import { exerciseMeta, isBodyweightLoaded } from '@/training/exercise-meta';
 import { schemeForLevel, type Level } from '@/training/levels';
 import { progressionHint, type ProgressionHint } from '@/training/progression';
 import { detectStall } from '@/training/intelligence';
@@ -75,6 +75,9 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
   const info = exerciseInfo(exerciseName);
   const mv = muscleView(muscleGroup ?? '');
   const bwLoaded = isBodyweightLoaded(exerciseName);
+  const isCompound = exerciseMeta(exerciseName)?.compound ?? false;
+  // Tipo de serie por defecto: en compuestos, 1ª = top set, resto = back-off; aislamiento = normal.
+  const defaultType = (n: number) => (isCompound ? (n === 1 ? 'top' : 'backoff') : 'normal');
   const workSets = sets.filter((s) => s.setType !== 'warmup').length;
   const volWarn = exerciseSetWarning(workSets, schemeSets);
 
@@ -121,7 +124,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
         weightKg: up ? h!.suggestedWeightKg! : prev?.weightKg ?? base,
         reps: up ? lo : prev?.reps ?? 8,
         rir: 2,
-        setType: 'normal',
+        setType: defaultType(1),
         exists: false,
       });
     }
@@ -164,7 +167,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
       weightKg: up ? hint!.suggestedWeightKg! : lastSame?.weightKg ?? todayPrev?.weightKg ?? base,
       reps: lastSame?.reps ?? todayPrev?.reps ?? 8,
       rir: 2,
-      setType: 'normal',
+      setType: lastSame?.setType ?? defaultType(n),
       exists: false,
     });
   }
