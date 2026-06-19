@@ -36,11 +36,24 @@ export function exerciseSetWarning(workSets: number, targetSets: number): Volume
   return OK;
 }
 
-const LARGE_MUSCLES = new Set(['pecho', 'espalda', 'pierna']);
+// Rango orientativo de series/semana por músculo (metodología): grandes 10–20;
+// el hombro tolera más (lateral/posterior necesitan volumen); el antebrazo, menos.
+const WEEKLY_RANGES: Record<string, { min: number; max: number }> = {
+  pecho: { min: 10, max: 20 },
+  espalda: { min: 10, max: 20 },
+  pierna: { min: 10, max: 20 },
+  hombro: { min: 12, max: 22 },
+  biceps: { min: 8, max: 16 },
+  triceps: { min: 8, max: 16 },
+  gluteo: { min: 8, max: 16 },
+  gemelo: { min: 8, max: 16 },
+  core: { min: 8, max: 20 },
+  antebrazo: { min: 6, max: 12 },
+};
 
-/** Rango orientativo de series por semana según el tamaño del músculo. */
+/** Rango orientativo de series por semana según el músculo. */
 export function weeklyVolumeRange(muscleGroup: string): { min: number; max: number } {
-  return LARGE_MUSCLES.has(muscleGroup) ? { min: 10, max: 20 } : { min: 8, max: 15 };
+  return WEEKLY_RANGES[muscleGroup] ?? { min: 8, max: 15 };
 }
 
 /**

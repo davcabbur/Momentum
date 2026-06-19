@@ -11,9 +11,11 @@ test('no avisa dentro del tope, avisa al pasarse', () => {
   expect(exerciseSetWarning(6, 3).level).toBe('warn');
 });
 
-test('rango semanal según tamaño del músculo', () => {
+test('rango semanal por músculo', () => {
   expect(weeklyVolumeRange('pecho')).toEqual({ min: 10, max: 20 });
-  expect(weeklyVolumeRange('biceps')).toEqual({ min: 8, max: 15 });
+  expect(weeklyVolumeRange('hombro')).toEqual({ min: 12, max: 22 });
+  expect(weeklyVolumeRange('biceps')).toEqual({ min: 8, max: 16 });
+  expect(weeklyVolumeRange('desconocido')).toEqual({ min: 8, max: 15 });
 });
 
 test('estado del volumen semanal: poco / óptimo / demasiado', () => {

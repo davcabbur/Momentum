@@ -104,19 +104,52 @@ const ISOLATION = new Set([
   'Colgarse en barra',
 ]);
 
-// Antebrazo/muñeca: recorrido corto → reps altas.
-const HIGH_REP = new Set(['Curl de muñeca', 'Curl inverso', 'Extensión de muñeca']);
+// Compuestos pesados (barra / patrón de fuerza): menos reps, enfoque de sobrecarga.
+const HEAVY = new Set([
+  'Sentadilla',
+  'Sentadilla frontal',
+  'Peso muerto',
+  'Peso muerto con barra trap',
+  'Peso muerto rumano',
+  'Peso muerto piernas rígidas',
+  'Press banca',
+  'Press inclinado con barra',
+  'Press militar con barra',
+  'Remo barra',
+  'Remo Pendlay',
+  'Dominadas',
+  'Press cerrado en banca',
+]);
+
+// Reps altas: recorrido corto o músculos que las toleran mejor (gemelo, core, abducción, antebrazo).
+const HIGH_REP = new Set([
+  'Curl de muñeca',
+  'Curl inverso',
+  'Extensión de muñeca',
+  'Gemelo de pie',
+  'Gemelo en prensa',
+  'Gemelo sentado',
+  'Crunch',
+  'Crunch declinado',
+  'Elevación de piernas',
+  'Rotación de torso',
+  'Abducción de cadera',
+]);
 
 /**
- * Esquema de partida por ejercicio: compuestos a menos reps (más fuerza),
- * aislamiento a más reps. Editable después por el usuario.
+ * Esquema de partida por ejercicio (editable por el usuario), según la metodología:
+ * - Compuesto pesado (barra): 4×6–8 (fuerza/sobrecarga).
+ * - Compuesto de hipertrofia (máquina/mancuerna): 4×8–12.
+ * - Aislamiento: 3×10–15.
+ * - Reps altas (gemelo/core/abducción/antebrazo): 3×12–20.
+ * - Principiante: 3 series y reps algo más altas/seguras.
  */
 export function defaultScheme(exerciseName: string, level: Level): { sets: number; repMin: number; repMax: number } {
   const beginner = level === 'principiante';
   const sets = beginner ? 3 : 4;
   if (HIGH_REP.has(exerciseName)) return { sets: 3, repMin: 12, repMax: 20 };
-  // Compuestos: principiante a reps más altas (técnica y seguridad); intermedio/avanzado más pesado.
-  if (COMPOUNDS.has(exerciseName)) return beginner ? { sets: 3, repMin: 8, repMax: 12 } : { sets, repMin: 6, repMax: 10 };
+  if (HEAVY.has(exerciseName)) return beginner ? { sets: 3, repMin: 8, repMax: 12 } : { sets, repMin: 6, repMax: 8 };
+  if (COMPOUNDS.has(exerciseName)) return { sets, repMin: 8, repMax: 12 };
   if (ISOLATION.has(exerciseName)) return { sets: 3, repMin: 10, repMax: 15 };
   return { sets: 3, repMin: 8, repMax: 12 };
 }
