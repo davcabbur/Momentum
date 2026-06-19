@@ -13,6 +13,10 @@ const DAY_EXERCISES: Record<string, string[]> = {
   empuje: ['Press inclinado', 'Press de pecho en máquina', 'Press militar', 'Elevaciones laterales en polea', 'Extensión tríceps sobre la cabeza'],
   tiron: ['Jalón al pecho', 'Remo en máquina', 'Remo Gironda', 'Face pull', 'Curl predicador', 'Curl martillo'],
   pierna: ['Sentadilla', 'Extensión cuádriceps', 'Peso muerto rumano', 'Curl femoral sentado', 'Hip thrust', 'Gemelo de pie'],
+  // Dos días de pierna complementarios (para rutinas con doble día): uno con énfasis
+  // en cuádriceps y gemelo de pie (gastrocnemio), otro en femoral/glúteo y gemelo sentado (sóleo).
+  pierna1: ['Sentadilla', 'Prensa', 'Extensión cuádriceps', 'Curl femoral sentado', 'Hip thrust', 'Gemelo de pie'],
+  pierna2: ['Peso muerto rumano', 'Curl femoral', 'Curl femoral sentado', 'Sentadilla búlgara', 'Hip thrust', 'Gemelo sentado'],
   torso: ['Press inclinado', 'Jalón al pecho', 'Remo en máquina', 'Elevaciones laterales en polea', 'Extensión tríceps sobre la cabeza', 'Curl predicador'],
   fullbody: ['Sentadilla', 'Press inclinado', 'Remo en máquina', 'Press militar', 'Curl martillo'],
   // Músculo por día: cubre las regiones con los mejores de cada tier-list.
@@ -49,9 +53,9 @@ const TEMPLATES: Record<number, RoutineTemplate[]> = {
   4: [
     { key: 'ul', name: 'Torso / Pierna', days: [
       { name: 'Torso A', type: 'torso' },
-      { name: 'Pierna A', type: 'pierna' },
+      { name: 'Pierna A (cuádriceps)', type: 'pierna1' },
       { name: 'Torso B', type: 'torso' },
-      { name: 'Pierna B', type: 'pierna' },
+      { name: 'Pierna B (femoral/glúteo)', type: 'pierna2' },
     ] },
     { key: 'ppl_fb', name: 'PPL + Full body', days: [
       { name: 'Empuje', type: 'empuje' },
@@ -64,9 +68,9 @@ const TEMPLATES: Record<number, RoutineTemplate[]> = {
     { key: 'ppl_ul', name: 'PPL + Torso/Pierna', days: [
       { name: 'Empuje', type: 'empuje' },
       { name: 'Tirón', type: 'tiron' },
-      { name: 'Pierna', type: 'pierna' },
+      { name: 'Pierna (cuádriceps)', type: 'pierna1' },
       { name: 'Torso', type: 'torso' },
-      { name: 'Pierna 2', type: 'pierna' },
+      { name: 'Pierna 2 (femoral/glúteo)', type: 'pierna2' },
     ] },
     { key: 'bro5', name: 'Músculo por día', days: [
       { name: 'Pecho', type: 'pecho' },
@@ -80,10 +84,10 @@ const TEMPLATES: Record<number, RoutineTemplate[]> = {
     { key: 'ppl2', name: 'PPL ×2', days: [
       { name: 'Empuje A', type: 'empuje' },
       { name: 'Tirón A', type: 'tiron' },
-      { name: 'Pierna A', type: 'pierna' },
+      { name: 'Pierna A (cuádriceps)', type: 'pierna1' },
       { name: 'Empuje B', type: 'empuje' },
       { name: 'Tirón B', type: 'tiron' },
-      { name: 'Pierna B', type: 'pierna' },
+      { name: 'Pierna B (femoral/glúteo)', type: 'pierna2' },
     ] },
     { key: 'bro6', name: 'Músculo por día', days: [
       { name: 'Pecho', type: 'pecho' },

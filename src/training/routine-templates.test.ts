@@ -17,9 +17,12 @@ test('un número sin plantillas devuelve vacío', () => {
   expect(routineTemplatesFor(1)).toEqual([]);
 });
 
-test('cada día de plantilla tiene un tipo con ejercicios por defecto', () => {
-  const ppl = routineTemplatesFor(3).find((t) => t.key === 'ppl')!;
-  for (const d of ppl.days) {
-    expect(exercisesForType(d.type).length).toBeGreaterThan(0);
+test('cada día de cada plantilla tiene un tipo con ejercicios por defecto', () => {
+  for (const n of [2, 3, 4, 5, 6]) {
+    for (const t of routineTemplatesFor(n)) {
+      for (const d of t.days) {
+        expect(exercisesForType(d.type).length).toBeGreaterThan(0);
+      }
+    }
   }
 });
