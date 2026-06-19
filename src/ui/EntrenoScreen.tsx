@@ -13,6 +13,7 @@ import { nextDay } from '@/training/next-day';
 import { Loading } from '@/ui/Loading';
 import { RoutineBuilder } from '@/ui/RoutineBuilder';
 import { SessionScreen } from '@/ui/SessionScreen';
+import { useRefresh } from '@/ui/useRefresh';
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -50,6 +51,8 @@ export function EntrenoScreen() {
     }, [load]),
   );
 
+  const { control } = useRefresh(load);
+
   if (!loaded) return <Loading />;
   if (view === 'builder') return <RoutineBuilder onDone={() => { setView('home'); load(); }} />;
   if (typeof view === 'object') {
@@ -60,7 +63,7 @@ export function EntrenoScreen() {
   const others = days.filter((d) => d.id !== suggestedId);
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} refreshControl={control}>
       <Text style={styles.h1}>Entreno</Text>
 
       {welcome && (

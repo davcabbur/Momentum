@@ -12,6 +12,7 @@ import { liveKcalPlan, proteinTarget, type LiveKcalPlan } from '@/nutrition/kcal
 import { dietBreakAdvice } from '@/training/intelligence';
 import { ComidaHoy } from '@/ui/ComidaHoy';
 import { Loading } from '@/ui/Loading';
+import { useRefresh } from '@/ui/useRefresh';
 
 const STAGE_LABEL: Record<string, string> = {
   definicion: 'Definición',
@@ -46,71 +47,69 @@ interface State {
 export function NutricionScreen() {
   const [s, setS] = useState<State | null>(null);
 
+  const load = useCallback(async () => {
+    const prof = await getProfile();
+    const weights = await listWeights();
+    const goal = await getGoal();
+
+    let missing: string | null = null;
+    if (!prof || prof.heightCm == null || prof.age == null) missing = 'perfil';
+    else if (weights.length === 0) missing = 'peso';
+
+    const trend = computeTrend(weights);
+    const trendKg = trend.length ? trend[trend.length - 1].trendKg : null;
+    const actualRate = weights.length >= 3 ? trendSlopePerWeek(trend) : null;
+
+    let plan: LiveKcalPlan | null = null;
+    let protein: number | null = null;
+    if (prof && prof.heightCm != null && prof.age != null && trendKg != null) {
+      const daysRemaining = goal && goal.targetDate ? Math.max(0, daysBetween(today(), goal.targetDate)) : 0;
+      plan = liveKcalPlan({
+        sex: prof.sex,
+        age: prof.age,
+        heightCm: prof.heightCm,
+        activityLevel: prof.activityLevel,
+        trendKg,
+        targetKg: goal?.targetKg ?? trendKg,
+        daysRemaining,
+        actualRatePerWeek: actualRate,
+      });
+      protein = proteinTarget(trendKg, prof.stage ?? 'normocalorica');
+    }
+
+    let dietBreak: string | null = null;
+    if (prof?.stage === 'definicion' && goal?.startDate) {
+      const weeks = Math.floor(daysBetween(goal.startDate, today()) / 7);
+      dietBreak = dietBreakAdvice('definicion', weeks)?.text ?? null;
+    }
+
+    // Gasto real estimado: ingesta media de ~14 días vs cambio de peso de tendencia.
+    let realTdee: number | null = null;
+    const fromDate = addDays(today(), -14);
+    const intake = await intakeByDay(fromDate);
+    if (intake.length > 0 && trend.length >= 2) {
+      const avgIntakeKcal = intake.reduce((a, d) => a + d.kcal, 0) / intake.length;
+      const windowTrend = trend.filter((p) => p.date >= fromDate);
+      const past = windowTrend[0] ?? trend[0];
+      const span = daysBetween(past.date, trend[trend.length - 1].date);
+      realTdee = estimateRealTdee({
+        avgIntakeKcal,
+        weightChangeKg: trend[trend.length - 1].trendKg - past.trendKg,
+        spanDays: span,
+        loggedDays: intake.length,
+      });
+    }
+
+    setS({ plan, protein, stage: prof?.stage ?? null, hasGoal: goal != null && goal.targetDate != null, trendKg, dietBreak, realTdee, missing });
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
-      let active = true;
-      (async () => {
-        const prof = await getProfile();
-        const weights = await listWeights();
-        const goal = await getGoal();
-
-        let missing: string | null = null;
-        if (!prof || prof.heightCm == null || prof.age == null) missing = 'perfil';
-        else if (weights.length === 0) missing = 'peso';
-
-        const trend = computeTrend(weights);
-        const trendKg = trend.length ? trend[trend.length - 1].trendKg : null;
-        const actualRate = weights.length >= 3 ? trendSlopePerWeek(trend) : null;
-
-        let plan: LiveKcalPlan | null = null;
-        let protein: number | null = null;
-        if (prof && prof.heightCm != null && prof.age != null && trendKg != null) {
-          const daysRemaining = goal && goal.targetDate ? Math.max(0, daysBetween(today(), goal.targetDate)) : 0;
-          plan = liveKcalPlan({
-            sex: prof.sex,
-            age: prof.age,
-            heightCm: prof.heightCm,
-            activityLevel: prof.activityLevel,
-            trendKg,
-            targetKg: goal?.targetKg ?? trendKg,
-            daysRemaining,
-            actualRatePerWeek: actualRate,
-          });
-          protein = proteinTarget(trendKg, prof.stage ?? 'normocalorica');
-        }
-
-        let dietBreak: string | null = null;
-        if (prof?.stage === 'definicion' && goal?.startDate) {
-          const weeks = Math.floor(daysBetween(goal.startDate, today()) / 7);
-          dietBreak = dietBreakAdvice('definicion', weeks)?.text ?? null;
-        }
-
-        // Gasto real estimado: ingesta media de ~14 días vs cambio de peso de tendencia.
-        let realTdee: number | null = null;
-        const fromDate = addDays(today(), -14);
-        const intake = await intakeByDay(fromDate);
-        if (intake.length > 0 && trend.length >= 2) {
-          const avgIntakeKcal = intake.reduce((a, d) => a + d.kcal, 0) / intake.length;
-          const windowTrend = trend.filter((p) => p.date >= fromDate);
-          const past = windowTrend[0] ?? trend[0];
-          const span = daysBetween(past.date, trend[trend.length - 1].date);
-          realTdee = estimateRealTdee({
-            avgIntakeKcal,
-            weightChangeKg: trend[trend.length - 1].trendKg - past.trendKg,
-            spanDays: span,
-            loggedDays: intake.length,
-          });
-        }
-
-        if (active) {
-          setS({ plan, protein, stage: prof?.stage ?? null, hasGoal: goal != null && goal.targetDate != null, trendKg, dietBreak, realTdee, missing });
-        }
-      })();
-      return () => {
-        active = false;
-      };
-    }, []),
+      load();
+    }, [load]),
   );
+
+  const { control, nonce } = useRefresh(load);
 
   if (!s) return <Loading />;
 
@@ -134,11 +133,11 @@ export function NutricionScreen() {
   };
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} refreshControl={control}>
       <Text style={styles.h1}>Nutrición</Text>
       <Text style={styles.intro}>Tus calorías guía, calculadas con tu tendencia de peso (no con el dato de un día).</Text>
 
-      <ComidaHoy />
+      <ComidaHoy reloadNonce={nonce} />
 
       {s.missing === 'perfil' && (
         <View style={styles.card}>

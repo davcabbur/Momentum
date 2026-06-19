@@ -11,7 +11,7 @@ import { WeightChart } from '@/ui/WeightChart';
 type Goal = typeof weightGoal.$inferSelect;
 
 /** Gráfica de peso en Progreso (el objetivo y el mensaje viven en Inicio). */
-export function WeightDetail() {
+export function WeightDetail({ reloadNonce }: { reloadNonce?: number }) {
   const { width } = useWindowDimensions();
   const [points, setPoints] = useState<TrendPoint[]>([]);
   const [goal, setGoal] = useState<Goal | null>(null);
@@ -24,7 +24,7 @@ export function WeightDetail() {
   useFocusEffect(
     useCallback(() => {
       load();
-    }, [load]),
+    }, [load, reloadNonce]),
   );
 
   if (points.length === 0) return null;

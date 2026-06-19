@@ -13,6 +13,7 @@ import { getSetting, setSetting } from '@/db/settings-repo';
 import { cancelReminders, ensureNotificationPermission, scheduleDailyReminder } from '@/lib/notifications';
 import { type Level } from '@/training/levels';
 import { SetGoalSheet } from '@/ui/SetGoalSheet';
+import { useRefresh } from '@/ui/useRefresh';
 
 type Goal = typeof weightGoal.$inferSelect;
 
@@ -81,6 +82,8 @@ export function AjustesScreen() {
     }, [load]),
   );
 
+  const { control } = useRefresh(load);
+
   async function saveProfile() {
     if (!sex || !activity || !stage) return;
     await setProfile({
@@ -140,7 +143,7 @@ export function AjustesScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} refreshControl={control}>
       <View style={styles.topBar}>
         <Pressable onPress={() => router.back()} hitSlop={10} style={styles.backRow}>
           <Ionicons name="chevron-back" size={22} color={Brand.accent} />

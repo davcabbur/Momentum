@@ -19,7 +19,7 @@ function today(): string {
 }
 
 /** Resumen de peso para Inicio: Inicio / Actual (anillo) / Objetivo + progreso/tiempo + mensaje. */
-export function WeightSummaryCard() {
+export function WeightSummaryCard({ reloadNonce }: { reloadNonce?: number }) {
   const router = useRouter();
   const [points, setPoints] = useState<TrendPoint[]>([]);
   const [goal, setGoal] = useState<Goal | null>(null);
@@ -33,7 +33,7 @@ export function WeightSummaryCard() {
   useFocusEffect(
     useCallback(() => {
       load();
-    }, [load]),
+    }, [load, reloadNonce]),
   );
 
   const last = points.at(-1);

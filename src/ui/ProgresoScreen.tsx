@@ -8,6 +8,7 @@ import { getHistoryRows } from '@/db/workout-repo';
 import { buildProgress, type ExerciseProgress } from '@/training/progression';
 import { detectStall, deloadAdvice } from '@/training/intelligence';
 import { LineChart } from './LineChart';
+import { useRefresh } from './useRefresh';
 import { WeightDetail } from './WeightDetail';
 import { WeightHistory } from './WeightHistory';
 
@@ -20,24 +21,22 @@ export function ProgresoScreen() {
   const [items, setItems] = useState<ExerciseProgress[]>([]);
   const [loaded, setLoaded] = useState(false);
 
+  const load = useCallback(async () => {
+    const rows = await getHistoryRows();
+    setItems(buildProgress(rows));
+    setLoaded(true);
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
-      let active = true;
-      (async () => {
-        const rows = await getHistoryRows();
-        if (active) {
-          setItems(buildProgress(rows));
-          setLoaded(true);
-        }
-      })();
-      return () => {
-        active = false;
-      };
-    }, []),
+      load();
+    }, [load]),
   );
 
+  const { control, nonce } = useRefresh(load);
+
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} refreshControl={control}>
       <Text style={styles.h1}>Progreso</Text>
       <Text style={styles.intro}>Tu fuerza estimada (1RM) y volumen por ejercicio. Orienta, no presiona.</Text>
 
@@ -83,8 +82,8 @@ export function ProgresoScreen() {
         );
       })}
 
-      <WeightDetail />
-      <WeightHistory />
+      <WeightDetail reloadNonce={nonce} />
+      <WeightHistory reloadNonce={nonce} />
     </ScrollView>
   );
 }

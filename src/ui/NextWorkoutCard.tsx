@@ -8,7 +8,7 @@ import { getActiveRoutine, listDays } from '@/db/routine-repo';
 import { lastSessionDayId } from '@/db/workout-repo';
 import { nextDay, type DayRef } from '@/training/next-day';
 
-export function NextWorkoutCard() {
+export function NextWorkoutCard({ reloadNonce }: { reloadNonce?: number }) {
   const router = useRouter();
   const [next, setNext] = useState<DayRef | null>(null);
   const [hasRoutine, setHasRoutine] = useState<boolean | null>(null);
@@ -28,7 +28,7 @@ export function NextWorkoutCard() {
       return () => {
         active = false;
       };
-    }, []),
+    }, [reloadNonce]),
   );
 
   if (hasRoutine === null) return null;

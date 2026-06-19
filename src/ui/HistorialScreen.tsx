@@ -6,6 +6,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { formatDate } from '@/bodyweight/format';
 import { Brand } from '@/constants/theme';
 import { listSessions, type SessionSummary } from '@/db/workout-repo';
+import { useRefresh } from '@/ui/useRefresh';
 
 function vol(n: number): string {
   return `${Math.round(n)}`.replace(/\B(?=(\d{3})+(?!\d))/, ' ');
@@ -17,24 +18,22 @@ export function HistorialScreen() {
   const [loaded, setLoaded] = useState(false);
   const [open, setOpen] = useState<number | null>(null);
 
+  const load = useCallback(async () => {
+    const s = await listSessions();
+    setSessions(s);
+    setLoaded(true);
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
-      let active = true;
-      (async () => {
-        const s = await listSessions();
-        if (active) {
-          setSessions(s);
-          setLoaded(true);
-        }
-      })();
-      return () => {
-        active = false;
-      };
-    }, []),
+      load();
+    }, [load]),
   );
 
+  const { control } = useRefresh(load);
+
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} refreshControl={control}>
       <Pressable onPress={() => router.back()} hitSlop={10} style={styles.backRow}>
         <Ionicons name="chevron-back" size={22} color={Brand.accent} />
         <Text style={styles.back}>Progreso</Text>

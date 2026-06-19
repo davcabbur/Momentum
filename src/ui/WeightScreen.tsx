@@ -9,6 +9,7 @@ import { KcalSummaryCard } from '@/ui/KcalSummaryCard';
 import { Loading } from '@/ui/Loading';
 import { NextWorkoutCard } from '@/ui/NextWorkoutCard';
 import { Onboarding } from '@/ui/Onboarding';
+import { useRefresh } from '@/ui/useRefresh';
 import { WeightSummaryCard } from '@/ui/WeightSummaryCard';
 
 /** Inicio: panel ligero con accesos rápidos (entreno, kcal, peso). El detalle vive en cada pestaña. */
@@ -26,11 +27,13 @@ export function WeightScreen() {
     }, [load]),
   );
 
+  const { control, nonce } = useRefresh(load);
+
   if (hasWeights === null) return <Loading />;
   if (!hasWeights) return <Onboarding onDone={load} />;
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} refreshControl={control}>
       <View style={styles.topBar}>
         <Text style={styles.h1}>Inicio</Text>
         <Pressable style={styles.gear} onPress={() => router.push('/ajustes')} hitSlop={10}>
@@ -38,9 +41,9 @@ export function WeightScreen() {
         </Pressable>
       </View>
 
-      <NextWorkoutCard />
-      <WeightSummaryCard />
-      <KcalSummaryCard onPress={() => router.push('/nutricion')} />
+      <NextWorkoutCard reloadNonce={nonce} />
+      <WeightSummaryCard reloadNonce={nonce} />
+      <KcalSummaryCard reloadNonce={nonce} onPress={() => router.push('/nutricion')} />
     </ScrollView>
   );
 }

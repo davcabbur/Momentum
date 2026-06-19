@@ -25,7 +25,7 @@ function shortDate(iso: string): string {
 }
 
 /** Historial de pesajes: cada entrada con peso, diferencia, barra de progreso, fecha y editar. */
-export function WeightHistory() {
+export function WeightHistory({ reloadNonce }: { reloadNonce?: number }) {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [goal, setGoal] = useState<Goal | null>(null);
   const [editing, setEditing] = useState<Entry | null>(null);
@@ -40,7 +40,7 @@ export function WeightHistory() {
   useFocusEffect(
     useCallback(() => {
       load();
-    }, [load]),
+    }, [load, reloadNonce]),
   );
 
   if (entries.length === 0) return null;

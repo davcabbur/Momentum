@@ -21,7 +21,7 @@ function r0(n: number): number {
   return Math.round(n);
 }
 
-export function ComidaHoy() {
+export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
   const [foods, setFoods] = useState<FoodEntry[]>([]);
   const [targets, setTargets] = useState<Macros | null>(null);
   const [sheet, setSheet] = useState(false);
@@ -79,7 +79,7 @@ export function ComidaHoy() {
   useFocusEffect(
     useCallback(() => {
       load();
-    }, [load]),
+    }, [load, reloadNonce]),
   );
 
   const consumed = sumMacros(foods);

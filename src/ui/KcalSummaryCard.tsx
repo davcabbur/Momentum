@@ -17,7 +17,7 @@ function kcal(n: number): string {
   return `${n}`.replace(/\B(?=(\d{3})+(?!\d))/, ' ');
 }
 
-export function KcalSummaryCard({ onPress }: { onPress: () => void }) {
+export function KcalSummaryCard({ onPress, reloadNonce }: { onPress: () => void; reloadNonce?: number }) {
   const [data, setData] = useState<{ kcal: number; label: string; protein: number } | null>(null);
 
   useFocusEffect(
@@ -58,7 +58,7 @@ export function KcalSummaryCard({ onPress }: { onPress: () => void }) {
       return () => {
         active = false;
       };
-    }, []),
+    }, [reloadNonce]),
   );
 
   if (!data) return null;
