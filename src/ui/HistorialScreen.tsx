@@ -4,8 +4,8 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { formatDate } from '@/bodyweight/format';
-import { Brand } from '@/constants/theme';
 import { listSessions, type SessionSummary } from '@/db/workout-repo';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { useRefresh } from '@/ui/useRefresh';
 
 function vol(n: number): string {
@@ -14,6 +14,8 @@ function vol(n: number): string {
 
 export function HistorialScreen() {
   const router = useRouter();
+  const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [open, setOpen] = useState<number | null>(null);
@@ -35,7 +37,7 @@ export function HistorialScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} refreshControl={control}>
       <Pressable onPress={() => router.back()} hitSlop={10} style={styles.backRow}>
-        <Ionicons name="chevron-back" size={22} color={Brand.accent} />
+        <Ionicons name="chevron-back" size={22} color={c.accent} />
         <Text style={styles.back}>Progreso</Text>
       </Pressable>
       <Text style={styles.h1}>Historial de sesiones</Text>
@@ -55,7 +57,7 @@ export function HistorialScreen() {
                   {s.dayName ? `${s.dayName} · ` : ''}{s.totalSets} series · {vol(s.totalVolume)} kg de volumen
                 </Text>
               </View>
-              <Ionicons name={isOpen ? 'chevron-up' : 'chevron-down'} size={18} color={Brand.textMuted} />
+              <Ionicons name={isOpen ? 'chevron-up' : 'chevron-down'} size={18} color={c.textMuted} />
             </Pressable>
             {isOpen && s.note && <Text style={styles.note}>📝 {s.note}</Text>}
             {isOpen &&
@@ -74,19 +76,20 @@ export function HistorialScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Brand.surface },
-  content: { padding: 14, gap: 10 },
-  backRow: { flexDirection: 'row', alignItems: 'center' },
-  back: { color: Brand.accent, fontWeight: '700', fontSize: 15 },
-  h1: { color: Brand.text, fontSize: 20, fontWeight: '800', marginBottom: 4 },
-  empty: { color: Brand.textMuted, fontSize: 14, lineHeight: 20 },
-  card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14 },
-  head: { flexDirection: 'row', alignItems: 'center' },
-  date: { color: Brand.text, fontSize: 15, fontWeight: '700' },
-  sub: { color: Brand.textMuted, fontSize: 12, marginTop: 2 },
-  note: { color: Brand.info, fontSize: 13, marginTop: 8, fontStyle: 'italic', lineHeight: 18 },
-  exBlock: { marginTop: 10, borderTopWidth: 1, borderTopColor: Brand.cardBorder, paddingTop: 8 },
-  exName: { color: Brand.text, fontSize: 14, fontWeight: '600' },
-  exSets: { color: Brand.textMuted, fontSize: 13, marginTop: 2 },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.surface },
+    content: { padding: 14, gap: 10 },
+    backRow: { flexDirection: 'row', alignItems: 'center' },
+    back: { color: c.accent, fontWeight: '700', fontSize: 15 },
+    h1: { color: c.text, fontSize: 20, fontWeight: '800', marginBottom: 4 },
+    empty: { color: c.textMuted, fontSize: 14, lineHeight: 20 },
+    card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14 },
+    head: { flexDirection: 'row', alignItems: 'center' },
+    date: { color: c.text, fontSize: 15, fontWeight: '700' },
+    sub: { color: c.textMuted, fontSize: 12, marginTop: 2 },
+    note: { color: c.info, fontSize: 13, marginTop: 8, fontStyle: 'italic', lineHeight: 18 },
+    exBlock: { marginTop: 10, borderTopWidth: 1, borderTopColor: c.cardBorder, paddingTop: 8 },
+    exName: { color: c.text, fontSize: 14, fontWeight: '600' },
+    exSets: { color: c.textMuted, fontSize: 13, marginTop: 2 },
+  });

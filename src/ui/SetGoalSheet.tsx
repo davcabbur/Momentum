@@ -3,9 +3,9 @@ import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-nativ
 
 import { formatDate, parseDmy } from '@/bodyweight/format';
 import { addDays } from '@/bodyweight/goal';
-import { Brand } from '@/constants/theme';
 import { clearGoal, setGoal } from '@/db/bodyweight-repo';
 import { DateField } from '@/ui/DateField';
+import { useThemedStyles, type Theme } from '@/ui/theme';
 
 interface Props {
   visible: boolean;
@@ -22,6 +22,7 @@ interface Props {
 }
 
 export function SetGoalSheet({ visible, initialTargetKg, initialTargetDate, startKg, startDate, canClear, onClose }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const [value, setValue] = useState(String(initialTargetKg));
   const [dateStr, setDateStr] = useState(formatDate(initialTargetDate));
 
@@ -72,29 +73,30 @@ export function SetGoalSheet({ visible, initialTargetKg, initialTargetDate, star
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
-  sheet: {
-    backgroundColor: Brand.card,
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    gap: 8,
-  },
-  title: { color: Brand.text, fontSize: 16, fontWeight: '700' },
-  hint: { color: Brand.textMuted, fontSize: 12, marginBottom: 4 },
-  label: { color: Brand.text, fontSize: 13, fontWeight: '600', marginTop: 6 },
-  input: {
-    color: Brand.text,
-    fontSize: 22,
-    fontWeight: '800',
-    textAlign: 'center',
-    backgroundColor: Brand.surface,
-    borderRadius: 12,
-    paddingVertical: 10,
-  },
-  save: { backgroundColor: Brand.accentStrong, borderRadius: 12, padding: 14, marginTop: 8 },
-  saveTxt: { textAlign: 'center', fontWeight: '800', color: '#fff' },
-  delete: { padding: 10 },
-  deleteTxt: { textAlign: 'center', color: '#f87171', fontWeight: '700' },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
+    sheet: {
+      backgroundColor: c.card,
+      padding: 20,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      gap: 8,
+    },
+    title: { color: c.text, fontSize: 16, fontWeight: '700' },
+    hint: { color: c.textMuted, fontSize: 12, marginBottom: 4 },
+    label: { color: c.text, fontSize: 13, fontWeight: '600', marginTop: 6 },
+    input: {
+      color: c.text,
+      fontSize: 22,
+      fontWeight: '800',
+      textAlign: 'center',
+      backgroundColor: c.surface,
+      borderRadius: 12,
+      paddingVertical: 10,
+    },
+    save: { backgroundColor: c.accentStrong, borderRadius: 12, padding: 14, marginTop: 8 },
+    saveTxt: { textAlign: 'center', fontWeight: '800', color: c.onAccent },
+    delete: { padding: 10 },
+    deleteTxt: { textAlign: 'center', color: c.bad, fontWeight: '700' },
+  });

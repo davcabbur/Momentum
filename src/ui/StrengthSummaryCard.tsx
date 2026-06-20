@@ -3,8 +3,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Brand } from '@/constants/theme';
 import { getHistoryRows } from '@/db/workout-repo';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { buildProgress, type ExerciseProgress } from '@/training/progression';
 
 function fmt(n: number): string {
@@ -16,6 +16,8 @@ function fmt(n: number): string {
  *  "Ver más" que lleva a Progreso → Fuerza. */
 export function StrengthSummaryCard({ reloadNonce }: { reloadNonce?: number }) {
   const router = useRouter();
+  const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [items, setItems] = useState<ExerciseProgress[]>([]);
 
   const load = useCallback(async () => {
@@ -39,7 +41,7 @@ export function StrengthSummaryCard({ reloadNonce }: { reloadNonce?: number }) {
   return (
     <View style={styles.card}>
       <Pressable style={styles.head} onPress={() => router.navigate('/progreso')}>
-        <Ionicons name="barbell" size={18} color={Brand.accent} />
+        <Ionicons name="barbell" size={18} color={c.accent} />
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>Fuerza</Text>
           <Text style={styles.sub}>Último entreno</Text>
@@ -62,9 +64,9 @@ export function StrengthSummaryCard({ reloadNonce }: { reloadNonce?: number }) {
                   <Ionicons
                     name={dir > 0 ? 'arrow-up' : dir < 0 ? 'arrow-down' : 'remove'}
                     size={13}
-                    color={dir > 0 ? Brand.good : Brand.textMuted}
+                    color={dir > 0 ? c.good : c.textMuted}
                   />
-                  <Text style={[styles.diffTxt, { color: dir > 0 ? Brand.good : Brand.textMuted }]}>
+                  <Text style={[styles.diffTxt, { color: dir > 0 ? c.good : c.textMuted }]}>
                     {`${diff > 0 ? '+' : diff < 0 ? '−' : ''}${fmt(Math.abs(diff))}`}
                   </Text>
                   {isPR && <Text style={styles.pr}>★ PR</Text>}
@@ -78,26 +80,27 @@ export function StrengthSummaryCard({ reloadNonce }: { reloadNonce?: number }) {
 
         <Pressable style={styles.more} onPress={() => router.navigate('/progreso')}>
           <Text style={styles.moreTxt}>Ver más</Text>
-          <Ionicons name="chevron-forward" size={16} color={Brand.accent} />
+          <Ionicons name="chevron-forward" size={16} color={c.accent} />
         </Pressable>
       </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 10 },
-  head: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { color: Brand.text, fontSize: 15, fontWeight: '800' },
-  sub: { color: Brand.textMuted, fontSize: 11, marginTop: 1 },
-  row: { gap: 8, paddingRight: 2 },
-  chip: { backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, minWidth: 116 },
-  chipName: { color: Brand.textMuted, fontSize: 12, fontWeight: '600', marginBottom: 4 },
-  chipKg: { color: Brand.accent, fontSize: 18, fontWeight: '800' },
-  diffRow: { flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 2 },
-  diffTxt: { fontSize: 12, fontWeight: '700' },
-  pr: { color: Brand.good, fontSize: 11, fontWeight: '800', marginLeft: 4 },
-  first: { color: Brand.textMuted, fontSize: 11, marginTop: 3 },
-  more: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 2, paddingHorizontal: 14, borderRadius: 12, borderColor: Brand.cardBorder, borderWidth: 1, borderStyle: 'dashed' },
-  moreTxt: { color: Brand.accent, fontSize: 13, fontWeight: '700' },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 10 },
+    head: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    title: { color: c.text, fontSize: 15, fontWeight: '800' },
+    sub: { color: c.textMuted, fontSize: 11, marginTop: 1 },
+    row: { gap: 8, paddingRight: 2 },
+    chip: { backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, minWidth: 116 },
+    chipName: { color: c.textMuted, fontSize: 12, fontWeight: '600', marginBottom: 4 },
+    chipKg: { color: c.accent, fontSize: 18, fontWeight: '800' },
+    diffRow: { flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 2 },
+    diffTxt: { fontSize: 12, fontWeight: '700' },
+    pr: { color: c.good, fontSize: 11, fontWeight: '800', marginLeft: 4 },
+    first: { color: c.textMuted, fontSize: 11, marginTop: 3 },
+    more: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 2, paddingHorizontal: 14, borderRadius: 12, borderColor: c.cardBorder, borderWidth: 1, borderStyle: 'dashed' },
+    moreTxt: { color: c.accent, fontSize: 13, fontWeight: '700' },
+  });

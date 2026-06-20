@@ -5,7 +5,7 @@ import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { daysBetween } from '@/bodyweight/goal';
 import { computeTrend, trendSlopePerWeek } from '@/bodyweight/trend';
-import { Brand } from '@/constants/theme';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { getGoal, getProfile, listWeights } from '@/db/bodyweight-repo';
 import { cacheProduct, deleteFoodEntry, getCachedProduct, listFoodEntries, type FoodEntry } from '@/db/food-repo';
 import { liveKcalPlan } from '@/nutrition/kcal';
@@ -22,6 +22,8 @@ function r0(n: number): number {
 }
 
 export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
+  const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [foods, setFoods] = useState<FoodEntry[]>([]);
   const [targets, setTargets] = useState<Macros | null>(null);
   const [sheet, setSheet] = useState(false);
@@ -90,21 +92,21 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
         <Text style={styles.title}>Hoy comido</Text>
         <View style={styles.actions}>
           <Pressable style={styles.scan} onPress={() => setScanner(true)}>
-            <Ionicons name="barcode-outline" size={18} color={Brand.accent} />
+            <Ionicons name="barcode-outline" size={18} color={c.accent} />
             <Text style={styles.scanTxt}>Escanear</Text>
           </Pressable>
           <Pressable style={styles.add} onPress={() => { setPrefill(null); setSheet(true); }}>
-            <Ionicons name="add" size={20} color="#fff" />
+            <Ionicons name="add" size={20} color={c.onAccent} />
             <Text style={styles.addTxt}>Alimento</Text>
           </Pressable>
         </View>
       </View>
 
       <View style={styles.card}>
-        <MacroBar label="Kcal" consumed={r0(consumed.kcal)} target={targets?.kcal ?? null} color={Brand.good} unit="" />
-        <MacroBar label="Proteína" consumed={r0(consumed.protein)} target={targets?.protein ?? null} color={Brand.accent} unit="g" />
-        <MacroBar label="Carbos" consumed={r0(consumed.carbs)} target={targets?.carbs ?? null} color={Brand.info} unit="g" />
-        <MacroBar label="Grasa" consumed={r0(consumed.fat)} target={targets?.fat ?? null} color="#fbbf24" unit="g" />
+        <MacroBar label="Kcal" consumed={r0(consumed.kcal)} target={targets?.kcal ?? null} color={c.good} unit="" />
+        <MacroBar label="Proteína" consumed={r0(consumed.protein)} target={targets?.protein ?? null} color={c.accent} unit="g" />
+        <MacroBar label="Carbos" consumed={r0(consumed.carbs)} target={targets?.carbs ?? null} color={c.info} unit="g" />
+        <MacroBar label="Grasa" consumed={r0(consumed.fat)} target={targets?.fat ?? null} color={c.warn} unit="g" />
         {!targets && <Text style={styles.noTarget}>Completa perfil y peso para ver tus objetivos de macros.</Text>}
       </View>
 
@@ -120,7 +122,7 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
               </Text>
             </View>
             <Pressable hitSlop={8} onPress={async () => { await deleteFoodEntry(f.id); load(); }}>
-              <Ionicons name="trash-outline" size={18} color="#f87171" />
+              <Ionicons name="trash-outline" size={18} color={c.bad} />
             </Pressable>
           </View>
         ))
@@ -133,6 +135,7 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
 }
 
 function MacroBar({ label, consumed, target, color, unit }: { label: string; consumed: number; target: number | null; color: string; unit: string }) {
+  const styles = useThemedStyles(makeStyles);
   const pct = target && target > 0 ? Math.min(100, (consumed / target) * 100) : 0;
   return (
     <View style={styles.bar}>
@@ -150,25 +153,26 @@ function MacroBar({ label, consumed, target, color, unit }: { label: string; con
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { gap: 8 },
-  head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  title: { color: Brand.text, fontSize: 16, fontWeight: '800' },
-  actions: { flexDirection: 'row', gap: 8 },
-  scan: { flexDirection: 'row', alignItems: 'center', gap: 4, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 10, paddingVertical: 7, paddingHorizontal: 10 },
-  scanTxt: { color: Brand.accent, fontWeight: '700', fontSize: 13 },
-  add: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: Brand.accentStrong, borderRadius: 10, paddingVertical: 7, paddingHorizontal: 12 },
-  addTxt: { color: '#fff', fontWeight: '700', fontSize: 13 },
-  card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 10 },
-  bar: {},
-  barTop: { flexDirection: 'row', justifyContent: 'space-between' },
-  barLbl: { color: Brand.textMuted, fontSize: 12 },
-  barVal: { color: Brand.text, fontSize: 12, fontWeight: '700' },
-  track: { height: 8, backgroundColor: Brand.track, borderRadius: 99, overflow: 'hidden', marginTop: 4 },
-  fill: { height: '100%', borderRadius: 99 },
-  noTarget: { color: Brand.textMuted, fontSize: 12 },
-  empty: { color: Brand.textMuted, fontSize: 13, fontStyle: 'italic' },
-  foodRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, padding: 12, gap: 10 },
-  foodName: { color: Brand.text, fontSize: 14, fontWeight: '600' },
-  foodSub: { color: Brand.textMuted, fontSize: 12, marginTop: 1 },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    wrap: { gap: 8 },
+    head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    title: { color: c.text, fontSize: 16, fontWeight: '800' },
+    actions: { flexDirection: 'row', gap: 8 },
+    scan: { flexDirection: 'row', alignItems: 'center', gap: 4, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 10, paddingVertical: 7, paddingHorizontal: 10 },
+    scanTxt: { color: c.accent, fontWeight: '700', fontSize: 13 },
+    add: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.accentStrong, borderRadius: 10, paddingVertical: 7, paddingHorizontal: 12 },
+    addTxt: { color: c.onAccent, fontWeight: '700', fontSize: 13 },
+    card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 10 },
+    bar: {},
+    barTop: { flexDirection: 'row', justifyContent: 'space-between' },
+    barLbl: { color: c.textMuted, fontSize: 12 },
+    barVal: { color: c.text, fontSize: 12, fontWeight: '700' },
+    track: { height: 8, backgroundColor: c.track, borderRadius: 99, overflow: 'hidden', marginTop: 4 },
+    fill: { height: '100%', borderRadius: 99 },
+    noTarget: { color: c.textMuted, fontSize: 12 },
+    empty: { color: c.textMuted, fontSize: 13, fontStyle: 'italic' },
+    foodRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, padding: 12, gap: 10 },
+    foodName: { color: c.text, fontSize: 14, fontWeight: '600' },
+    foodSub: { color: c.textMuted, fontSize: 12, marginTop: 1 },
+  });

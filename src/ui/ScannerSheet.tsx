@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Brand } from '@/constants/theme';
+import { useThemedStyles, type Theme } from '@/ui/theme';
 
 interface Props {
   visible: boolean;
@@ -14,6 +14,7 @@ interface Props {
 export function ScannerSheet({ visible, onClose, onScanned }: Props) {
   const [permission, requestPermission] = useCameraPermissions();
   const [handled, setHandled] = useState(false);
+  const styles = useThemedStyles(makeStyles);
 
   useEffect(() => {
     if (visible) setHandled(false);
@@ -62,18 +63,19 @@ export function ScannerSheet({ visible, onClose, onScanned }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#000' },
-  camera: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 30, gap: 14, backgroundColor: Brand.surface },
-  msg: { color: Brand.text, fontSize: 15, textAlign: 'center', lineHeight: 21 },
-  btn: { backgroundColor: Brand.accentStrong, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 24 },
-  btnTxt: { color: '#fff', fontWeight: '800' },
-  linkBtn: { padding: 8 },
-  link: { color: Brand.textMuted },
-  overlay: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
-  frame: { width: '70%', height: 140, borderColor: '#fff', borderWidth: 2, borderRadius: 12, opacity: 0.8 },
-  hint: { color: '#fff', marginTop: 16, fontWeight: '700' },
-  close: { position: 'absolute', bottom: 40, alignSelf: 'center', backgroundColor: '#000a', borderRadius: 12, paddingVertical: 12, paddingHorizontal: 28 },
-  closeTxt: { color: '#fff', fontWeight: '800' },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: '#000' },
+    camera: { flex: 1 },
+    center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 30, gap: 14, backgroundColor: c.surface },
+    msg: { color: c.text, fontSize: 15, textAlign: 'center', lineHeight: 21 },
+    btn: { backgroundColor: c.accentStrong, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 24 },
+    btnTxt: { color: c.onAccent, fontWeight: '800' },
+    linkBtn: { padding: 8 },
+    link: { color: c.textMuted },
+    overlay: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+    frame: { width: '70%', height: 140, borderColor: '#fff', borderWidth: 2, borderRadius: 12, opacity: 0.8 },
+    hint: { color: '#fff', marginTop: 16, fontWeight: '700' },
+    close: { position: 'absolute', bottom: 40, alignSelf: 'center', backgroundColor: '#000a', borderRadius: 12, paddingVertical: 12, paddingHorizontal: 28 },
+    closeTxt: { color: '#fff', fontWeight: '800' },
+  });

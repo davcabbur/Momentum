@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Alert, AppState, Modal, Pressable, ScrollView, StyleSheet, Text, Vibration, View } from 'react-native';
 import Body from 'react-native-body-highlighter';
 
-import { Brand } from '@/constants/theme';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { computeTrend } from '@/bodyweight/trend';
 import { GLOSSARY } from '@/education/glossary';
 import { getProfile, listWeights } from '@/db/bodyweight-repo';
@@ -68,6 +68,8 @@ interface Props {
 type Editing = { setNumber: number; weightKg: number; reps: number; rir: number | null; setType: string; exists: boolean };
 
 export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerciseName, muscleGroup, targetSets, repMin, repMax, onSessionCreated, onClose }: Props) {
+  const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [sid, setSid] = useState<number | null>(sessionId);
   const [sets, setSets] = useState<SetLog[]>([]);
   const [last, setLast] = useState<{ date: string; sets: SetLog[] } | null>(null);
@@ -308,13 +310,13 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
               <View style={styles.howBox}>
                 <Pressable style={styles.howHead} onPress={() => setShowHow((v) => !v)}>
                   <Text style={styles.howTitle}>Cómo hacerlo {muscleGroup ? `· ${muscleGroup}` : ''}</Text>
-                  <Ionicons name={showHow ? 'chevron-up' : 'chevron-down'} size={16} color={Brand.accent} />
+                  <Ionicons name={showHow ? 'chevron-up' : 'chevron-down'} size={16} color={c.accent} />
                 </Pressable>
                 {showHow && (
                   <>
                     {mv && (
                       <View style={styles.bodyBox}>
-                        <Body data={[{ slug: mv.slug, intensity: 1 }]} side={mv.side} gender="male" colors={[Brand.accent]} defaultFill="#2e2e3a" border="none" scale={0.5} />
+                        <Body data={[{ slug: mv.slug, intensity: 1 }]} side={mv.side} gender="male" colors={[c.accent]} defaultFill="#2e2e3a" border="none" scale={0.5} />
                       </View>
                     )}
                     {info?.howTo.map((cue, i) => (
@@ -356,7 +358,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
 
             {restLeft > 0 && (
               <View style={styles.restBox}>
-                <Ionicons name="timer-outline" size={20} color={Brand.good} />
+                <Ionicons name="timer-outline" size={20} color={c.good} />
                 <Text style={styles.restTime}>Descanso {mmss(restLeft)}</Text>
                 <Pressable style={styles.restBtn} onPress={() => setRestEnd((e) => (e ?? Date.now()) + 30000)}>
                   <Text style={styles.restBtnTxt}>+30s</Text>
@@ -375,7 +377,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
             </View>
             {sets.map((s) => (
               <Pressable key={s.id} style={styles.row} onPress={() => openEdit(s)}>
-                <Text style={[styles.cell, { width: 44, color: Brand.textMuted }]}>{s.setNumber}</Text>
+                <Text style={[styles.cell, { width: 44, color: c.textMuted }]}>{s.setNumber}</Text>
                 <Text style={[styles.cell, { flex: 1 }]}>{s.weightKg}</Text>
                 <Text style={[styles.cell, { flex: 1 }]}>{s.reps}</Text>
                 <Text style={[styles.cell, { width: 50 }]}>{s.rir ?? '—'}</Text>
@@ -419,7 +421,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
                 </View>
                 <Pressable style={styles.lblRow} onPress={() => showTerm('rir')}>
                   <Text style={styles.lbl}>RIR</Text>
-                  <Ionicons name="information-circle-outline" size={14} color={Brand.accent} />
+                  <Ionicons name="information-circle-outline" size={14} color={c.accent} />
                 </Pressable>
                 <View style={styles.chips}>
                   {RIRS.map((r) => (
@@ -433,7 +435,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
                 </View>
                 <Pressable style={styles.lblRow} onPress={showTipos}>
                   <Text style={styles.lbl}>Tipo de serie</Text>
-                  <Ionicons name="information-circle-outline" size={14} color={Brand.accent} />
+                  <Ionicons name="information-circle-outline" size={14} color={c.accent} />
                 </Pressable>
                 <View style={styles.chips}>
                   {TYPES.map((t) => (
@@ -462,56 +464,57 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
   backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
-  sheet: { backgroundColor: Brand.card, padding: 18, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '92%' },
-  title: { color: Brand.text, fontSize: 18, fontWeight: '800', marginBottom: 8 },
-  bodyBox: { backgroundColor: Brand.surface, borderRadius: 12, borderColor: Brand.cardBorder, borderWidth: 1, alignItems: 'center', paddingVertical: 10, gap: 4, marginBottom: 8 },
-  bodyCaption: { color: Brand.textMuted, fontSize: 12, textTransform: 'capitalize' },
-  imagePlaceholder: { width: '100%', height: 90, borderRadius: 12, backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 },
-  placeholderTxt: { color: Brand.textMuted, fontSize: 12, textTransform: 'capitalize' },
-  howBox: { backgroundColor: Brand.surface, borderRadius: 12, padding: 12, marginBottom: 8, gap: 4 },
+  sheet: { backgroundColor: c.card, padding: 18, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '92%' },
+  title: { color: c.text, fontSize: 18, fontWeight: '800', marginBottom: 8 },
+  bodyBox: { backgroundColor: c.surface, borderRadius: 12, borderColor: c.cardBorder, borderWidth: 1, alignItems: 'center', paddingVertical: 10, gap: 4, marginBottom: 8 },
+  bodyCaption: { color: c.textMuted, fontSize: 12, textTransform: 'capitalize' },
+  imagePlaceholder: { width: '100%', height: 90, borderRadius: 12, backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 },
+  placeholderTxt: { color: c.textMuted, fontSize: 12, textTransform: 'capitalize' },
+  howBox: { backgroundColor: c.surface, borderRadius: 12, padding: 12, marginBottom: 8, gap: 4 },
   howHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  howTitle: { color: Brand.accent, fontSize: 13, fontWeight: '700' },
-  cue: { color: Brand.text, fontSize: 13, lineHeight: 19 },
-  target: { color: Brand.accent, fontSize: 13, fontWeight: '700', marginTop: 2 },
-  last: { color: Brand.textMuted, fontSize: 12, marginTop: 4 },
-  bwNote: { color: Brand.info, fontSize: 12, marginTop: 4, lineHeight: 17 },
-  hint: { color: Brand.textMuted, fontSize: 12, marginTop: 4 },
-  hintReady: { color: Brand.good, fontWeight: '700' },
-  warn: { color: '#fbbf24', fontSize: 12, marginTop: 6, lineHeight: 18 },
+  howTitle: { color: c.accent, fontSize: 13, fontWeight: '700' },
+  cue: { color: c.text, fontSize: 13, lineHeight: 19 },
+  target: { color: c.accent, fontSize: 13, fontWeight: '700', marginTop: 2 },
+  last: { color: c.textMuted, fontSize: 12, marginTop: 4 },
+  bwNote: { color: c.info, fontSize: 12, marginTop: 4, lineHeight: 17 },
+  hint: { color: c.textMuted, fontSize: 12, marginTop: 4 },
+  hintReady: { color: c.good, fontWeight: '700' },
+  warn: { color: c.warn, fontSize: 12, marginTop: 6, lineHeight: 18 },
   deloadBox: { backgroundColor: '#2a2412', borderColor: '#5c4d1e', borderWidth: 1, borderRadius: 12, padding: 12, marginTop: 8, gap: 8 },
-  deloadTxt: { color: '#fbbf24', fontSize: 12, lineHeight: 18 },
+  deloadTxt: { color: c.warn, fontSize: 12, lineHeight: 18 },
   deloadBtn: { backgroundColor: '#5c4d1e', borderRadius: 9, paddingVertical: 8, alignItems: 'center' },
   deloadBtnTxt: { color: '#fde68a', fontWeight: '800', fontSize: 13 },
-  restBox: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#15251c', borderRadius: 12, padding: 12, marginTop: 8 },
-  restTime: { color: Brand.good, fontSize: 16, fontWeight: '800', flex: 1 },
-  restBtn: { backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 9, paddingVertical: 6, paddingHorizontal: 12 },
-  restBtnTxt: { color: Brand.text, fontWeight: '700', fontSize: 12 },
+  restBox: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: c.goodSurface, borderRadius: 12, padding: 12, marginTop: 8 },
+  restTime: { color: c.good, fontSize: 16, fontWeight: '800', flex: 1 },
+  restBtn: { backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 9, paddingVertical: 6, paddingHorizontal: 12 },
+  restBtnTxt: { color: c.text, fontWeight: '700', fontSize: 12 },
   head: { flexDirection: 'row', gap: 8, paddingHorizontal: 4, marginTop: 8 },
-  hCell: { color: Brand.textMuted, fontSize: 10, textTransform: 'uppercase' },
-  row: { flexDirection: 'row', gap: 8, alignItems: 'center', backgroundColor: Brand.surface, borderRadius: 10, paddingHorizontal: 4, paddingVertical: 10, marginTop: 4 },
-  cell: { color: Brand.text, fontWeight: '700', textAlign: 'center' },
-  addSet: { marginTop: 8, padding: 10, alignItems: 'center', borderWidth: 1, borderColor: Brand.cardBorder, borderStyle: 'dashed', borderRadius: 10 },
-  addSetTxt: { color: Brand.accent, fontWeight: '700' },
-  focus: { marginTop: 12, borderTopWidth: 1, borderTopColor: Brand.cardBorder, paddingTop: 12, gap: 8 },
-  focusTitle: { color: Brand.text, fontWeight: '700' },
-  recLine: { color: Brand.accent, fontSize: 12, fontWeight: '600', marginTop: 4, marginBottom: 2 },
-  stepper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Brand.surface, borderRadius: 12, padding: 8 },
-  stepBtn: { width: 44, height: 44, borderRadius: 10, backgroundColor: Brand.cardBorder, alignItems: 'center', justifyContent: 'center' },
-  stepTxt: { color: Brand.accent, fontSize: 24, fontWeight: '700' },
+  hCell: { color: c.textMuted, fontSize: 10, textTransform: 'uppercase' },
+  row: { flexDirection: 'row', gap: 8, alignItems: 'center', backgroundColor: c.surface, borderRadius: 10, paddingHorizontal: 4, paddingVertical: 10, marginTop: 4 },
+  cell: { color: c.text, fontWeight: '700', textAlign: 'center' },
+  addSet: { marginTop: 8, padding: 10, alignItems: 'center', borderWidth: 1, borderColor: c.cardBorder, borderStyle: 'dashed', borderRadius: 10 },
+  addSetTxt: { color: c.accent, fontWeight: '700' },
+  focus: { marginTop: 12, borderTopWidth: 1, borderTopColor: c.cardBorder, paddingTop: 12, gap: 8 },
+  focusTitle: { color: c.text, fontWeight: '700' },
+  recLine: { color: c.accent, fontSize: 12, fontWeight: '600', marginTop: 4, marginBottom: 2 },
+  stepper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: c.surface, borderRadius: 12, padding: 8 },
+  stepBtn: { width: 44, height: 44, borderRadius: 10, backgroundColor: c.cardBorder, alignItems: 'center', justifyContent: 'center' },
+  stepTxt: { color: c.accent, fontSize: 24, fontWeight: '700' },
   stepVal: { alignItems: 'center', flexDirection: 'row', gap: 4 },
-  stepValTxt: { color: Brand.text, fontSize: 24, fontWeight: '800' },
-  stepUnit: { color: Brand.textMuted, fontSize: 12 },
-  lbl: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase' },
+  stepValTxt: { color: c.text, fontSize: 24, fontWeight: '800' },
+  stepUnit: { color: c.textMuted, fontSize: 12 },
+  lbl: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase' },
   lblRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   chips: { flexDirection: 'row', gap: 6 },
-  chip: { flex: 1, backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 9, paddingVertical: 8, alignItems: 'center' },
-  chipOn: { borderColor: Brand.accentStrong, backgroundColor: '#241f3a' },
-  chipTxt: { color: Brand.textMuted, fontWeight: '700', fontSize: 12 },
-  chipTxtOn: { color: Brand.text },
-  done: { backgroundColor: Brand.good, borderRadius: 12, padding: 14, marginTop: 6 },
-  doneTxt: { textAlign: 'center', color: '#06240f', fontWeight: '800' },
+  chip: { flex: 1, backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 9, paddingVertical: 8, alignItems: 'center' },
+  chipOn: { borderColor: c.accentStrong, backgroundColor: c.accentSurface },
+  chipTxt: { color: c.textMuted, fontWeight: '700', fontSize: 12 },
+  chipTxtOn: { color: c.text },
+  done: { backgroundColor: c.good, borderRadius: 12, padding: 14, marginTop: 6 },
+  doneTxt: { textAlign: 'center', color: c.onGood, fontWeight: '800' },
   del: { padding: 8 },
-  delTxt: { textAlign: 'center', color: '#f87171', fontWeight: '700' },
+  delTxt: { textAlign: 'center', color: c.bad, fontWeight: '700' },
 });

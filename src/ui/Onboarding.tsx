@@ -3,10 +3,10 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 
 import { formatDate, parseDmy } from '@/bodyweight/format';
 import { estimateTargetDate, estimateTargetWeight, suggestGoal } from '@/bodyweight/goal';
-import { Brand } from '@/constants/theme';
 import { setGoal, setLevel, setProfile, upsertWeight } from '@/db/bodyweight-repo';
 import { kcalForTarget } from '@/nutrition/kcal';
 import { DateField } from '@/ui/DateField';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 
 const SEXES = [
   { key: 'male', label: 'Hombre' },
@@ -40,6 +40,8 @@ function num(s: string): number {
 }
 
 export function Onboarding({ onDone }: { onDone: () => void }) {
+  const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const todayIso = new Date().toISOString().slice(0, 10);
 
   const [step, setStep] = useState(0);
@@ -156,16 +158,16 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             ))}
           </View>
           <Text style={[styles.label, { marginTop: 16 }]}>Edad</Text>
-          <TextInput value={age} onChangeText={setAge} keyboardType="number-pad" placeholder="años" placeholderTextColor={Brand.textMuted} style={styles.input} />
+          <TextInput value={age} onChangeText={setAge} keyboardType="number-pad" placeholder="años" placeholderTextColor={c.textMuted} style={styles.input} />
           <Text style={[styles.label, { marginTop: 16 }]}>Altura (cm)</Text>
-          <TextInput value={height} onChangeText={setHeight} keyboardType="number-pad" placeholder="cm" placeholderTextColor={Brand.textMuted} style={styles.input} />
+          <TextInput value={height} onChangeText={setHeight} keyboardType="number-pad" placeholder="cm" placeholderTextColor={c.textMuted} style={styles.input} />
         </>
       )}
 
       {step === 1 && (
         <>
           <Text style={styles.label}>Peso inicial (kg)</Text>
-          <TextInput value={weight} onChangeText={setWeight} keyboardType="decimal-pad" placeholder="kg" placeholderTextColor={Brand.textMuted} style={styles.input} />
+          <TextInput value={weight} onChangeText={setWeight} keyboardType="decimal-pad" placeholder="kg" placeholderTextColor={c.textMuted} style={styles.input} />
           <Text style={[styles.label, { marginTop: 16 }]}>Fecha de inicio</Text>
           <Text style={styles.help}>Escríbela o elígela en el calendario. Por defecto, hoy.</Text>
           <DateField value={dateStr} onChange={setDateStr} />
@@ -213,7 +215,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             solo registrando tu peso (lo defines luego cuando quieras).
           </Text>
           <Text style={[styles.label, { marginTop: 8 }]}>Peso objetivo (kg)</Text>
-          <TextInput value={target} onChangeText={onChangeTarget} keyboardType="decimal-pad" placeholder="kg" placeholderTextColor={Brand.textMuted} style={styles.input} />
+          <TextInput value={target} onChangeText={onChangeTarget} keyboardType="decimal-pad" placeholder="kg" placeholderTextColor={c.textMuted} style={styles.input} />
           <Text style={[styles.label, { marginTop: 16 }]}>Fecha objetivo</Text>
           <DateField value={targetDateStr} onChange={onChangeTargetDate} />
 
@@ -252,43 +254,44 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Brand.surface },
-  content: { padding: 20, gap: 8 },
-  kicker: { color: Brand.accent, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' },
-  h1: { color: Brand.text, fontSize: 24, fontWeight: '800', marginBottom: 8 },
-  label: { color: Brand.text, fontSize: 15, fontWeight: '600' },
-  help: { color: Brand.textMuted, fontSize: 12, marginBottom: 4 },
-  input: {
-    color: Brand.text,
-    fontSize: 22,
-    fontWeight: '700',
-    backgroundColor: Brand.card,
-    borderColor: Brand.cardBorder,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginTop: 6,
-  },
-  rowOptions: { flexDirection: 'row', gap: 10, marginTop: 6 },
-  pill: { flex: 1, backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, padding: 14, alignItems: 'center' },
-  pillOn: { borderColor: Brand.accentStrong, backgroundColor: '#241f3a' },
-  pillTxt: { color: Brand.textMuted, fontWeight: '700' },
-  pillTxtOn: { color: Brand.text },
-  optionList: { gap: 10, marginTop: 6 },
-  option: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, padding: 14 },
-  optionOn: { borderColor: Brand.accentStrong, backgroundColor: '#241f3a' },
-  optionLabel: { color: Brand.text, fontSize: 16, fontWeight: '700' },
-  optionDesc: { color: Brand.textMuted, fontSize: 12, marginTop: 2 },
-  kcalBox: { backgroundColor: '#1a2330', borderRadius: 14, padding: 14, marginTop: 16 },
-  kcalTitle: { color: Brand.good, fontSize: 22, fontWeight: '800' },
-  kcalDesc: { color: '#b9c4d0', fontSize: 12, marginTop: 4 },
-  kcalWarn: { color: '#fbbf24', fontSize: 12, marginTop: 8 },
-  nav: { flexDirection: 'row', gap: 10, marginTop: 24 },
-  back: { paddingVertical: 14, paddingHorizontal: 18, borderRadius: 12, borderWidth: 1, borderColor: Brand.cardBorder },
-  backTxt: { color: Brand.text, fontWeight: '700' },
-  next: { flex: 1, backgroundColor: Brand.accentStrong, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
-  nextDisabled: { opacity: 0.4 },
-  nextTxt: { color: '#fff', fontWeight: '800', fontSize: 15 },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.surface },
+    content: { padding: 20, gap: 8 },
+    kicker: { color: c.accent, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' },
+    h1: { color: c.text, fontSize: 24, fontWeight: '800', marginBottom: 8 },
+    label: { color: c.text, fontSize: 15, fontWeight: '600' },
+    help: { color: c.textMuted, fontSize: 12, marginBottom: 4 },
+    input: {
+      color: c.text,
+      fontSize: 22,
+      fontWeight: '700',
+      backgroundColor: c.card,
+      borderColor: c.cardBorder,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      marginTop: 6,
+    },
+    rowOptions: { flexDirection: 'row', gap: 10, marginTop: 6 },
+    pill: { flex: 1, backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, padding: 14, alignItems: 'center' },
+    pillOn: { borderColor: c.accentStrong, backgroundColor: c.accentSurface },
+    pillTxt: { color: c.textMuted, fontWeight: '700' },
+    pillTxtOn: { color: c.text },
+    optionList: { gap: 10, marginTop: 6 },
+    option: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, padding: 14 },
+    optionOn: { borderColor: c.accentStrong, backgroundColor: c.accentSurface },
+    optionLabel: { color: c.text, fontSize: 16, fontWeight: '700' },
+    optionDesc: { color: c.textMuted, fontSize: 12, marginTop: 2 },
+    kcalBox: { backgroundColor: c.infoSurface, borderRadius: 14, padding: 14, marginTop: 16 },
+    kcalTitle: { color: c.good, fontSize: 22, fontWeight: '800' },
+    kcalDesc: { color: c.infoText, fontSize: 12, marginTop: 4 },
+    kcalWarn: { color: c.warn, fontSize: 12, marginTop: 8 },
+    nav: { flexDirection: 'row', gap: 10, marginTop: 24 },
+    back: { paddingVertical: 14, paddingHorizontal: 18, borderRadius: 12, borderWidth: 1, borderColor: c.cardBorder },
+    backTxt: { color: c.text, fontWeight: '700' },
+    next: { flex: 1, backgroundColor: c.accentStrong, borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
+    nextDisabled: { opacity: 0.4 },
+    nextTxt: { color: c.onAccent, fontWeight: '800', fontSize: 15 },
+  });

@@ -65,18 +65,75 @@ export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
 
 /**
- * Paleta de marca de Momentum (acentos del diseño aprobado).
- * Se afinará junto al modo claro/oscuro cuando pulamos la UI sobre el dispositivo.
+ * Paleta de marca de Momentum (identidad de Claude Design). Dos temas (claro/oscuro)
+ * con las mismas claves, para cambiar en caliente con `useTheme()`. Acento violeta-índigo
+ * en ambos temas; verde/azul/ámbar/rojo solo para significado (progreso, info, aviso, error).
+ *
+ * Claves "surface" = tintes (cajas de info, chips activos, fondos de icono);
+ * claves "on..." = texto sobre botones de color.
  */
-export const Brand = {
-  accent: '#a78bfa',
-  accentStrong: '#8b5cf6',
-  good: '#34d399',
-  info: '#7dd3fc',
-  surface: '#0f0f13',
-  card: '#15151b',
-  cardBorder: '#26262f',
-  track: '#23232c',
-  text: '#e9e9ef',
-  textMuted: '#8a8a96',
-} as const;
+export interface Theme {
+  accent: string;
+  accentStrong: string;
+  accentSurface: string; // tinte de acento (chips/pills activos, fondos de icono)
+  good: string;
+  goodSurface: string;
+  onGood: string; // texto sobre botones verdes
+  info: string;
+  infoSurface: string; // cajas informativas / bienvenida
+  infoText: string; // texto dentro de infoSurface
+  warn: string;
+  bad: string;
+  onAccent: string; // texto sobre botones de acento
+  surface: string; // fondo de pantalla
+  card: string;
+  cardBorder: string;
+  track: string; // fondo de barras de progreso
+  text: string;
+  textMuted: string;
+  scheme: 'light' | 'dark';
+}
+
+export const darkTheme: Theme = {
+  accent: '#8E80FF',
+  accentStrong: '#6353EF',
+  accentSurface: '#221F3D',
+  good: '#36D17E',
+  goodSurface: '#13241C',
+  onGood: '#06240F',
+  info: '#5B9BFF',
+  infoSurface: '#16202E',
+  infoText: '#B9C4D0',
+  warn: '#F2B34F',
+  bad: '#F87171',
+  onAccent: '#FFFFFF',
+  surface: '#0E0F13',
+  card: '#181A20',
+  cardBorder: '#2A2D37',
+  track: '#23262F',
+  text: '#F3F5F9',
+  textMuted: '#969CAB',
+  scheme: 'dark',
+};
+
+export const lightTheme: Theme = {
+  accent: '#6353EF',
+  accentStrong: '#4B39D6',
+  accentSurface: '#ECEAFE',
+  good: '#1E9E57',
+  goodSurface: '#E5F5EC',
+  onGood: '#FFFFFF',
+  info: '#2563EB',
+  infoSurface: '#E8F0FE',
+  infoText: '#3A4654',
+  warn: '#C2710C',
+  bad: '#DC2626',
+  onAccent: '#FFFFFF',
+  surface: '#F6F7F9',
+  card: '#FFFFFF',
+  cardBorder: '#E6E8EF',
+  track: '#E6E8EF',
+  text: '#14161C',
+  textMuted: '#5B616E',
+  scheme: 'light',
+};

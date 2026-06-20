@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Brand } from '@/constants/theme';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { addFoodEntry, listKnownFoods } from '@/db/food-repo';
 import { portionMacros, type Macros } from '@/nutrition/macros';
 import { searchProducts } from '@/nutrition/openfoodfacts';
@@ -25,6 +25,8 @@ interface Props {
 
 /** Alta manual de alimento por valores por 100 g (como las etiquetas). */
 export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
+  const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [name, setName] = useState('');
   const [grams, setGrams] = useState('100');
   const [kcal, setKcal] = useState('');
@@ -135,7 +137,7 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
             <Text style={styles.title}>Añadir alimento</Text>
 
             <Text style={styles.lbl}>Nombre</Text>
-            <TextInput value={name} onChangeText={setName} placeholder="p. ej. Avena" placeholderTextColor={Brand.textMuted} style={styles.input} />
+            <TextInput value={name} onChangeText={setName} placeholder="p. ej. Avena" placeholderTextColor={c.textMuted} style={styles.input} />
             {(suggestions.length > 0 || searching) && (
               <View style={styles.suggBox}>
                 {suggestions.map((s) => (
@@ -152,7 +154,7 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
             )}
 
             <Text style={styles.lbl}>Ración (gramos)</Text>
-            <TextInput value={grams} onChangeText={setGrams} keyboardType="decimal-pad" placeholder="g" placeholderTextColor={Brand.textMuted} style={styles.input} />
+            <TextInput value={grams} onChangeText={setGrams} keyboardType="decimal-pad" placeholder="g" placeholderTextColor={c.textMuted} style={styles.input} />
 
             <Text style={styles.section}>Por 100 g (de la etiqueta)</Text>
             <View style={styles.grid}>
@@ -184,37 +186,40 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
 }
 
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLbl}>{label}</Text>
-      <TextInput value={value} onChangeText={onChange} keyboardType="decimal-pad" placeholder="0" placeholderTextColor={Brand.textMuted} style={styles.fieldInput} />
+      <TextInput value={value} onChangeText={onChange} keyboardType="decimal-pad" placeholder="0" placeholderTextColor={c.textMuted} style={styles.fieldInput} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
-  sheet: { backgroundColor: Brand.card, padding: 18, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '90%' },
-  title: { color: Brand.text, fontSize: 18, fontWeight: '800', marginBottom: 8 },
-  lbl: { color: Brand.textMuted, fontSize: 12, marginTop: 8 },
-  section: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 14 },
-  input: { color: Brand.text, fontSize: 18, fontWeight: '700', backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, marginTop: 4 },
-  suggBox: { backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, marginTop: 6, overflow: 'hidden' },
-  sugg: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: Brand.cardBorder },
-  suggName: { color: Brand.text, fontSize: 14, fontWeight: '600' },
-  suggSrc: { color: Brand.textMuted, fontSize: 10, marginTop: 1 },
-  suggMacro: { color: Brand.textMuted, fontSize: 12, marginLeft: 8 },
-  suggSearching: { color: Brand.textMuted, fontSize: 12, fontStyle: 'italic', padding: 12 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 },
-  field: { flexBasis: '47%', flexGrow: 1 },
-  fieldLbl: { color: Brand.textMuted, fontSize: 12 },
-  fieldInput: { color: Brand.text, fontSize: 16, fontWeight: '700', backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 9, marginTop: 4 },
-  portion: { backgroundColor: Brand.surface, borderColor: Brand.accentStrong, borderWidth: 1, borderRadius: 12, padding: 14, marginTop: 14, alignItems: 'center', gap: 4 },
-  portionLbl: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700' },
-  portionKcal: { color: Brand.good, fontSize: 24, fontWeight: '800' },
-  portionRow: { flexDirection: 'row', gap: 16 },
-  portionMacro: { color: Brand.text, fontSize: 13, fontWeight: '700' },
-  save: { backgroundColor: Brand.accentStrong, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 12 },
-  saveOff: { opacity: 0.4 },
-  saveTxt: { color: '#fff', fontWeight: '800', fontSize: 15 },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
+    sheet: { backgroundColor: c.card, padding: 18, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '90%' },
+    title: { color: c.text, fontSize: 18, fontWeight: '800', marginBottom: 8 },
+    lbl: { color: c.textMuted, fontSize: 12, marginTop: 8 },
+    section: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 14 },
+    input: { color: c.text, fontSize: 18, fontWeight: '700', backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, marginTop: 4 },
+    suggBox: { backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, marginTop: 6, overflow: 'hidden' },
+    sugg: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: c.cardBorder },
+    suggName: { color: c.text, fontSize: 14, fontWeight: '600' },
+    suggSrc: { color: c.textMuted, fontSize: 10, marginTop: 1 },
+    suggMacro: { color: c.textMuted, fontSize: 12, marginLeft: 8 },
+    suggSearching: { color: c.textMuted, fontSize: 12, fontStyle: 'italic', padding: 12 },
+    grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 },
+    field: { flexBasis: '47%', flexGrow: 1 },
+    fieldLbl: { color: c.textMuted, fontSize: 12 },
+    fieldInput: { color: c.text, fontSize: 16, fontWeight: '700', backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 9, marginTop: 4 },
+    portion: { backgroundColor: c.surface, borderColor: c.accentStrong, borderWidth: 1, borderRadius: 12, padding: 14, marginTop: 14, alignItems: 'center', gap: 4 },
+    portionLbl: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700' },
+    portionKcal: { color: c.good, fontSize: 24, fontWeight: '800' },
+    portionRow: { flexDirection: 'row', gap: 16 },
+    portionMacro: { color: c.text, fontSize: 13, fontWeight: '700' },
+    save: { backgroundColor: c.accentStrong, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 12 },
+    saveOff: { opacity: 0.4 },
+    saveTxt: { color: c.onAccent, fontWeight: '800', fontSize: 15 },
+  });

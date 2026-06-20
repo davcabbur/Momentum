@@ -3,11 +3,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Brand } from '@/constants/theme';
 import { getHistoryRows } from '@/db/workout-repo';
 import { buildProgress, type ExerciseProgress } from '@/training/progression';
 import { detectStall, deloadAdvice } from '@/training/intelligence';
 import { LineChart } from './LineChart';
+import { useTheme, useThemedStyles, type Theme } from './theme';
 import { useRefresh } from './useRefresh';
 import { WeightDetail } from './WeightDetail';
 import { WeightHistory } from './WeightHistory';
@@ -20,6 +20,8 @@ type Tab = 'fuerza' | 'peso';
 
 export function ProgresoScreen() {
   const router = useRouter();
+  const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [items, setItems] = useState<ExerciseProgress[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [tab, setTab] = useState<Tab>('fuerza');
@@ -54,11 +56,11 @@ export function ProgresoScreen() {
 
       <View style={styles.tabs}>
         <Pressable style={[styles.tab, tab === 'fuerza' && styles.tabOn]} onPress={() => setTab('fuerza')}>
-          <Ionicons name="barbell-outline" size={16} color={tab === 'fuerza' ? Brand.text : Brand.textMuted} />
+          <Ionicons name="barbell-outline" size={16} color={tab === 'fuerza' ? c.text : c.textMuted} />
           <Text style={[styles.tabTxt, tab === 'fuerza' && styles.tabTxtOn]}>Fuerza</Text>
         </Pressable>
         <Pressable style={[styles.tab, tab === 'peso' && styles.tabOn]} onPress={() => setTab('peso')}>
-          <Ionicons name="trending-up-outline" size={16} color={tab === 'peso' ? Brand.text : Brand.textMuted} />
+          <Ionicons name="trending-up-outline" size={16} color={tab === 'peso' ? c.text : c.textMuted} />
           <Text style={[styles.tabTxt, tab === 'peso' && styles.tabTxtOn]}>Peso corporal</Text>
         </Pressable>
       </View>
@@ -66,9 +68,9 @@ export function ProgresoScreen() {
       {tab === 'fuerza' ? (
         <>
           <Pressable style={styles.histBtn} onPress={() => router.push('/historial')}>
-            <Ionicons name="calendar-outline" size={18} color={Brand.accent} />
+            <Ionicons name="calendar-outline" size={18} color={c.accent} />
             <Text style={styles.histTxt}>Historial de sesiones</Text>
-            <Ionicons name="chevron-forward" size={18} color={Brand.textMuted} />
+            <Ionicons name="chevron-forward" size={18} color={c.textMuted} />
           </Pressable>
 
           {loaded && items.length === 0 && (
@@ -95,12 +97,12 @@ export function ProgresoScreen() {
                       <Ionicons
                         name={dir > 0 ? 'arrow-up' : dir < 0 ? 'arrow-down' : 'remove'}
                         size={14}
-                        color={dir > 0 ? Brand.good : Brand.textMuted}
+                        color={dir > 0 ? c.good : c.textMuted}
                       />
-                      <Text style={[styles.diffTxt, { color: dir > 0 ? Brand.good : Brand.textMuted }]}>{diffStr}</Text>
+                      <Text style={[styles.diffTxt, { color: dir > 0 ? c.good : c.textMuted }]}>{diffStr}</Text>
                     </View>
                   )}
-                  <Ionicons name={isOpen ? 'chevron-up' : 'chevron-down'} size={18} color={Brand.textMuted} />
+                  <Ionicons name={isOpen ? 'chevron-up' : 'chevron-down'} size={18} color={c.textMuted} />
                 </Pressable>
 
                 {isOpen && (
@@ -141,30 +143,31 @@ export function ProgresoScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Brand.surface },
-  content: { padding: 14, gap: 10 },
-  h1: { color: Brand.text, fontSize: 20, fontWeight: '800' },
-  tabs: { flexDirection: 'row', backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, padding: 4, gap: 4 },
-  tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 9, borderRadius: 9 },
-  tabOn: { backgroundColor: '#241f3a' },
-  tabTxt: { color: Brand.textMuted, fontWeight: '700', fontSize: 13 },
-  tabTxtOn: { color: Brand.text },
-  empty: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, padding: 18 },
-  emptyTxt: { color: Brand.textMuted, fontSize: 14, lineHeight: 20, textAlign: 'center' },
-  card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
-  head: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  name: { color: Brand.text, fontSize: 15, fontWeight: '700', flex: 1 },
-  headKg: { color: Brand.accent, fontSize: 15, fontWeight: '800' },
-  diffWrap: { flexDirection: 'row', alignItems: 'center', gap: 1, minWidth: 64, justifyContent: 'flex-end' },
-  diffTxt: { fontSize: 13, fontWeight: '700' },
-  body: { gap: 10, marginTop: 12 },
-  statsRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  stat: { alignItems: 'center', flex: 1 },
-  statVal: { color: Brand.accent, fontSize: 17, fontWeight: '800' },
-  statLbl: { color: Brand.textMuted, fontSize: 11, marginTop: 2 },
-  note: { color: Brand.textMuted, fontSize: 12, fontStyle: 'italic' },
-  deload: { color: '#fbbf24', fontSize: 12, lineHeight: 18, marginTop: 2 },
-  histBtn: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  histTxt: { color: Brand.text, fontSize: 15, fontWeight: '600', flex: 1 },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.surface },
+    content: { padding: 14, gap: 10 },
+    h1: { color: c.text, fontSize: 20, fontWeight: '800' },
+    tabs: { flexDirection: 'row', backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, padding: 4, gap: 4 },
+    tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 9, borderRadius: 9 },
+    tabOn: { backgroundColor: c.accentSurface },
+    tabTxt: { color: c.textMuted, fontWeight: '700', fontSize: 13 },
+    tabTxtOn: { color: c.text },
+    empty: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, padding: 18 },
+    emptyTxt: { color: c.textMuted, fontSize: 14, lineHeight: 20, textAlign: 'center' },
+    card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12 },
+    head: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    name: { color: c.text, fontSize: 15, fontWeight: '700', flex: 1 },
+    headKg: { color: c.accent, fontSize: 15, fontWeight: '800' },
+    diffWrap: { flexDirection: 'row', alignItems: 'center', gap: 1, minWidth: 64, justifyContent: 'flex-end' },
+    diffTxt: { fontSize: 13, fontWeight: '700' },
+    body: { gap: 10, marginTop: 12 },
+    statsRow: { flexDirection: 'row', justifyContent: 'space-between' },
+    stat: { alignItems: 'center', flex: 1 },
+    statVal: { color: c.accent, fontSize: 17, fontWeight: '800' },
+    statLbl: { color: c.textMuted, fontSize: 11, marginTop: 2 },
+    note: { color: c.textMuted, fontSize: 12, fontStyle: 'italic' },
+    deload: { color: c.warn, fontSize: 12, lineHeight: 18, marginTop: 2 },
+    histBtn: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 10 },
+    histTxt: { color: c.text, fontSize: 15, fontWeight: '600', flex: 1 },
+  });

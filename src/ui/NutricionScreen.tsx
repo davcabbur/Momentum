@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { addDays, daysBetween } from '@/bodyweight/goal';
 import { computeTrend, trendSlopePerWeek } from '@/bodyweight/trend';
-import { Brand } from '@/constants/theme';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { getGoal, getProfile, listWeights } from '@/db/bodyweight-repo';
 import { intakeByDay } from '@/db/food-repo';
 import { estimateRealTdee } from '@/nutrition/tdee-estimate';
@@ -45,6 +45,8 @@ interface State {
 }
 
 export function NutricionScreen() {
+  const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [s, setS] = useState<State | null>(null);
 
   const load = useCallback(async () => {
@@ -116,19 +118,19 @@ export function NutricionScreen() {
   const trackMsg = (p: LiveKcalPlan): { color: string; text: string } => {
     switch (p.track) {
       case 'en-camino':
-        return { color: Brand.good, text: `Vas en camino 👍 Mantén unas ${kcal(p.targetKcal)} kcal/día.` };
+        return { color: c.good, text: `Vas en camino 👍 Mantén unas ${kcal(p.targetKcal)} kcal/día.` };
       case 'rapido':
         return {
-          color: Brand.info,
+          color: c.info,
           text: `Vas algo más rápido de lo previsto (${rate(p.actualRatePerWeek!)}). Para cuidar el músculo y que sea sostenible, podrías subir a ~${kcal(p.adjustedKcal!)} kcal/día.`,
         };
       case 'lento':
         return {
-          color: '#fbbf24',
+          color: c.warn,
           text: `Vas algo más lento de lo previsto (${rate(p.actualRatePerWeek!)}). Puedes ajustar a ~${kcal(p.adjustedKcal!)} kcal/día o darle más tiempo, sin agobios.`,
         };
       default:
-        return { color: Brand.textMuted, text: 'Aún no hay tendencia suficiente para ajustar. Sigue registrando tu peso y en unas semanas afino las kcal.' };
+        return { color: c.textMuted, text: 'Aún no hay tendencia suficiente para ajustar. Sigue registrando tu peso y en unas semanas afino las kcal.' };
     }
   };
 
@@ -159,9 +161,9 @@ export function NutricionScreen() {
           </View>
 
           {s.realTdee != null && (
-            <View style={[styles.card, { borderColor: Brand.info }]}>
+            <View style={[styles.card, { borderColor: c.info }]}>
               <Text style={styles.cardLbl}>Gasto real estimado</Text>
-              <Text style={[styles.big, { color: Brand.info }]}>≈ {kcal(s.realTdee)} kcal/día</Text>
+              <Text style={[styles.big, { color: c.info }]}>≈ {kcal(s.realTdee)} kcal/día</Text>
               <Text style={styles.note}>
                 Calculado con lo que comes y cómo cambia tu peso estas semanas (más fiable que la fórmula).{' '}
                 {Math.abs(s.realTdee - s.plan.tdee) >= 100
@@ -174,7 +176,7 @@ export function NutricionScreen() {
           {s.hasGoal ? (
             <View style={styles.card}>
               <Text style={styles.cardLbl}>Objetivo {s.stage ? `· ${STAGE_LABEL[s.stage] ?? s.stage}` : ''}</Text>
-              <Text style={[styles.big, { color: Brand.good }]}>≈ {kcal(s.plan.targetKcal)} kcal/día</Text>
+              <Text style={[styles.big, { color: c.good }]}>≈ {kcal(s.plan.targetKcal)} kcal/día</Text>
               <Text style={styles.note}>
                 Ritmo previsto {rate(s.plan.plannedRatePerWeek)}. {s.plan.targetKcal <= s.plan.tdee ? 'Déficit' : 'Superávit'} de{' '}
                 {kcal(Math.abs(s.plan.targetKcal - s.plan.tdee))} kcal/día.
@@ -195,9 +197,9 @@ export function NutricionScreen() {
 
 
           {s.dietBreak && (
-            <View style={[styles.card, { borderColor: Brand.info }]}>
+            <View style={[styles.card, { borderColor: c.info }]}>
               <Text style={styles.cardLbl}>Descanso de dieta</Text>
-              <Text style={[styles.note, { color: Brand.info }]}>{s.dietBreak}</Text>
+              <Text style={[styles.note, { color: c.info }]}>{s.dietBreak}</Text>
             </View>
           )}
 
@@ -208,14 +210,15 @@ export function NutricionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Brand.surface },
-  content: { padding: 14, gap: 10 },
-  h1: { color: Brand.text, fontSize: 20, fontWeight: '800' },
-  intro: { color: Brand.textMuted, fontSize: 13, marginBottom: 4 },
-  card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 4 },
-  cardLbl: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700' },
-  big: { color: Brand.text, fontSize: 24, fontWeight: '800' },
-  note: { color: Brand.textMuted, fontSize: 13, lineHeight: 19 },
-  foot: { color: Brand.textMuted, fontSize: 11, fontStyle: 'italic', marginTop: 2 },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.surface },
+    content: { padding: 14, gap: 10 },
+    h1: { color: c.text, fontSize: 20, fontWeight: '800' },
+    intro: { color: c.textMuted, fontSize: 13, marginBottom: 4 },
+    card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 4 },
+    cardLbl: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700' },
+    big: { color: c.text, fontSize: 24, fontWeight: '800' },
+    note: { color: c.textMuted, fontSize: 13, lineHeight: 19 },
+    foot: { color: c.textMuted, fontSize: 11, fontStyle: 'italic', marginTop: 2 },
+  });

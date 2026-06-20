@@ -1,16 +1,19 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-import { Brand } from '@/constants/theme';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 
 /** Indicador de carga centrado, para evitar pantallas en blanco mientras se lee la BD. */
 export function Loading() {
+  const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.center}>
-      <ActivityIndicator color={Brand.accent} />
+      <ActivityIndicator color={c.accent} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Brand.surface },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: c.surface },
+  });

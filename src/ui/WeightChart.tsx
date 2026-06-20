@@ -1,7 +1,7 @@
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 
 import type { TrendPoint } from '@/bodyweight/trend';
-import { Brand } from '@/constants/theme';
+import { useTheme } from '@/ui/theme';
 
 interface Props {
   points: TrendPoint[];
@@ -15,6 +15,7 @@ interface Props {
  * línea de objetivo (verde discontinua). Se escala al min/max del conjunto.
  */
 export function WeightChart({ points, goalKg, width = 300, height = 130 }: Props) {
+  const { c } = useTheme();
   if (points.length === 0) return null;
 
   const values = points.flatMap((p) => [p.weightKg, p.trendKg]);
@@ -31,12 +32,12 @@ export function WeightChart({ points, goalKg, width = 300, height = 130 }: Props
   return (
     <Svg width={width} height={height}>
       {goalKg != null && (
-        <Line x1={0} y1={y(goalKg)} x2={width} y2={y(goalKg)} stroke={Brand.good} strokeDasharray="4 4" strokeWidth={1} />
+        <Line x1={0} y1={y(goalKg)} x2={width} y2={y(goalKg)} stroke={c.good} strokeDasharray="4 4" strokeWidth={1} />
       )}
       {points.map((p, i) => (
-        <Circle key={i} cx={x(i)} cy={y(p.weightKg)} r={2.6} fill={Brand.textMuted} />
+        <Circle key={i} cx={x(i)} cy={y(p.weightKg)} r={2.6} fill={c.textMuted} />
       ))}
-      <Path d={trendPath} stroke={Brand.accent} strokeWidth={3} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <Path d={trendPath} stroke={c.accent} strokeWidth={3} fill="none" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   );
 }

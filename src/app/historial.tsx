@@ -1,11 +1,12 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Brand } from '@/constants/theme';
+import { useTheme } from '@/ui/theme';
 import { HistorialScreen } from '@/ui/HistorialScreen';
 
 export default function HistorialRoute() {
+  const { c } = useTheme();
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: Brand.surface }} edges={['top']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
       <HistorialScreen />
     </SafeAreaView>
   );

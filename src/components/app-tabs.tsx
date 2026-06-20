@@ -1,21 +1,25 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 
-import { Brand } from '@/constants/theme';
+import { useTheme } from '@/ui/theme';
 
 /**
  * Barra de pestañas inferior: Inicio · Entreno · Progreso · Nutrición.
  * Ajustes y Glosario son rutas accesibles (engranaje en Inicio), no pestañas.
  */
 export default function AppTabs() {
+  const { c } = useTheme();
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: Brand.accent,
-        tabBarInactiveTintColor: Brand.textMuted,
-        tabBarStyle: { backgroundColor: Brand.card, borderTopColor: Brand.cardBorder },
-      }}>
+    <>
+      <StatusBar style={c.scheme === 'dark' ? 'light' : 'dark'} />
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: c.accent,
+          tabBarInactiveTintColor: c.textMuted,
+          tabBarStyle: { backgroundColor: c.card, borderTopColor: c.cardBorder },
+        }}>
       <Tabs.Screen
         name="index"
         options={{
@@ -48,6 +52,7 @@ export default function AppTabs() {
       <Tabs.Screen name="ajustes" options={{ href: null }} />
       <Tabs.Screen name="glosario" options={{ href: null }} />
       <Tabs.Screen name="historial" options={{ href: null }} />
-    </Tabs>
+      </Tabs>
+    </>
   );
 }

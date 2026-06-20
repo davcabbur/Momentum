@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Brand } from '@/constants/theme';
 import { addExercise, listExercises, type Exercise } from '@/db/exercise-repo';
 import { recommendForMuscle, type EquipmentScope } from '@/training/recommend';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 
 interface Props {
   visible: boolean;
@@ -18,6 +18,8 @@ const SCOPES: { key: EquipmentScope; label: string }[] = [
 ];
 
 export function ExercisePicker({ visible, onPick, onClose }: Props) {
+  const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [items, setItems] = useState<Exercise[]>([]);
   const [name, setName] = useState('');
   const [showNew, setShowNew] = useState(false);
@@ -103,7 +105,7 @@ export function ExercisePicker({ visible, onPick, onClose }: Props) {
 
           {showNew ? (
             <View style={styles.newBox}>
-              <TextInput value={name} onChangeText={setName} placeholder="Nombre del ejercicio" placeholderTextColor={Brand.textMuted} style={styles.input} />
+              <TextInput value={name} onChangeText={setName} placeholder="Nombre del ejercicio" placeholderTextColor={c.textMuted} style={styles.input} />
               <Pressable style={styles.save} onPress={create}>
                 <Text style={styles.saveTxt}>Crear</Text>
               </Pressable>
@@ -119,27 +121,28 @@ export function ExercisePicker({ visible, onPick, onClose }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
-  sheet: { backgroundColor: Brand.card, padding: 18, borderTopLeftRadius: 20, borderTopRightRadius: 20, gap: 10 },
-  title: { color: Brand.text, fontSize: 16, fontWeight: '700' },
-  chips: { gap: 6, paddingVertical: 2 },
-  chip: { backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 9, paddingVertical: 7, paddingHorizontal: 12 },
-  chipOn: { borderColor: Brand.accentStrong, backgroundColor: '#241f3a' },
-  chipTxt: { color: Brand.textMuted, fontWeight: '700', fontSize: 12, textTransform: 'capitalize' },
-  chipTxtOn: { color: Brand.text },
-  scopeRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
-  scopeLbl: { color: Brand.textMuted, fontSize: 12 },
-  scope: { backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 9, paddingVertical: 6, paddingHorizontal: 10 },
-  scopeTxt: { color: Brand.textMuted, fontWeight: '700', fontSize: 12 },
-  recHdr: { color: Brand.accent, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 8, marginBottom: 2 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: Brand.cardBorder },
-  exName: { color: Brand.text, fontSize: 15 },
-  exGroup: { color: Brand.textMuted, fontSize: 12, textTransform: 'capitalize' },
-  newBox: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  input: { flex: 1, color: Brand.text, backgroundColor: Brand.surface, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
-  save: { backgroundColor: Brand.good, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 10 },
-  saveTxt: { color: '#06240f', fontWeight: '800' },
-  newBtn: { padding: 12, alignItems: 'center', borderWidth: 1, borderColor: Brand.cardBorder, borderStyle: 'dashed', borderRadius: 10 },
-  newTxt: { color: Brand.accent, fontWeight: '700' },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
+    sheet: { backgroundColor: c.card, padding: 18, borderTopLeftRadius: 20, borderTopRightRadius: 20, gap: 10 },
+    title: { color: c.text, fontSize: 16, fontWeight: '700' },
+    chips: { gap: 6, paddingVertical: 2 },
+    chip: { backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 9, paddingVertical: 7, paddingHorizontal: 12 },
+    chipOn: { borderColor: c.accentStrong, backgroundColor: c.accentSurface },
+    chipTxt: { color: c.textMuted, fontWeight: '700', fontSize: 12, textTransform: 'capitalize' },
+    chipTxtOn: { color: c.text },
+    scopeRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+    scopeLbl: { color: c.textMuted, fontSize: 12 },
+    scope: { backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 9, paddingVertical: 6, paddingHorizontal: 10 },
+    scopeTxt: { color: c.textMuted, fontWeight: '700', fontSize: 12 },
+    recHdr: { color: c.accent, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 8, marginBottom: 2 },
+    row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: c.cardBorder },
+    exName: { color: c.text, fontSize: 15 },
+    exGroup: { color: c.textMuted, fontSize: 12, textTransform: 'capitalize' },
+    newBox: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+    input: { flex: 1, color: c.text, backgroundColor: c.surface, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
+    save: { backgroundColor: c.good, borderRadius: 10, paddingHorizontal: 16, paddingVertical: 10 },
+    saveTxt: { color: c.onGood, fontWeight: '800' },
+    newBtn: { padding: 12, alignItems: 'center', borderWidth: 1, borderColor: c.cardBorder, borderStyle: 'dashed', borderRadius: 10 },
+    newTxt: { color: c.accent, fontWeight: '700' },
+  });

@@ -6,12 +6,12 @@ import { daysBetween, estimateDaysToGoal, goalProgressPct, timeElapsedPct } from
 import { formatDate, formatKg } from '@/bodyweight/format';
 import { weightInsight } from '@/bodyweight/insight';
 import { computeTrend, trendSlopePerWeek, type TrendPoint } from '@/bodyweight/trend';
-import { Brand } from '@/constants/theme';
 import { getGoal, getProfile, listWeights } from '@/db/bodyweight-repo';
 import { weightGoal } from '@/db/schema';
 import { liveKcalPlan } from '@/nutrition/kcal';
 import { AddWeightSheet } from '@/ui/AddWeightSheet';
 import { ProgressRing } from '@/ui/ProgressRing';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 
 type Goal = typeof weightGoal.$inferSelect;
 type Profile = Awaited<ReturnType<typeof getProfile>>;
@@ -42,6 +42,8 @@ function rateStr(kg: number, stage: string | null | undefined): string {
 
 /** Resumen de peso para Inicio: Inicio / Actual (anillo) / Objetivo + progreso/tiempo + mensaje. */
 export function WeightSummaryCard({ reloadNonce }: { reloadNonce?: number }) {
+  const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const router = useRouter();
   const [points, setPoints] = useState<TrendPoint[]>([]);
   const [goal, setGoal] = useState<Goal | null>(null);
@@ -170,7 +172,7 @@ export function WeightSummaryCard({ reloadNonce }: { reloadNonce?: number }) {
 
       {goal && (
         <View style={styles.barsCard}>
-          <Bar label="Progreso" pct={progressPct} color={Brand.accent} />
+          <Bar label="Progreso" pct={progressPct} color={c.accent} />
           {timePct != null && <Bar label="Tiempo" pct={timePct} color="#5b8fd4" />}
         </View>
       )}
@@ -197,6 +199,7 @@ export function WeightSummaryCard({ reloadNonce }: { reloadNonce?: number }) {
 }
 
 function Bar({ label, pct, color }: { label: string; pct: number; color: string }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.bar}>
       <View style={styles.barLabelRow}>
@@ -210,34 +213,35 @@ function Bar({ label, pct, color }: { label: string; pct: number; color: string 
   );
 }
 
-const styles = StyleSheet.create({
-  card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 16, padding: 16, gap: 10 },
-  cols: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  centerOnly: { alignItems: 'center', gap: 10 },
-  side: { alignItems: 'center', flex: 1, gap: 4 },
-  colLbl: { color: Brand.accent, fontSize: 13, fontWeight: '700' },
-  colKg: { color: Brand.text, fontSize: 16, fontWeight: '800' },
-  colDate: { color: Brand.textMuted, fontSize: 11 },
-  ringLbl: { color: Brand.accent, fontSize: 13, fontWeight: '700' },
-  ringKg: { color: Brand.text, fontSize: 24, fontWeight: '800', marginTop: 2 },
-  statRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderTopColor: Brand.cardBorder, borderTopWidth: 1, paddingTop: 12, marginTop: 2 },
-  statCell: { flex: 1, alignItems: 'center', gap: 1 },
-  statCenter: { borderLeftColor: Brand.cardBorder, borderRightColor: Brand.cardBorder, borderLeftWidth: 1, borderRightWidth: 1 },
-  statWord: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700' },
-  statVal: { color: Brand.text, fontSize: 15, fontWeight: '800', marginTop: 2 },
-  kcalVal: { color: Brand.good },
-  statSub: { color: Brand.textMuted, fontSize: 10 },
-  enter: { backgroundColor: Brand.accentStrong, borderRadius: 12, paddingVertical: 13, alignItems: 'center', marginTop: 2 },
-  enterTxt: { color: '#fff', fontWeight: '800', fontSize: 15 },
-  link: { color: Brand.accent, fontSize: 12, fontWeight: '700', textAlign: 'center' },
-  barsCard: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 8 },
-  bar: {},
-  barLabelRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  barLabel: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase' },
-  barPct: { color: Brand.text, fontSize: 11, fontWeight: '700' },
-  track: { height: 9, backgroundColor: Brand.track, borderRadius: 99, overflow: 'hidden', marginTop: 4 },
-  fill: { height: '100%', borderRadius: 99 },
-  insight: { backgroundColor: '#1a2330', borderRadius: 14, padding: 12 },
-  insightH: { color: Brand.info, fontWeight: '700', marginBottom: 4 },
-  insightP: { color: '#b9c4d0', fontSize: 12 },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 16, padding: 16, gap: 10 },
+    cols: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    centerOnly: { alignItems: 'center', gap: 10 },
+    side: { alignItems: 'center', flex: 1, gap: 4 },
+    colLbl: { color: c.accent, fontSize: 13, fontWeight: '700' },
+    colKg: { color: c.text, fontSize: 16, fontWeight: '800' },
+    colDate: { color: c.textMuted, fontSize: 11 },
+    ringLbl: { color: c.accent, fontSize: 13, fontWeight: '700' },
+    ringKg: { color: c.text, fontSize: 24, fontWeight: '800', marginTop: 2 },
+    statRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderTopColor: c.cardBorder, borderTopWidth: 1, paddingTop: 12, marginTop: 2 },
+    statCell: { flex: 1, alignItems: 'center', gap: 1 },
+    statCenter: { borderLeftColor: c.cardBorder, borderRightColor: c.cardBorder, borderLeftWidth: 1, borderRightWidth: 1 },
+    statWord: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700' },
+    statVal: { color: c.text, fontSize: 15, fontWeight: '800', marginTop: 2 },
+    kcalVal: { color: c.good },
+    statSub: { color: c.textMuted, fontSize: 10 },
+    enter: { backgroundColor: c.accentStrong, borderRadius: 12, paddingVertical: 13, alignItems: 'center', marginTop: 2 },
+    enterTxt: { color: c.onAccent, fontWeight: '800', fontSize: 15 },
+    link: { color: c.accent, fontSize: 12, fontWeight: '700', textAlign: 'center' },
+    barsCard: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 8 },
+    bar: {},
+    barLabelRow: { flexDirection: 'row', justifyContent: 'space-between' },
+    barLabel: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase' },
+    barPct: { color: c.text, fontSize: 11, fontWeight: '700' },
+    track: { height: 9, backgroundColor: c.track, borderRadius: 99, overflow: 'hidden', marginTop: 4 },
+    fill: { height: '100%', borderRadius: 99 },
+    insight: { backgroundColor: c.infoSurface, borderRadius: 14, padding: 12 },
+    insightH: { color: c.info, fontWeight: '700', marginBottom: 4 },
+    insightP: { color: c.infoText, fontSize: 12 },
+  });

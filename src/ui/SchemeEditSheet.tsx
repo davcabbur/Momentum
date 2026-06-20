@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Brand } from '@/constants/theme';
 import { updateDayExerciseScheme } from '@/db/routine-repo';
+import { useThemedStyles, type Theme } from '@/ui/theme';
 
 interface Props {
   visible: boolean;
@@ -15,6 +15,7 @@ interface Props {
 }
 
 function Stepper({ label, value, onChange, min }: { label: string; value: number; onChange: (v: number) => void; min: number }) {
+  const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.stepRow}>
       <Text style={styles.stepLabel}>{label}</Text>
@@ -32,6 +33,7 @@ function Stepper({ label, value, onChange, min }: { label: string; value: number
 }
 
 export function SchemeEditSheet({ visible, rdeId, name, sets, repMin, repMax, onClose }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const [s, setS] = useState(sets);
   const [lo, setLo] = useState(repMin);
   const [hi, setHi] = useState(repMax);
@@ -66,16 +68,17 @@ export function SchemeEditSheet({ visible, rdeId, name, sets, repMin, repMax, on
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
-  sheet: { backgroundColor: Brand.card, padding: 18, borderTopLeftRadius: 20, borderTopRightRadius: 20, gap: 10 },
-  title: { color: Brand.text, fontSize: 18, fontWeight: '800', marginBottom: 4 },
-  stepRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  stepLabel: { color: Brand.text, fontSize: 15 },
-  stepCtl: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  stepBtn: { width: 40, height: 40, borderRadius: 10, backgroundColor: Brand.cardBorder, alignItems: 'center', justifyContent: 'center' },
-  stepTxt: { color: Brand.accent, fontSize: 22, fontWeight: '700' },
-  stepVal: { color: Brand.text, fontSize: 20, fontWeight: '800', minWidth: 28, textAlign: 'center' },
-  save: { backgroundColor: Brand.good, borderRadius: 12, padding: 14, marginTop: 6 },
-  saveTxt: { textAlign: 'center', color: '#06240f', fontWeight: '800' },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
+    sheet: { backgroundColor: c.card, padding: 18, borderTopLeftRadius: 20, borderTopRightRadius: 20, gap: 10 },
+    title: { color: c.text, fontSize: 18, fontWeight: '800', marginBottom: 4 },
+    stepRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    stepLabel: { color: c.text, fontSize: 15 },
+    stepCtl: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    stepBtn: { width: 40, height: 40, borderRadius: 10, backgroundColor: c.cardBorder, alignItems: 'center', justifyContent: 'center' },
+    stepTxt: { color: c.accent, fontSize: 22, fontWeight: '700' },
+    stepVal: { color: c.text, fontSize: 20, fontWeight: '800', minWidth: 28, textAlign: 'center' },
+    save: { backgroundColor: c.good, borderRadius: 12, padding: 14, marginTop: 6 },
+    saveTxt: { textAlign: 'center', color: c.onGood, fontWeight: '800' },
+  });

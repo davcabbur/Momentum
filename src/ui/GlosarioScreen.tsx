@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Brand } from '@/constants/theme';
 import { GLOSSARY } from '@/education/glossary';
+import { useThemedStyles, type Theme } from '@/ui/theme';
 
 export function GlosarioScreen() {
+  const styles = useThemedStyles(makeStyles);
   const [open, setOpen] = useState<string | null>(null);
 
   return (
@@ -27,14 +28,15 @@ export function GlosarioScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Brand.surface },
-  content: { padding: 14, gap: 8 },
-  h1: { color: Brand.text, fontSize: 20, fontWeight: '800' },
-  intro: { color: Brand.textMuted, fontSize: 13, marginBottom: 4 },
-  card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, padding: 14 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  title: { color: Brand.text, fontSize: 15, fontWeight: '700', flex: 1 },
-  chevron: { color: Brand.accent, fontSize: 20, fontWeight: '700', marginLeft: 8 },
-  body: { color: Brand.textMuted, fontSize: 13, marginTop: 8, lineHeight: 19 },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.surface },
+    content: { padding: 14, gap: 8 },
+    h1: { color: c.text, fontSize: 20, fontWeight: '800' },
+    intro: { color: c.textMuted, fontSize: 13, marginBottom: 4 },
+    card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, padding: 14 },
+    row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    title: { color: c.text, fontSize: 15, fontWeight: '700', flex: 1 },
+    chevron: { color: c.accent, fontSize: 20, fontWeight: '700', marginLeft: 8 },
+    body: { color: c.textMuted, fontSize: 13, marginTop: 8, lineHeight: 19 },
+  });

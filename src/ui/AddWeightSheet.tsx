@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Brand } from '@/constants/theme';
 import { deleteWeight, upsertWeight } from '@/db/bodyweight-repo';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 
 interface Props {
   visible: boolean;
@@ -22,6 +22,7 @@ function prettyDate(iso: string): string {
 }
 
 export function AddWeightSheet({ visible, date, initialKg, isExisting, onClose }: Props) {
+  const styles = useThemedStyles(makeStyles);
   const [value, setValue] = useState(String(initialKg));
 
   useEffect(() => {
@@ -81,38 +82,39 @@ export function AddWeightSheet({ visible, date, initialKg, isExisting, onClose }
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
-  sheet: {
-    backgroundColor: Brand.card,
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    gap: 12,
-  },
-  title: { color: Brand.text, fontSize: 16 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  stepBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: Brand.cardBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepTxt: { color: Brand.accent, fontSize: 26, fontWeight: '700' },
-  input: {
-    flex: 1,
-    color: Brand.text,
-    fontSize: 28,
-    fontWeight: '800',
-    textAlign: 'center',
-    backgroundColor: Brand.surface,
-    borderRadius: 12,
-    paddingVertical: 10,
-  },
-  save: { backgroundColor: Brand.good, borderRadius: 12, padding: 14 },
-  saveTxt: { textAlign: 'center', fontWeight: '800', color: '#06240f' },
-  delete: { padding: 10 },
-  deleteTxt: { textAlign: 'center', color: '#f87171', fontWeight: '700' },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
+    sheet: {
+      backgroundColor: c.card,
+      padding: 20,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      gap: 12,
+    },
+    title: { color: c.text, fontSize: 16 },
+    row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    stepBtn: {
+      width: 48,
+      height: 48,
+      borderRadius: 12,
+      backgroundColor: c.cardBorder,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    stepTxt: { color: c.accent, fontSize: 26, fontWeight: '700' },
+    input: {
+      flex: 1,
+      color: c.text,
+      fontSize: 28,
+      fontWeight: '800',
+      textAlign: 'center',
+      backgroundColor: c.surface,
+      borderRadius: 12,
+      paddingVertical: 10,
+    },
+    save: { backgroundColor: c.good, borderRadius: 12, padding: 14 },
+    saveTxt: { textAlign: 'center', fontWeight: '800', color: c.onGood },
+    delete: { padding: 10 },
+    deleteTxt: { textAlign: 'center', color: c.bad, fontWeight: '700' },
+  });

@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { RefreshControl } from 'react-native';
 
-import { Brand } from '@/constants/theme';
+import { useTheme } from '@/ui/theme';
 
 /**
  * Pull-to-refresh reutilizable ("desliza hacia abajo para actualizar").
@@ -10,6 +10,7 @@ import { Brand } from '@/constants/theme';
  * propios datos para que también se recarguen.
  */
 export function useRefresh(reload: () => Promise<void> | void) {
+  const { c } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
   const [nonce, setNonce] = useState(0);
 
@@ -27,9 +28,9 @@ export function useRefresh(reload: () => Promise<void> | void) {
     <RefreshControl
       refreshing={refreshing}
       onRefresh={onRefresh}
-      tintColor={Brand.accent}
-      colors={[Brand.accent]}
-      progressBackgroundColor={Brand.card}
+      tintColor={c.accent}
+      colors={[c.accent]}
+      progressBackgroundColor={c.card}
     />
   );
 

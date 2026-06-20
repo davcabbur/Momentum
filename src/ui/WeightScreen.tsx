@@ -3,18 +3,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Brand } from '@/constants/theme';
 import { listWeights } from '@/db/bodyweight-repo';
 import { Loading } from '@/ui/Loading';
 import { NextWorkoutCard } from '@/ui/NextWorkoutCard';
 import { Onboarding } from '@/ui/Onboarding';
 import { StrengthSummaryCard } from '@/ui/StrengthSummaryCard';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { useRefresh } from '@/ui/useRefresh';
 import { WeightSummaryCard } from '@/ui/WeightSummaryCard';
 
 /** Inicio: panel ligero con accesos rápidos (entreno, kcal, peso). El detalle vive en cada pestaña. */
 export function WeightScreen() {
   const router = useRouter();
+  const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [hasWeights, setHasWeights] = useState<boolean | null>(null);
 
   const load = useCallback(async () => {
@@ -37,7 +39,7 @@ export function WeightScreen() {
       <View style={styles.topBar}>
         <Text style={styles.h1}>Inicio</Text>
         <Pressable style={styles.gear} onPress={() => router.push('/ajustes')} hitSlop={10}>
-          <Ionicons name="settings-outline" size={22} color={Brand.textMuted} />
+          <Ionicons name="settings-outline" size={22} color={c.textMuted} />
         </Pressable>
       </View>
 
@@ -48,10 +50,11 @@ export function WeightScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Brand.surface },
-  content: { padding: 14, gap: 12 },
-  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  h1: { color: Brand.text, fontSize: 22, fontWeight: '800' },
-  gear: { padding: 4 },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.surface },
+    content: { padding: 14, gap: 12 },
+    topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    h1: { color: c.text, fontSize: 22, fontWeight: '800' },
+    gear: { padding: 4 },
+  });

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Brand } from '@/constants/theme';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { getProfile, setLevel } from '@/db/bodyweight-repo';
 import { seedExercises } from '@/db/exercise-repo';
 import {
@@ -27,6 +27,8 @@ import { SchemeEditSheet } from '@/ui/SchemeEditSheet';
 const LEVELS = ['principiante', 'intermedio', 'avanzado'];
 
 export function RoutineBuilder({ onDone }: { onDone: () => void }) {
+  const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [days, setDays] = useState<RoutineDay[]>([]);
   const [exByDay, setExByDay] = useState<Record<number, DayExercise[]>>({});
   const [level, setLvl] = useState('intermedio');
@@ -86,7 +88,7 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
     .map(([muscle, sets]) => ({ muscle, sets, status: muscleVolumeStatus(muscle, sets) }))
     .sort((a, b) => b.sets - a.sets);
   const fmtSets = (n: number) => (n % 1 === 0 ? `${n}` : n.toFixed(1).replace('.', ','));
-  const STATUS_COLOR: Record<string, string> = { ok: Brand.textMuted, info: Brand.accent, warn: '#fbbf24' };
+  const STATUS_COLOR: Record<string, string> = { ok: c.textMuted, info: c.accent, warn: c.warn };
   const shoulderAdvice = shoulderOverlapAdvice(
     days.map((d) => ({ name: d.name, exercises: (exByDay[d.id] ?? []).map((x) => ({ muscleGroup: x.exercise.muscleGroup, pattern: x.exercise.pattern })) })),
   );
@@ -173,7 +175,7 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
                     <Text style={styles.exName}>{x.exercise.name}</Text>
                     <Text style={styles.exScheme}>{schemeText(x)}</Text>
                   </View>
-                  <Ionicons name="ellipsis-horizontal" size={18} color={Brand.textMuted} />
+                  <Ionicons name="ellipsis-horizontal" size={18} color={c.textMuted} />
                 </Pressable>
               ))}
               <Pressable style={styles.addEx} onPress={() => setPickerDay(d.id)}>
@@ -185,7 +187,7 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
           {/* Resumen de volumen y avisos, plegable. */}
           <Pressable style={styles.summaryToggle} onPress={() => setShowSummary((v) => !v)}>
             <Text style={styles.summaryToggleTxt}>Resumen de volumen y avisos</Text>
-            <Ionicons name={showSummary ? 'chevron-up' : 'chevron-down'} size={16} color={Brand.accent} />
+            <Ionicons name={showSummary ? 'chevron-up' : 'chevron-down'} size={16} color={c.accent} />
           </Pressable>
           {showSummary && (
             <>
@@ -260,7 +262,7 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
                 </Pressable>
               </View>
               <Pressable style={styles.menuBtn} onPress={async () => { const id = menuEx.rdeId; setMenuEx(null); await removeExerciseFromDay(id); load(); }}>
-                <Text style={[styles.menuBtnTxt, { color: '#f87171' }]}>Quitar ejercicio</Text>
+                <Text style={[styles.menuBtnTxt, { color: c.bad }]}>Quitar ejercicio</Text>
               </Pressable>
               <Pressable style={styles.menuCancel} onPress={() => setMenuEx(null)}>
                 <Text style={styles.menuCancelTxt}>Cancelar</Text>
@@ -273,60 +275,61 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Brand.surface },
-  content: { padding: 14, gap: 10 },
-  back: { color: Brand.accent, fontWeight: '700' },
-  h1: { color: Brand.text, fontSize: 22, fontWeight: '800' },
-  stepLbl: { color: Brand.accent, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' },
-  lbl: { color: Brand.text, fontSize: 15, fontWeight: '700', marginTop: 6 },
-  hint: { color: Brand.textMuted, fontSize: 12 },
-  chips: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  chip: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center', minWidth: 44 },
-  chipOn: { borderColor: Brand.accentStrong, backgroundColor: '#241f3a' },
-  chipTxt: { color: Brand.textMuted, fontWeight: '700', fontSize: 13, textAlign: 'center' },
-  chipTxtOn: { color: Brand.text },
-  next: { backgroundColor: Brand.accentStrong, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
-  navNext: { flex: 1, marginTop: 0 },
-  nextOff: { opacity: 0.4 },
-  nextTxt: { color: '#fff', fontWeight: '800', fontSize: 15 },
-  navRow: { flexDirection: 'row', gap: 10, alignItems: 'center', marginTop: 8 },
-  backBtn: { borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, paddingVertical: 13, paddingHorizontal: 18, alignItems: 'center', marginTop: 8 },
-  backBtnTxt: { color: Brand.text, fontWeight: '700' },
-  tpl: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14 },
-  tplName: { color: Brand.text, fontSize: 16, fontWeight: '700' },
-  tplDays: { color: Brand.textMuted, fontSize: 12, marginTop: 3 },
-  cancel: { padding: 10, alignItems: 'center' },
-  cancelTxt: { color: Brand.textMuted },
-  dayBox: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 12, gap: 6 },
-  dayName: { color: Brand.text, fontSize: 16, fontWeight: '700' },
-  exRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, borderTopColor: Brand.cardBorder },
-  exMain: { flex: 1 },
-  exName: { color: Brand.text },
-  exScheme: { color: Brand.accent, fontSize: 12, marginTop: 1 },
-  addEx: { paddingVertical: 8, alignItems: 'center', borderWidth: 1, borderColor: Brand.cardBorder, borderStyle: 'dashed', borderRadius: 10, marginTop: 4 },
-  addExTxt: { color: Brand.accent, fontSize: 13, fontWeight: '600' },
-  change: { padding: 12, alignItems: 'center', marginTop: 4 },
-  changeTxt: { color: Brand.textMuted },
-  summaryToggle: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, padding: 14, marginTop: 4 },
-  summaryToggleTxt: { color: Brand.text, fontSize: 14, fontWeight: '700' },
-  volBox: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 8 },
-  volTitle: { color: Brand.text, fontSize: 15, fontWeight: '700' },
-  volItem: { gap: 2 },
-  volHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  volMuscle: { color: Brand.text, fontSize: 14 },
-  volSets: { fontSize: 13, fontWeight: '700' },
-  volNote: { fontSize: 12, lineHeight: 17 },
-  volFoot: { color: Brand.textMuted, fontSize: 11, fontStyle: 'italic', marginTop: 2 },
-  shoulderBox: { backgroundColor: '#2a2412', borderColor: '#5c4d1e', borderWidth: 1, borderRadius: 14, padding: 14 },
-  shoulderTxt: { color: '#fbbf24', fontSize: 12, lineHeight: 18 },
-  menuBackdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
-  menu: { backgroundColor: Brand.card, padding: 12, borderTopLeftRadius: 20, borderTopRightRadius: 20, gap: 6 },
-  menuTitle: { color: Brand.text, fontSize: 16, fontWeight: '800', padding: 8 },
-  menuBtn: { padding: 14, borderRadius: 10, backgroundColor: Brand.surface },
-  menuBtnTxt: { color: Brand.text, fontSize: 15, fontWeight: '600' },
-  moveRow: { flexDirection: 'row', gap: 6 },
-  moveBtn: { flex: 1, alignItems: 'center' },
-  menuCancel: { padding: 14, alignItems: 'center' },
-  menuCancelTxt: { color: Brand.textMuted },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.surface },
+    content: { padding: 14, gap: 10 },
+    back: { color: c.accent, fontWeight: '700' },
+    h1: { color: c.text, fontSize: 22, fontWeight: '800' },
+    stepLbl: { color: c.accent, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' },
+    lbl: { color: c.text, fontSize: 15, fontWeight: '700', marginTop: 6 },
+    hint: { color: c.textMuted, fontSize: 12 },
+    chips: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+    chip: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 16, alignItems: 'center', minWidth: 44 },
+    chipOn: { borderColor: c.accentStrong, backgroundColor: c.accentSurface },
+    chipTxt: { color: c.textMuted, fontWeight: '700', fontSize: 13, textAlign: 'center' },
+    chipTxtOn: { color: c.text },
+    next: { backgroundColor: c.accentStrong, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
+    navNext: { flex: 1, marginTop: 0 },
+    nextOff: { opacity: 0.4 },
+    nextTxt: { color: c.onAccent, fontWeight: '800', fontSize: 15 },
+    navRow: { flexDirection: 'row', gap: 10, alignItems: 'center', marginTop: 8 },
+    backBtn: { borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, paddingVertical: 13, paddingHorizontal: 18, alignItems: 'center', marginTop: 8 },
+    backBtnTxt: { color: c.text, fontWeight: '700' },
+    tpl: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14 },
+    tplName: { color: c.text, fontSize: 16, fontWeight: '700' },
+    tplDays: { color: c.textMuted, fontSize: 12, marginTop: 3 },
+    cancel: { padding: 10, alignItems: 'center' },
+    cancelTxt: { color: c.textMuted },
+    dayBox: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 12, gap: 6 },
+    dayName: { color: c.text, fontSize: 16, fontWeight: '700' },
+    exRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8, borderTopWidth: 1, borderTopColor: c.cardBorder },
+    exMain: { flex: 1 },
+    exName: { color: c.text },
+    exScheme: { color: c.accent, fontSize: 12, marginTop: 1 },
+    addEx: { paddingVertical: 8, alignItems: 'center', borderWidth: 1, borderColor: c.cardBorder, borderStyle: 'dashed', borderRadius: 10, marginTop: 4 },
+    addExTxt: { color: c.accent, fontSize: 13, fontWeight: '600' },
+    change: { padding: 12, alignItems: 'center', marginTop: 4 },
+    changeTxt: { color: c.textMuted },
+    summaryToggle: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, padding: 14, marginTop: 4 },
+    summaryToggleTxt: { color: c.text, fontSize: 14, fontWeight: '700' },
+    volBox: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 8 },
+    volTitle: { color: c.text, fontSize: 15, fontWeight: '700' },
+    volItem: { gap: 2 },
+    volHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    volMuscle: { color: c.text, fontSize: 14 },
+    volSets: { fontSize: 13, fontWeight: '700' },
+    volNote: { fontSize: 12, lineHeight: 17 },
+    volFoot: { color: c.textMuted, fontSize: 11, fontStyle: 'italic', marginTop: 2 },
+    shoulderBox: { backgroundColor: '#2a2412', borderColor: '#5c4d1e', borderWidth: 1, borderRadius: 14, padding: 14 },
+    shoulderTxt: { color: c.warn, fontSize: 12, lineHeight: 18 },
+    menuBackdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
+    menu: { backgroundColor: c.card, padding: 12, borderTopLeftRadius: 20, borderTopRightRadius: 20, gap: 6 },
+    menuTitle: { color: c.text, fontSize: 16, fontWeight: '800', padding: 8 },
+    menuBtn: { padding: 14, borderRadius: 10, backgroundColor: c.surface },
+    menuBtnTxt: { color: c.text, fontSize: 15, fontWeight: '600' },
+    moveRow: { flexDirection: 'row', gap: 6 },
+    moveBtn: { flex: 1, alignItems: 'center' },
+    menuCancel: { padding: 14, alignItems: 'center' },
+    menuCancelTxt: { color: c.textMuted },
+  });

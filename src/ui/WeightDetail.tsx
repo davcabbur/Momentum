@@ -3,15 +3,16 @@ import { useFocusEffect } from 'expo-router';
 import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { computeTrend, type TrendPoint } from '@/bodyweight/trend';
-import { Brand } from '@/constants/theme';
 import { getGoal, listWeights } from '@/db/bodyweight-repo';
 import { weightGoal } from '@/db/schema';
+import { useThemedStyles, type Theme } from '@/ui/theme';
 import { WeightChart } from '@/ui/WeightChart';
 
 type Goal = typeof weightGoal.$inferSelect;
 
 /** Gráfica de peso en Progreso (el objetivo y el mensaje viven en Inicio). */
 export function WeightDetail({ reloadNonce }: { reloadNonce?: number }) {
+  const styles = useThemedStyles(makeStyles);
   const { width } = useWindowDimensions();
   const [points, setPoints] = useState<TrendPoint[]>([]);
   const [goal, setGoal] = useState<Goal | null>(null);
@@ -39,7 +40,8 @@ export function WeightDetail({ reloadNonce }: { reloadNonce?: number }) {
   );
 }
 
-const styles = StyleSheet.create({
-  h2: { color: Brand.text, fontSize: 18, fontWeight: '800', marginTop: 6, marginBottom: 6 },
-  card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 12, marginBottom: 10 },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    h2: { color: c.text, fontSize: 18, fontWeight: '800', marginTop: 6, marginBottom: 6 },
+    card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 12, marginBottom: 10 },
+  });

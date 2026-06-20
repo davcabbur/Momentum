@@ -1,9 +1,10 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavThemeProvider } from '@react-navigation/native';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { ActivityIndicator, StyleSheet, Text, View, useColorScheme } from 'react-native';
 
 import AppTabs from '@/components/app-tabs';
 import { db } from '@/db/client';
+import { ThemeProvider as AppThemeProvider } from '@/ui/theme';
 import migrations from '../../drizzle/migrations';
 
 export default function RootLayout() {
@@ -27,9 +28,11 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AppTabs />
-    </ThemeProvider>
+    <AppThemeProvider>
+      <NavThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <AppTabs />
+      </NavThemeProvider>
+    </AppThemeProvider>
   );
 }
 

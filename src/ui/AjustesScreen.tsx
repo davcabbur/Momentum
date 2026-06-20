@@ -5,7 +5,6 @@ import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View
 
 import { addDays } from '@/bodyweight/goal';
 import { computeTrend } from '@/bodyweight/trend';
-import { Brand } from '@/constants/theme';
 import { getGoal, getProfile, listWeights, setLevel, setProfile } from '@/db/bodyweight-repo';
 import { weightGoal } from '@/db/schema';
 import { reapplyLevelToRoutine } from '@/db/routine-repo';
@@ -13,9 +12,16 @@ import { getSetting, setSetting } from '@/db/settings-repo';
 import { cancelReminders, ensureNotificationPermission, scheduleDailyReminder } from '@/lib/notifications';
 import { type Level } from '@/training/levels';
 import { SetGoalSheet } from '@/ui/SetGoalSheet';
+import { useTheme, useThemedStyles, type Theme, type ThemeMode } from '@/ui/theme';
 import { useRefresh } from '@/ui/useRefresh';
 
 type Goal = typeof weightGoal.$inferSelect;
+
+const THEMES: { key: ThemeMode; label: string }[] = [
+  { key: 'light', label: 'Claro' },
+  { key: 'dark', label: 'Oscuro' },
+  { key: 'system', label: 'Automático' },
+];
 
 const SEXES = [
   { key: 'male', label: 'Hombre' },
@@ -44,6 +50,8 @@ function num(s: string): number {
 
 export function AjustesScreen() {
   const router = useRouter();
+  const { c, mode, setMode } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [sex, setSex] = useState<string | null>(null);
   const [age, setAge] = useState('');
   const [height, setHeight] = useState('');
@@ -146,7 +154,7 @@ export function AjustesScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} refreshControl={control}>
       <View style={styles.topBar}>
         <Pressable onPress={() => router.back()} hitSlop={10} style={styles.backRow}>
-          <Ionicons name="chevron-back" size={22} color={Brand.accent} />
+          <Ionicons name="chevron-back" size={22} color={c.accent} />
           <Text style={styles.back}>Inicio</Text>
         </Pressable>
       </View>
@@ -166,11 +174,11 @@ export function AjustesScreen() {
         <View style={styles.twoCol}>
           <View style={{ flex: 1 }}>
             <Text style={styles.lbl}>Edad</Text>
-            <TextInput value={age} onChangeText={(v) => { setAge(v); setSaved(false); }} keyboardType="number-pad" placeholder="años" placeholderTextColor={Brand.textMuted} style={styles.input} />
+            <TextInput value={age} onChangeText={(v) => { setAge(v); setSaved(false); }} keyboardType="number-pad" placeholder="años" placeholderTextColor={c.textMuted} style={styles.input} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.lbl}>Altura (cm)</Text>
-            <TextInput value={height} onChangeText={(v) => { setHeight(v); setSaved(false); }} keyboardType="number-pad" placeholder="cm" placeholderTextColor={Brand.textMuted} style={styles.input} />
+            <TextInput value={height} onChangeText={(v) => { setHeight(v); setSaved(false); }} keyboardType="number-pad" placeholder="cm" placeholderTextColor={c.textMuted} style={styles.input} />
           </View>
         </View>
         <Text style={styles.lbl}>Actividad</Text>
@@ -198,7 +206,7 @@ export function AjustesScreen() {
       <Text style={styles.section}>Objetivo de peso</Text>
       <Pressable style={styles.linkRow} onPress={() => setGoalSheet(true)}>
         <Text style={styles.linkTxt}>Editar peso objetivo y fecha</Text>
-        <Ionicons name="chevron-forward" size={18} color={Brand.textMuted} />
+        <Ionicons name="chevron-forward" size={18} color={c.textMuted} />
       </Pressable>
 
       {/* Nivel */}
@@ -217,12 +225,25 @@ export function AjustesScreen() {
         </Pressable>
       </View>
 
+      {/* Apariencia */}
+      <Text style={styles.section}>Apariencia</Text>
+      <View style={styles.card}>
+        <View style={styles.row}>
+          {THEMES.map((t) => (
+            <Pressable key={t.key} style={[styles.pill, mode === t.key && styles.pillOn]} onPress={() => setMode(t.key)}>
+              <Text style={[styles.pillTxt, mode === t.key && styles.pillTxtOn]}>{t.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={styles.note}>«Automático» sigue el tema de tu móvil. Cámbialo a Claro u Oscuro para forzarlo.</Text>
+      </View>
+
       {/* Recordatorios */}
       <Text style={styles.section}>Recordatorios</Text>
       <View style={styles.card}>
         <View style={styles.switchRow}>
           <Text style={styles.switchLbl}>Recordatorio diario</Text>
-          <Switch value={reminderOn} onValueChange={toggleReminder} trackColor={{ true: Brand.accentStrong, false: Brand.cardBorder }} />
+          <Switch value={reminderOn} onValueChange={toggleReminder} trackColor={{ true: c.accentStrong, false: c.cardBorder }} />
         </View>
         {reminderOn && (
           <View style={styles.hourRow}>
@@ -243,7 +264,7 @@ export function AjustesScreen() {
       <Text style={styles.section}>Aprende</Text>
       <Pressable style={styles.linkRow} onPress={() => router.push('/glosario')}>
         <Text style={styles.linkTxt}>📖 Glosario de términos</Text>
-        <Ionicons name="chevron-forward" size={18} color={Brand.textMuted} />
+        <Ionicons name="chevron-forward" size={18} color={c.textMuted} />
       </Pressable>
 
       <SetGoalSheet
@@ -262,37 +283,38 @@ export function AjustesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Brand.surface },
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+  screen: { flex: 1, backgroundColor: c.surface },
   content: { padding: 14, gap: 8 },
   topBar: { flexDirection: 'row', alignItems: 'center' },
   backRow: { flexDirection: 'row', alignItems: 'center' },
-  back: { color: Brand.accent, fontWeight: '700', fontSize: 15 },
-  h1: { color: Brand.text, fontSize: 22, fontWeight: '800', marginBottom: 4 },
-  section: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 10 },
-  card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 8 },
-  lbl: { color: Brand.textMuted, fontSize: 12, marginTop: 4 },
+  back: { color: c.accent, fontWeight: '700', fontSize: 15 },
+  h1: { color: c.text, fontSize: 22, fontWeight: '800', marginBottom: 4 },
+  section: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 10 },
+  card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 8 },
+  lbl: { color: c.textMuted, fontSize: 12, marginTop: 4 },
   row: { flexDirection: 'row', gap: 8 },
   twoCol: { flexDirection: 'row', gap: 10 },
   wrap: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  pill: { flex: 1, backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
-  pillOn: { borderColor: Brand.accentStrong, backgroundColor: '#241f3a' },
-  pillTxt: { color: Brand.textMuted, fontWeight: '700', fontSize: 13 },
-  pillTxtOn: { color: Brand.text },
-  chip: { backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 10, paddingVertical: 9, paddingHorizontal: 14 },
-  chipTxt: { color: Brand.textMuted, fontWeight: '700', fontSize: 13 },
-  input: { color: Brand.text, fontSize: 18, fontWeight: '700', backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, marginTop: 4 },
-  save: { backgroundColor: Brand.accentStrong, borderRadius: 12, paddingVertical: 13, alignItems: 'center', marginTop: 6 },
+  pill: { flex: 1, backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
+  pillOn: { borderColor: c.accentStrong, backgroundColor: '#241f3a' },
+  pillTxt: { color: c.textMuted, fontWeight: '700', fontSize: 13 },
+  pillTxtOn: { color: c.text },
+  chip: { backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 10, paddingVertical: 9, paddingHorizontal: 14 },
+  chipTxt: { color: c.textMuted, fontWeight: '700', fontSize: 13 },
+  input: { color: c.text, fontSize: 18, fontWeight: '700', backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, marginTop: 4 },
+  save: { backgroundColor: c.accentStrong, borderRadius: 12, paddingVertical: 13, alignItems: 'center', marginTop: 6 },
   saveTxt: { color: '#fff', fontWeight: '800' },
-  secondary: { borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
-  secondaryTxt: { color: Brand.accent, fontWeight: '700' },
-  note: { color: Brand.textMuted, fontSize: 12 },
+  secondary: { borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
+  secondaryTxt: { color: c.accent, fontWeight: '700' },
+  note: { color: c.textMuted, fontSize: 12 },
   switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  switchLbl: { color: Brand.text, fontSize: 15, fontWeight: '600' },
+  switchLbl: { color: c.text, fontSize: 15, fontWeight: '600' },
   hourRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  hourBtn: { width: 40, height: 40, borderRadius: 10, backgroundColor: Brand.surface, borderColor: Brand.cardBorder, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  hourBtnTxt: { color: Brand.accent, fontSize: 22, fontWeight: '700' },
-  hourVal: { color: Brand.text, fontSize: 18, fontWeight: '800', minWidth: 64, textAlign: 'center' },
-  linkRow: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  linkTxt: { color: Brand.text, fontSize: 15, fontWeight: '600' },
+  hourBtn: { width: 40, height: 40, borderRadius: 10, backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  hourBtnTxt: { color: c.accent, fontSize: 22, fontWeight: '700' },
+  hourVal: { color: c.text, fontSize: 18, fontWeight: '800', minWidth: 64, textAlign: 'center' },
+  linkRow: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  linkTxt: { color: c.text, fontSize: 15, fontWeight: '600' },
 });

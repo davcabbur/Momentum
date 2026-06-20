@@ -5,10 +5,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { daysBetween, weighInSegments } from '@/bodyweight/goal';
 import { formatKg } from '@/bodyweight/format';
-import { Brand } from '@/constants/theme';
 import { getGoal, listWeights } from '@/db/bodyweight-repo';
 import { weightGoal } from '@/db/schema';
 import { AddWeightSheet } from '@/ui/AddWeightSheet';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 
 type Goal = typeof weightGoal.$inferSelect;
 type Entry = { date: string; weightKg: number };
@@ -26,6 +26,8 @@ function shortDate(iso: string): string {
 
 /** Historial de pesajes: cada entrada con peso, diferencia, barra de progreso, fecha y editar. */
 export function WeightHistory({ reloadNonce }: { reloadNonce?: number }) {
+  const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [goal, setGoal] = useState<Goal | null>(null);
   const [editing, setEditing] = useState<Entry | null>(null);
@@ -70,12 +72,12 @@ export function WeightHistory({ reloadNonce }: { reloadNonce?: number }) {
             <View style={styles.segments}>
               {[0, 1, 2, 3, 4].map((s) => {
                 const on = bar ? s < bar.segments : false;
-                return <View key={s} style={[styles.seg, { backgroundColor: on ? (bar?.toward ? Brand.good : '#f87171') : Brand.track }]} />;
+                return <View key={s} style={[styles.seg, { backgroundColor: on ? (bar?.toward ? c.good : c.bad) : c.track }]} />;
               })}
             </View>
             <Text style={styles.date}>{shortDate(e.date)}</Text>
             <Pressable style={styles.editBtn} hitSlop={8} onPress={() => setEditing(e)}>
-              <Ionicons name="pencil" size={18} color={Brand.accent} />
+              <Ionicons name="pencil" size={18} color={c.accent} />
             </Pressable>
           </View>
         );
@@ -95,14 +97,15 @@ export function WeightHistory({ reloadNonce }: { reloadNonce?: number }) {
   );
 }
 
-const styles = StyleSheet.create({
-  title: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 4, marginBottom: 6 },
-  card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  wcol: { minWidth: 70 },
-  kg: { color: Brand.text, fontSize: 16, fontWeight: '800' },
-  diff: { color: Brand.textMuted, fontSize: 12, marginTop: 1 },
-  segments: { flex: 1, flexDirection: 'row', gap: 3 },
-  seg: { flex: 1, height: 9, borderRadius: 3 },
-  date: { color: Brand.textMuted, fontSize: 12, minWidth: 38, textAlign: 'right' },
-  editBtn: { padding: 2 },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    title: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 4, marginBottom: 6 },
+    card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 8 },
+    wcol: { minWidth: 70 },
+    kg: { color: c.text, fontSize: 16, fontWeight: '800' },
+    diff: { color: c.textMuted, fontSize: 12, marginTop: 1 },
+    segments: { flex: 1, flexDirection: 'row', gap: 3 },
+    seg: { flex: 1, height: 9, borderRadius: 3 },
+    date: { color: c.textMuted, fontSize: 12, minWidth: 38, textAlign: 'right' },
+    editBtn: { padding: 2 },
+  });

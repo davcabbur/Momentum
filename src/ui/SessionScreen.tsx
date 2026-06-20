@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { Brand } from '@/constants/theme';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { listDayExercises, type DayExercise } from '@/db/routine-repo';
 import { findSession, getSessionNote, listSets, setSessionNote } from '@/db/workout-repo';
 import { SetLogSheet } from '@/ui/SetLogSheet';
@@ -22,6 +22,8 @@ interface Props {
 }
 
 export function SessionScreen({ dayId, dayName, onBack }: Props) {
+  const { c: theme } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [exercises, setExercises] = useState<DayExercise[]>([]);
   const [counts, setCounts] = useState<Record<number, number>>({});
@@ -82,13 +84,13 @@ export function SessionScreen({ dayId, dayName, onBack }: Props) {
             <Ionicons
               name={isDone ? 'checkmark-circle' : 'ellipse-outline'}
               size={26}
-              color={isDone ? Brand.good : Brand.textMuted}
+              color={isDone ? theme.good : theme.textMuted}
             />
             <View style={styles.exMain}>
               <Text style={styles.exName}>{e.exercise.name}</Text>
               <Text style={styles.exMeta}>{isDone ? `${count} series hechas` : sch ? `Objetivo ${sch}` : 'Toca para registrar'}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={Brand.textMuted} />
+            <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />
           </Pressable>
         );
       })}
@@ -102,7 +104,7 @@ export function SessionScreen({ dayId, dayName, onBack }: Props) {
             onChangeText={setNote}
             onBlur={saveNote}
             placeholder="Cómo te sentiste, molestias, energía…"
-            placeholderTextColor={Brand.textMuted}
+            placeholderTextColor={theme.textMuted}
             multiline
           />
           <Pressable
@@ -137,23 +139,24 @@ export function SessionScreen({ dayId, dayName, onBack }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Brand.surface },
-  content: { padding: 14, gap: 10 },
-  back: { color: Brand.accent, fontWeight: '700' },
-  h1: { color: Brand.text, fontSize: 22, fontWeight: '800' },
-  progress: { gap: 6 },
-  progressTxt: { color: Brand.textMuted, fontSize: 12, fontWeight: '700' },
-  track: { height: 8, backgroundColor: Brand.track, borderRadius: 99, overflow: 'hidden' },
-  fill: { height: '100%', backgroundColor: Brand.good, borderRadius: 99 },
-  muted: { color: Brand.textMuted },
-  card: { backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  cardDone: { borderColor: '#1f3a2a' },
-  exMain: { flex: 1 },
-  exName: { color: Brand.text, fontSize: 16, fontWeight: '700' },
-  exMeta: { color: Brand.textMuted, fontSize: 12, marginTop: 1 },
-  noteLbl: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 6 },
-  noteInput: { color: Brand.text, fontSize: 14, backgroundColor: Brand.card, borderColor: Brand.cardBorder, borderWidth: 1, borderRadius: 12, padding: 12, minHeight: 64, textAlignVertical: 'top' },
-  finish: { backgroundColor: Brand.good, borderRadius: 12, padding: 14, alignItems: 'center', marginTop: 4 },
-  finishTxt: { color: '#06240f', fontWeight: '800' },
-});
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.surface },
+    content: { padding: 14, gap: 10 },
+    back: { color: c.accent, fontWeight: '700' },
+    h1: { color: c.text, fontSize: 22, fontWeight: '800' },
+    progress: { gap: 6 },
+    progressTxt: { color: c.textMuted, fontSize: 12, fontWeight: '700' },
+    track: { height: 8, backgroundColor: c.track, borderRadius: 99, overflow: 'hidden' },
+    fill: { height: '100%', backgroundColor: c.good, borderRadius: 99 },
+    muted: { color: c.textMuted },
+    card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 12 },
+    cardDone: { borderColor: '#1f3a2a' },
+    exMain: { flex: 1 },
+    exName: { color: c.text, fontSize: 16, fontWeight: '700' },
+    exMeta: { color: c.textMuted, fontSize: 12, marginTop: 1 },
+    noteLbl: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 6 },
+    noteInput: { color: c.text, fontSize: 14, backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, padding: 12, minHeight: 64, textAlignVertical: 'top' },
+    finish: { backgroundColor: c.good, borderRadius: 12, padding: 14, alignItems: 'center', marginTop: 4 },
+    finishTxt: { color: c.onGood, fontWeight: '800' },
+  });
