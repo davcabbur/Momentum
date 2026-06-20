@@ -14,9 +14,9 @@ const SEXES = [
 ];
 
 const STAGES = [
-  { key: 'definicion', label: 'Definición', desc: 'Perder grasa' },
+  { key: 'definicion', label: 'Déficit calórico', desc: 'Perder grasa' },
   { key: 'normocalorica', label: 'Normocalórica', desc: 'Mantener / recomposición' },
-  { key: 'volumen', label: 'Volumen', desc: 'Ganar músculo' },
+  { key: 'volumen', label: 'Superávit calórico', desc: 'Ganar músculo' },
 ];
 
 const ACTIVITIES = [

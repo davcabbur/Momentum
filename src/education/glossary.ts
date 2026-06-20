@@ -68,8 +68,8 @@ export const GLOSSARY: GlossaryTerm[] = [
   },
   {
     key: 'etapas',
-    title: 'Etapas: definición / normocalórica / volumen',
-    body: 'Definición = comer menos para perder grasa. Volumen = comer más para ganar músculo. Normocalórica/recomp = mantenerte y mejorar poco a poco.',
+    title: 'Etapas: déficit / normocalórica / superávit',
+    body: 'Déficit calórico = comer menos para perder grasa. Superávit calórico = comer más para ganar músculo. Normocalórica/recomp = mantenerte y mejorar poco a poco.',
   },
   {
     key: 'tdee',

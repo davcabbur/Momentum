@@ -15,9 +15,9 @@ import { Loading } from '@/ui/Loading';
 import { useRefresh } from '@/ui/useRefresh';
 
 const STAGE_LABEL: Record<string, string> = {
-  definicion: 'Definición',
+  definicion: 'Déficit calórico',
   normocalorica: 'Normocalórica',
-  volumen: 'Volumen',
+  volumen: 'Superávit calórico',
 };
 
 function today(): string {
