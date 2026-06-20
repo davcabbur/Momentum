@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#E9EAEE;font-family:'Manrope',sans-serif;-webkit-font-smoothing:antialiased}
+</style>
+</helmet>
+
+<div style="width:1440px;margin:0 auto;background:#E9EAEE;padding:72px 80px 96px;color:#14161C">
+
+  <!-- ===== SVG ICON SPRITE (full-bleed square bg for Android adaptive) ===== -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#8E80FF"/><stop offset="1" stop-color="#5B49E8"/>
+      </linearGradient>
+      <linearGradient id="gradInk" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#1A1C26"/><stop offset="1" stop-color="#0C0D12"/>
+      </linearGradient>
+      <linearGradient id="gradAccentBg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#7A68FF"/><stop offset="1" stop-color="#4B39D6"/>
+      </linearGradient>
+      <linearGradient id="gradLightBg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#F3F1FE"/><stop offset="1" stop-color="#E4E0FB"/>
+      </linearGradient>
+
+      <!-- A: double up-chevron on ink -->
+      <symbol id="iconA" viewBox="0 0 1024 1024">
+        <rect width="1024" height="1024" fill="url(#gradInk)"/>
+        <polyline points="300,520 512,360 724,520" fill="none" stroke="url(#gradA)" stroke-width="104" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="300,700 512,540 724,700" fill="none" stroke="url(#gradA)" stroke-width="104" stroke-linecap="round" stroke-linejoin="round" opacity="0.45"/>
+      </symbol>
+
+      <!-- B: rising trend line + arrowhead on accent -->
+      <symbol id="iconB" viewBox="0 0 1024 1024">
+        <rect width="1024" height="1024" fill="url(#gradAccentBg)"/>
+        <polyline points="290,690 430,600 552,650 710,420" fill="none" stroke="#FFFFFF" stroke-width="92" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="560,398 730,398 730,568" fill="none" stroke="#FFFFFF" stroke-width="92" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
+
+      <!-- C: rising geometric M on light -->
+      <symbol id="iconC" viewBox="0 0 1024 1024">
+        <rect width="1024" height="1024" fill="url(#gradLightBg)"/>
+        <polyline points="296,716 408,392 512,560 616,330 728,560" fill="none" stroke="url(#gradAccentBg)" stroke-width="98" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <!-- ===== HERO ===== -->
+  <div style="display:flex;align-items:center;gap:28px;margin-bottom:14px">
+    <div style="width:88px;height:88px;border-radius:21px;overflow:hidden;box-shadow:0 14px 34px -12px rgba(91,73,232,0.55)">
+      <svg width="88" height="88" viewBox="0 0 1024 1024"><use href="#iconA"/></svg>
+    </div>
+    <div>
+      <div style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:52px;letter-spacing:-0.02em;line-height:1">Momentum</div>
+      <div style="font-size:18px;color:#5B616E;margin-top:6px;font-weight:500">Visual identity — coach-led fitness app · light &amp; dark</div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:14px;margin:32px 0 8px;flex-wrap:wrap">
+    <span style="font-size:14px;font-weight:600;color:#4B39D6;background:#ECEAFE;padding:8px 16px;border-radius:999px">Cercano</span>
+    <span style="font-size:14px;font-weight:600;color:#4B39D6;background:#ECEAFE;padding:8px 16px;border-radius:999px">Fiable</span>
+    <span style="font-size:14px;font-weight:600;color:#4B39D6;background:#ECEAFE;padding:8px 16px;border-radius:999px">Educativo</span>
+    <span style="font-size:14px;font-weight:600;color:#4B39D6;background:#ECEAFE;padding:8px 16px;border-radius:999px">Tranquilo</span>
+    <span style="font-size:14px;font-weight:600;color:#4B39D6;background:#ECEAFE;padding:8px 16px;border-radius:999px">Impulso ascendente</span>
+  </div>
+
+  <p style="max-width:920px;font-size:17px;line-height:1.65;color:#3A3F4B;margin-top:20px">
+    Un <strong>violeta-índigo</strong> es el acento: transmite energía y enfoque sin la urgencia agresiva del rojo o el naranja —
+    motiva con calma. Se mantiene legible y vibrante sobre fondos claros y oscuros, así que el mismo color de marca define
+    los botones en ambos temas. Los verdes, azules, ámbares y rojos quedan reservados para significados (progreso, info,
+    aviso, error), nunca para la marca: así el progreso <em>orienta</em> y nunca se confunde con el acento.
+  </p>
+
+  <!-- ===== LIGHT PALETTE ===== -->
+  <div style="margin-top:64px">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:24px">
+      <h2 style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:600;letter-spacing:-0.01em">Tema claro</h2>
+      <span style="font-size:14px;color:#5B616E;font-weight:500">— calma diurna, fondos suaves</span>
+    </div>
+
+    <div style="background:#F6F7F9;border:1px solid #E6E8EF;border-radius:20px;padding:32px">
+      <!-- accents row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px">
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #E6E8EF;background:#fff">
+          <div style="height:84px;background:#6353EF"></div>
+          <div style="padding:12px 14px"><div style="font-weight:700;font-size:14px">Acento</div><div style="font-size:13px;color:#5B616E;font-family:'Space Grotesk',sans-serif">#6353EF</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #E6E8EF;background:#fff">
+          <div style="height:84px;background:#4B39D6"></div>
+          <div style="padding:12px 14px"><div style="font-weight:700;font-size:14px">Acento fuerte</div><div style="font-size:13px;color:#5B616E;font-family:'Space Grotesk',sans-serif">#4B39D6</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #E6E8EF;background:#fff">
+          <div style="height:84px;background:#ECEAFE"></div>
+          <div style="padding:12px 14px"><div style="font-weight:700;font-size:14px">Tinte de acento</div><div style="font-size:13px;color:#5B616E;font-family:'Space Grotesk',sans-serif">#ECEAFE</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #E6E8EF;background:#fff">
+          <div style="height:84px;background:#fff;border-bottom:1px solid #E6E8EF;display:flex;align-items:center;justify-content:center">
+            <button style="background:#6353EF;color:#fff;border:none;font-family:'Manrope';font-weight:700;font-size:14px;padding:10px 20px;border-radius:10px">Empezar</button>
+          </div>
+          <div style="padding:12px 14px"><div style="font-weight:700;font-size:14px">Botón (vista)</div><div style="font-size:13px;color:#5B616E">texto #FFFFFF</div></div>
+        </div>
+      </div>
+
+      <!-- surfaces + text -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px">
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #E6E8EF;background:#fff">
+          <div style="height:64px;background:#F6F7F9"></div>
+          <div style="padding:12px 14px"><div style="font-weight:700;font-size:14px">Fondo pantalla</div><div style="font-size:13px;color:#5B616E;font-family:'Space Grotesk',sans-serif">#F6F7F9</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #E6E8EF;background:#fff">
+          <div style="height:64px;background:#FFFFFF;border-bottom:1px solid #E6E8EF"></div>
+          <div style="padding:12px 14px"><div style="font-weight:700;font-size:14px">Fondo tarjeta</div><div style="font-size:13px;color:#5B616E;font-family:'Space Grotesk',sans-serif">#FFFFFF</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #E6E8EF;background:#fff">
+          <div style="height:64px;background:#fff;display:flex;align-items:center;justify-content:center"><div style="width:70%;height:0;border-top:2px solid #E6E8EF"></div></div>
+          <div style="padding:12px 14px"><div style="font-weight:700;font-size:14px">Borde tarjeta</div><div style="font-size:13px;color:#5B616E;font-family:'Space Grotesk',sans-serif">#E6E8EF</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #E6E8EF;background:#fff">
+          <div style="height:64px;background:#fff;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding-left:16px;gap:4px">
+            <span style="color:#14161C;font-weight:700;font-size:15px">Texto principal</span>
+            <span style="color:#5B616E;font-weight:500;font-size:13px">Texto secundario</span>
+          </div>
+          <div style="padding:12px 14px"><div style="font-size:13px;color:#5B616E;font-family:'Space Grotesk',sans-serif">#14161C&nbsp;·&nbsp;#5B616E</div></div>
+        </div>
+      </div>
+
+      <!-- semantics -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #E6E8EF;background:#fff">
+          <div style="height:56px;background:#1E9E57"></div>
+          <div style="padding:10px 14px"><div style="font-weight:700;font-size:13px">Éxito / progreso</div><div style="font-size:13px;color:#5B616E;font-family:'Space Grotesk',sans-serif">#1E9E57</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #E6E8EF;background:#fff">
+          <div style="height:56px;background:#2563EB"></div>
+          <div style="padding:10px 14px"><div style="font-weight:700;font-size:13px">Informativo</div><div style="font-size:13px;color:#5B616E;font-family:'Space Grotesk',sans-serif">#2563EB</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #E6E8EF;background:#fff">
+          <div style="height:56px;background:#C2710C"></div>
+          <div style="padding:10px 14px"><div style="font-weight:700;font-size:13px">Aviso</div><div style="font-size:13px;color:#5B616E;font-family:'Space Grotesk',sans-serif">#C2710C</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #E6E8EF;background:#fff">
+          <div style="height:56px;background:#DC2626"></div>
+          <div style="padding:10px 14px"><div style="font-weight:700;font-size:13px">Error</div><div style="font-size:13px;color:#5B616E;font-family:'Space Grotesk',sans-serif">#DC2626</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DARK PALETTE ===== -->
+  <div style="margin-top:56px">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:24px">
+      <h2 style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:600;letter-spacing:-0.01em">Tema oscuro</h2>
+      <span style="font-size:14px;color:#5B616E;font-weight:500">— enfoque nocturno, acento más luminoso</span>
+    </div>
+
+    <div style="background:#0E0F13;border:1px solid #2A2D37;border-radius:20px;padding:32px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px">
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #2A2D37;background:#181A20">
+          <div style="height:84px;background:#8E80FF"></div>
+          <div style="padding:12px 14px"><div style="font-weight:700;font-size:14px;color:#F3F5F9">Acento</div><div style="font-size:13px;color:#969CAB;font-family:'Space Grotesk',sans-serif">#8E80FF</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #2A2D37;background:#181A20">
+          <div style="height:84px;background:#6353EF"></div>
+          <div style="padding:12px 14px"><div style="font-weight:700;font-size:14px;color:#F3F5F9">Acento fuerte</div><div style="font-size:13px;color:#969CAB;font-family:'Space Grotesk',sans-serif">#6353EF</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #2A2D37;background:#181A20">
+          <div style="height:84px;background:#221F3D"></div>
+          <div style="padding:12px 14px"><div style="font-weight:700;font-size:14px;color:#F3F5F9">Tinte de acento</div><div style="font-size:13px;color:#969CAB;font-family:'Space Grotesk',sans-serif">#221F3D</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #2A2D37;background:#181A20">
+          <div style="height:84px;background:#181A20;border-bottom:1px solid #2A2D37;display:flex;align-items:center;justify-content:center">
+            <button style="background:#6353EF;color:#fff;border:none;font-family:'Manrope';font-weight:700;font-size:14px;padding:10px 20px;border-radius:10px">Empezar</button>
+          </div>
+          <div style="padding:12px 14px"><div style="font-weight:700;font-size:14px;color:#F3F5F9">Botón (vista)</div><div style="font-size:13px;color:#969CAB">texto #FFFFFF</div></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px">
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #2A2D37;background:#181A20">
+          <div style="height:64px;background:#0E0F13"></div>
+          <div style="padding:12px 14px"><div style="font-weight:700;font-size:14px;color:#F3F5F9">Fondo pantalla</div><div style="font-size:13px;color:#969CAB;font-family:'Space Grotesk',sans-serif">#0E0F13</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #2A2D37;background:#181A20">
+          <div style="height:64px;background:#181A20;border-bottom:1px solid #2A2D37"></div>
+          <div style="padding:12px 14px"><div style="font-weight:700;font-size:14px;color:#F3F5F9">Fondo tarjeta</div><div style="font-size:13px;color:#969CAB;font-family:'Space Grotesk',sans-serif">#181A20</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #2A2D37;background:#181A20">
+          <div style="height:64px;background:#181A20;display:flex;align-items:center;justify-content:center"><div style="width:70%;height:0;border-top:2px solid #2A2D37"></div></div>
+          <div style="padding:12px 14px"><div style="font-weight:700;font-size:14px;color:#F3F5F9">Borde tarjeta</div><div style="font-size:13px;color:#969CAB;font-family:'Space Grotesk',sans-serif">#2A2D37</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #2A2D37;background:#181A20">
+          <div style="height:64px;background:#181A20;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding-left:16px;gap:4px">
+            <span style="color:#F3F5F9;font-weight:700;font-size:15px">Texto principal</span>
+            <span style="color:#969CAB;font-weight:500;font-size:13px">Texto secundario</span>
+          </div>
+          <div style="padding:12px 14px"><div style="font-size:13px;color:#969CAB;font-family:'Space Grotesk',sans-serif">#F3F5F9&nbsp;·&nbsp;#969CAB</div></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #2A2D37;background:#181A20">
+          <div style="height:56px;background:#36D17E"></div>
+          <div style="padding:10px 14px"><div style="font-weight:700;font-size:13px;color:#F3F5F9">Éxito / progreso</div><div style="font-size:13px;color:#969CAB;font-family:'Space Grotesk',sans-serif">#36D17E</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #2A2D37;background:#181A20">
+          <div style="height:56px;background:#5B9BFF"></div>
+          <div style="padding:10px 14px"><div style="font-weight:700;font-size:13px;color:#F3F5F9">Informativo</div><div style="font-size:13px;color:#969CAB;font-family:'Space Grotesk',sans-serif">#5B9BFF</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #2A2D37;background:#181A20">
+          <div style="height:56px;background:#F2B34F"></div>
+          <div style="padding:10px 14px"><div style="font-weight:700;font-size:13px;color:#F3F5F9">Aviso</div><div style="font-size:13px;color:#969CAB;font-family:'Space Grotesk',sans-serif">#F2B34F</div></div>
+        </div>
+        <div style="border-radius:14px;overflow:hidden;border:1px solid #2A2D37;background:#181A20">
+          <div style="height:56px;background:#F87171"></div>
+          <div style="padding:10px 14px"><div style="font-weight:700;font-size:13px;color:#F3F5F9">Error</div><div style="font-size:13px;color:#969CAB;font-family:'Space Grotesk',sans-serif">#F87171</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ICONS ===== -->
+  <div style="margin-top:64px">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px">
+      <h2 style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:600;letter-spacing:-0.01em">Icono de la app</h2>
+      <span style="font-size:14px;color:#5B616E;font-weight:500">— 1024×1024, símbolo dentro del 63% central · prueba de máscara y 48px</span>
+    </div>
+    <p style="font-size:15px;color:#5B616E;max-width:880px;margin:6px 0 28px">Cada tile va a sangre completa (fondo de borde a borde) para los iconos adaptativos de Android; el símbolo queda dentro de la zona segura para sobrevivir a las máscaras circular y squircle.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px">
+
+      <!-- A -->
+      <div style="background:#fff;border:1px solid #E6E8EF;border-radius:18px;padding:24px">
+        <div style="border-radius:20%;overflow:hidden;box-shadow:0 16px 36px -16px rgba(0,0,0,0.5)">
+          <svg width="100%" viewBox="0 0 1024 1024" style="display:block"><use href="#iconA"/></svg>
+        </div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;margin-top:18px">A · Doble chevron</div>
+        <div style="font-size:14px;color:#5B616E;line-height:1.5;margin-top:4px">Dos galones ascendentes = avance y ritmo. El más tenue da sensación de movimiento.</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:18px">
+          <div style="width:48px;height:48px;border-radius:11px;overflow:hidden;flex:none"><svg width="48" height="48" viewBox="0 0 1024 1024"><use href="#iconA"/></svg></div>
+          <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;flex:none"><svg width="48" height="48" viewBox="0 0 1024 1024"><use href="#iconA"/></svg></div>
+          <div style="width:48px;height:48px;border-radius:38%;overflow:hidden;flex:none"><svg width="48" height="48" viewBox="0 0 1024 1024"><use href="#iconA"/></svg></div>
+          <span style="font-size:12px;color:#8A909C">48px · círculo · squircle</span>
+        </div>
+        <div style="margin-top:16px;font-size:13px;color:#3A3F4B"><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#0C0D12;vertical-align:-2px;margin-right:8px"></span>Fondo recomendado: tinta <strong>#0C0D12 → #1A1C26</strong>, símbolo en degradado de acento.</div>
+      </div>
+
+      <!-- B -->
+      <div style="background:#fff;border:1px solid #E6E8EF;border-radius:18px;padding:24px">
+        <div style="border-radius:20%;overflow:hidden;box-shadow:0 16px 36px -16px rgba(75,57,214,0.55)">
+          <svg width="100%" viewBox="0 0 1024 1024" style="display:block"><use href="#iconB"/></svg>
+        </div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;margin-top:18px">B · Tendencia ascendente</div>
+        <div style="font-size:14px;color:#5B616E;line-height:1.5;margin-top:4px">Línea de progreso con flecha al alza — el “coach” que muestra que vas subiendo.</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:18px">
+          <div style="width:48px;height:48px;border-radius:11px;overflow:hidden;flex:none"><svg width="48" height="48" viewBox="0 0 1024 1024"><use href="#iconB"/></svg></div>
+          <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;flex:none"><svg width="48" height="48" viewBox="0 0 1024 1024"><use href="#iconB"/></svg></div>
+          <div style="width:48px;height:48px;border-radius:38%;overflow:hidden;flex:none"><svg width="48" height="48" viewBox="0 0 1024 1024"><use href="#iconB"/></svg></div>
+          <span style="font-size:12px;color:#8A909C">48px · círculo · squircle</span>
+        </div>
+        <div style="margin-top:16px;font-size:13px;color:#3A3F4B"><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#6353EF;vertical-align:-2px;margin-right:8px"></span>Fondo recomendado: degradado de acento <strong>#7A68FF → #4B39D6</strong>, símbolo blanco.</div>
+      </div>
+
+      <!-- C -->
+      <div style="background:#fff;border:1px solid #E6E8EF;border-radius:18px;padding:24px">
+        <div style="border-radius:20%;overflow:hidden;box-shadow:0 16px 36px -16px rgba(0,0,0,0.25)">
+          <svg width="100%" viewBox="0 0 1024 1024" style="display:block"><use href="#iconC"/></svg>
+        </div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:18px;margin-top:18px">C · “M” en cuesta</div>
+        <div style="font-size:14px;color:#5B616E;line-height:1.5;margin-top:4px">Una M cuyos picos suben hacia la derecha: inicial de marca + gráfica de tendencia.</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-top:18px">
+          <div style="width:48px;height:48px;border-radius:11px;overflow:hidden;flex:none"><svg width="48" height="48" viewBox="0 0 1024 1024"><use href="#iconC"/></svg></div>
+          <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;flex:none"><svg width="48" height="48" viewBox="0 0 1024 1024"><use href="#iconC"/></svg></div>
+          <div style="width:48px;height:48px;border-radius:38%;overflow:hidden;flex:none"><svg width="48" height="48" viewBox="0 0 1024 1024"><use href="#iconC"/></svg></div>
+          <span style="font-size:12px;color:#8A909C">48px · círculo · squircle</span>
+        </div>
+        <div style="margin-top:16px;font-size:13px;color:#3A3F4B"><span style="display:inline-block;width:14px;height:14px;border-radius:4px;background:#E4E0FB;border:1px solid #d6d1f5;vertical-align:-2px;margin-right:8px"></span>Fondo recomendado: lavanda claro <strong>#F3F1FE → #E4E0FB</strong>, símbolo en acento.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== SUMMARY TABLE ===== -->
+  <div style="margin-top:64px">
+    <h2 style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:600;letter-spacing:-0.01em;margin-bottom:24px">Resumen de paleta</h2>
+    <div style="background:#fff;border:1px solid #E6E8EF;border-radius:18px;overflow:hidden">
+      <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;background:#F1F2F6;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14px;color:#3A3F4B">
+        <div style="padding:16px 24px">Rol</div>
+        <div style="padding:16px 24px">Claro</div>
+        <div style="padding:16px 24px">Oscuro</div>
+      </div>
+      <div data-rows>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;border-top:1px solid #EDEFF3;font-size:15px"><div style="padding:14px 24px;font-weight:600">Acento principal</div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#6353EF;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#6353EF</span></div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#8E80FF;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#8E80FF</span></div></div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;border-top:1px solid #EDEFF3;font-size:15px"><div style="padding:14px 24px;font-weight:600">Acento fuerte (botón)</div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#4B39D6;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#4B39D6</span></div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#6353EF;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#6353EF</span></div></div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;border-top:1px solid #EDEFF3;font-size:15px"><div style="padding:14px 24px;font-weight:600">Tinte de acento (chips)</div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#ECEAFE;border:1px solid #E6E8EF;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#ECEAFE</span></div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#221F3D;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#221F3D</span></div></div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;border-top:1px solid #EDEFF3;font-size:15px"><div style="padding:14px 24px;font-weight:600">Fondo pantalla</div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#F6F7F9;border:1px solid #E6E8EF;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#F6F7F9</span></div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#0E0F13;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#0E0F13</span></div></div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;border-top:1px solid #EDEFF3;font-size:15px"><div style="padding:14px 24px;font-weight:600">Fondo tarjeta</div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#FFFFFF;border:1px solid #E6E8EF;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#FFFFFF</span></div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#181A20;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#181A20</span></div></div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;border-top:1px solid #EDEFF3;font-size:15px"><div style="padding:14px 24px;font-weight:600">Borde tarjeta</div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#E6E8EF;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#E6E8EF</span></div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#2A2D37;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#2A2D37</span></div></div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;border-top:1px solid #EDEFF3;font-size:15px"><div style="padding:14px 24px;font-weight:600">Texto principal</div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#14161C;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#14161C</span></div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#F3F5F9;border:1px solid #E6E8EF;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#F3F5F9</span></div></div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;border-top:1px solid #EDEFF3;font-size:15px"><div style="padding:14px 24px;font-weight:600">Texto secundario</div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#5B616E;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#5B616E</span></div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#969CAB;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#969CAB</span></div></div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;border-top:1px solid #EDEFF3;font-size:15px"><div style="padding:14px 24px;font-weight:600">Éxito / progreso</div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#1E9E57;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#1E9E57</span></div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#36D17E;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#36D17E</span></div></div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;border-top:1px solid #EDEFF3;font-size:15px"><div style="padding:14px 24px;font-weight:600">Informativo</div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#2563EB;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#2563EB</span></div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#5B9BFF;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#5B9BFF</span></div></div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;border-top:1px solid #EDEFF3;font-size:15px"><div style="padding:14px 24px;font-weight:600">Aviso</div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#C2710C;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#C2710C</span></div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#F2B34F;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#F2B34F</span></div></div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;border-top:1px solid #EDEFF3;font-size:15px"><div style="padding:14px 24px;font-weight:600">Error</div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#DC2626;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#DC2626</span></div><div style="padding:14px 24px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:18px;border-radius:5px;background:#F87171;flex:none"></span><span style="font-family:'Space Grotesk',sans-serif;color:#3A3F4B">#F87171</span></div></div>
+      </div>
+    </div>
+    <p style="font-size:13px;color:#8A909C;margin-top:14px">Contraste: texto principal e inverso ≥ 12:1; texto secundario ≥ 4.5:1; botones de acento con texto blanco ≥ 4.5:1 en ambos temas (WCAG AA). En oscuro el acento se aclara a #8E80FF para mantener legibilidad sobre superficies oscuras.</p>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
