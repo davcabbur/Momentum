@@ -15,6 +15,7 @@ import { schemeForLevel, type Level } from '@/training/levels';
 import { progressionHint, type ProgressionHint } from '@/training/progression';
 import { detectStall } from '@/training/intelligence';
 import { cancelScheduledNotification, scheduleRestDoneNotification } from '@/lib/notifications';
+import { recommendSet, type SetRecommendation } from '@/training/recommend-set';
 import { recommendedRestSeconds } from '@/training/rest';
 import { exerciseSetWarning } from '@/training/volume';
 
@@ -41,6 +42,14 @@ const TYPES = [
   { key: 'warmup', label: 'Calent.' },
 ];
 
+function typeLabel(key: string): string {
+  return TYPES.find((t) => t.key === key)?.label ?? key;
+}
+
+function kgTxt(w: number): string {
+  return String(w).replace('.', ',');
+}
+
 interface Props {
   visible: boolean;
   sessionId: number | null;
@@ -64,8 +73,10 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
   const [last, setLast] = useState<{ date: string; sets: SetLog[] } | null>(null);
   const [target, setTarget] = useState('');
   const [schemeSets, setSchemeSets] = useState(3);
+  const [schemeRep, setSchemeRep] = useState({ repMin: 8, repMax: 12 });
   const [hint, setHint] = useState<ProgressionHint | null>(null);
   const [editing, setEditing] = useState<Editing | null>(null);
+  const [rec, setRec] = useState<SetRecommendation | null>(null);
   const [showHow, setShowHow] = useState(false);
   const [restGoal, setRestGoal] = useState(120);
   const [restEnd, setRestEnd] = useState<number | null>(null); // hora de fin (ms); fuente de verdad
@@ -79,8 +90,6 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
   const mv = muscleView(muscleGroup ?? '');
   const bwLoaded = isBodyweightLoaded(exerciseName);
   const isCompound = exerciseMeta(exerciseName)?.compound ?? false;
-  // Tipo de serie por defecto: en compuestos, 1ª = top set, resto = back-off; aislamiento = normal.
-  const defaultType = (n: number) => (isCompound ? (n === 1 ? 'top' : 'backoff') : 'normal');
   const workSets = sets.filter((s) => s.setType !== 'warmup').length;
   const volWarn = exerciseSetWarning(workSets, schemeSets);
 
@@ -102,6 +111,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
     const hi = repMax ?? sc.repMax;
     const rir = sc.rirMin === sc.rirMax ? `${sc.rirMin}` : `${sc.rirMin}–${sc.rirMax}`;
     setSchemeSets(setsN);
+    setSchemeRep({ repMin: lo, repMax: hi });
     setTarget(`${setsN}×${lo}–${hi} · RIR ${rir}`);
     setRestGoal(recommendedRestSeconds(hi));
     const h = lp ? progressionHint(lp.sets, { sets: setsN, repMin: lo, repMax: hi }) : null;
@@ -117,17 +127,28 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
     } else {
       setDeload(null);
     }
-    // Serie 1 ya abierta para anotar al entrar. Si toca subir peso, pre-rellena lo sugerido.
+    // Serie 1 ya abierta para anotar al entrar, con la recomendación (carga progresiva).
     if (fetched.length === 0) {
-      const prev = lp?.sets[0];
-      const up = h?.ready && h.suggestedWeightKg != null;
       const base = bwLoaded ? bw ?? 20 : 20;
+      const lastWork = (lp?.sets ?? []).filter((s) => s.setType !== 'warmup');
+      const lastTop = lastWork.length ? Math.max(...lastWork.map((s) => s.weightKg)) : null;
+      const topW = h?.ready && h.suggestedWeightKg != null ? h.suggestedWeightKg : lastTop;
+      const lastSame = lp?.sets.find((s) => s.setNumber === 1) ?? null;
+      const r = recommendSet({
+        setNumber: 1,
+        isCompound,
+        scheme: { sets: setsN, repMin: lo, repMax: hi },
+        topSetWeightKg: topW,
+        lastSameWeightKg: lastSame?.weightKg ?? null,
+        bodyweightLoaded: bwLoaded,
+      });
+      setRec(r);
       setEditing({
         setNumber: 1,
-        weightKg: up ? h!.suggestedWeightKg! : prev?.weightKg ?? base,
-        reps: up ? lo : prev?.reps ?? 8,
+        weightKg: r.weightKg ?? base,
+        reps: lastSame?.reps ?? r.repMin,
         rir: 2,
-        setType: defaultType(1),
+        setType: r.setType,
         exists: false,
       });
     }
@@ -201,21 +222,36 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
 
   function openNew() {
     const n = sets.length + 1;
-    const lastSame = last?.sets.find((s) => s.setNumber === n);
+    const lastSame = last?.sets.find((s) => s.setNumber === n) ?? null;
     const todayPrev = sets[sets.length - 1];
-    const up = hint?.ready && hint.suggestedWeightKg != null && !todayPrev;
     const base = bwLoaded ? bodyweight ?? 20 : 20;
+    // Top set de referencia: el más pesado de hoy si ya lo hiciste; si no, la progresión / la última vez.
+    const todayWork = sets.filter((s) => s.setType !== 'warmup');
+    const todayTop = todayWork.length ? Math.max(...todayWork.map((s) => s.weightKg)) : null;
+    const lastWork = (last?.sets ?? []).filter((s) => s.setType !== 'warmup');
+    const lastTop = lastWork.length ? Math.max(...lastWork.map((s) => s.weightKg)) : null;
+    const topW = todayTop ?? (hint?.ready && hint.suggestedWeightKg != null ? hint.suggestedWeightKg : lastTop);
+    const r = recommendSet({
+      setNumber: n,
+      isCompound,
+      scheme: { sets: schemeSets, repMin: schemeRep.repMin, repMax: schemeRep.repMax },
+      topSetWeightKg: topW,
+      lastSameWeightKg: lastSame?.weightKg ?? null,
+      bodyweightLoaded: bwLoaded,
+    });
+    setRec(r);
     setEditing({
       setNumber: n,
-      weightKg: up ? hint!.suggestedWeightKg! : lastSame?.weightKg ?? todayPrev?.weightKg ?? base,
-      reps: lastSame?.reps ?? todayPrev?.reps ?? 8,
+      weightKg: r.weightKg ?? todayPrev?.weightKg ?? base,
+      reps: lastSame?.reps ?? todayPrev?.reps ?? r.repMin,
       rir: 2,
-      setType: lastSame?.setType ?? defaultType(n),
+      setType: r.setType,
       exists: false,
     });
   }
 
   function openEdit(s: SetLog) {
+    setRec(null);
     setEditing({ setNumber: s.setNumber, weightKg: s.weightKg, reps: s.reps, rir: s.rir, setType: s.setType, exists: true });
   }
 
@@ -352,6 +388,11 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
             {editing && (
               <View style={styles.focus}>
                 <Text style={styles.focusTitle}>Serie {editing.setNumber}</Text>
+                {rec && !editing.exists && (
+                  <Text style={styles.recLine}>
+                    💡 Recomendado: {rec.weightKg != null ? `${kgTxt(rec.weightKg)} kg` : '—'} · {typeLabel(rec.setType)} · {rec.repMin}–{rec.repMax} reps
+                  </Text>
+                )}
                 <View style={styles.stepper}>
                   <Pressable style={styles.stepBtn} onPress={() => step('weightKg', -2.5)}>
                     <Text style={styles.stepTxt}>−</Text>
@@ -455,6 +496,7 @@ const styles = StyleSheet.create({
   addSetTxt: { color: Brand.accent, fontWeight: '700' },
   focus: { marginTop: 12, borderTopWidth: 1, borderTopColor: Brand.cardBorder, paddingTop: 12, gap: 8 },
   focusTitle: { color: Brand.text, fontWeight: '700' },
+  recLine: { color: Brand.accent, fontSize: 12, fontWeight: '600', marginTop: 4, marginBottom: 2 },
   stepper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: Brand.surface, borderRadius: 12, padding: 8 },
   stepBtn: { width: 44, height: 44, borderRadius: 10, backgroundColor: Brand.cardBorder, alignItems: 'center', justifyContent: 'center' },
   stepTxt: { color: Brand.accent, fontSize: 24, fontWeight: '700' },
