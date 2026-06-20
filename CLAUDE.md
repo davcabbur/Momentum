@@ -41,6 +41,7 @@ Mantener cada módulo enfocado y testeable por separado, para enchufar las fases
 - Componentes React en PascalCase; hooks en `useX`; ficheros de componente `.tsx`.
 - Lógica de negocio en funciones puras (separada de la UI) para poder testearla.
 - Sin código muerto ni IMC: si aparece algún cálculo de IMC, eliminarlo.
+- **Colores siempre vía el tema, nunca hex hardcodeados.** Soporta claro/oscuro: en cada componente usar `const { c } = useTheme()` y `const styles = useThemedStyles(makeStyles)` (con `makeStyles = (c: Theme) => StyleSheet.create({...})`), y referenciar los tokens (`c.surface`, `c.text`, `c.accent`, `c.good`, `c.bad`, etc.). La paleta vive en `src/constants/theme.ts` (temas `light`/`dark`); el provider/hook en `src/ui/theme.tsx`. Si hace falta un color nuevo, añadir un token al tema, no un literal.
 
 ## Flujo de trabajo
 
