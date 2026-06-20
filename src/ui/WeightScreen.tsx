@@ -5,10 +5,10 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Brand } from '@/constants/theme';
 import { listWeights } from '@/db/bodyweight-repo';
-import { KcalSummaryCard } from '@/ui/KcalSummaryCard';
 import { Loading } from '@/ui/Loading';
 import { NextWorkoutCard } from '@/ui/NextWorkoutCard';
 import { Onboarding } from '@/ui/Onboarding';
+import { StrengthSummaryCard } from '@/ui/StrengthSummaryCard';
 import { useRefresh } from '@/ui/useRefresh';
 import { WeightSummaryCard } from '@/ui/WeightSummaryCard';
 
@@ -42,8 +42,8 @@ export function WeightScreen() {
       </View>
 
       <NextWorkoutCard reloadNonce={nonce} />
+      <StrengthSummaryCard reloadNonce={nonce} />
       <WeightSummaryCard reloadNonce={nonce} />
-      <KcalSummaryCard reloadNonce={nonce} onPress={() => router.push('/nutricion')} />
     </ScrollView>
   );
 }

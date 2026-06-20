@@ -7,15 +7,37 @@ import { formatDate, formatKg } from '@/bodyweight/format';
 import { weightInsight } from '@/bodyweight/insight';
 import { computeTrend, trendSlopePerWeek, type TrendPoint } from '@/bodyweight/trend';
 import { Brand } from '@/constants/theme';
-import { getGoal, listWeights } from '@/db/bodyweight-repo';
+import { getGoal, getProfile, listWeights } from '@/db/bodyweight-repo';
 import { weightGoal } from '@/db/schema';
+import { liveKcalPlan } from '@/nutrition/kcal';
 import { AddWeightSheet } from '@/ui/AddWeightSheet';
 import { ProgressRing } from '@/ui/ProgressRing';
 
 type Goal = typeof weightGoal.$inferSelect;
+type Profile = Awaited<ReturnType<typeof getProfile>>;
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+function kcalFmt(n: number): string {
+  return `${n}`.replace(/\B(?=(\d{3})+(?!\d))/, ' ');
+}
+
+/** Formatea kg quitando ceros sobrantes: 0,50→"0,5", 1,00→"1", 0,07→"0,07". */
+function kg2(n: number): string {
+  return (Math.round(Math.abs(n) * 100) / 100).toFixed(2).replace(/\.?0+$/, '').replace('.', ',');
+}
+
+function rateWord(stage: string | null | undefined): string {
+  return stage === 'definicion' ? 'Pérdida' : stage === 'volumen' ? 'Ganancia' : 'Cambio';
+}
+
+/** Texto de ritmo: magnitud (la palabra ya indica dirección) salvo en normocalórica, con signo. */
+function rateStr(kg: number, stage: string | null | undefined): string {
+  if (stage === 'definicion' || stage === 'volumen') return `${kg2(kg)} kg`;
+  const s = kg > 0.005 ? '+' : kg < -0.005 ? '−' : '';
+  return `${s}${kg2(kg)} kg`;
 }
 
 /** Resumen de peso para Inicio: Inicio / Actual (anillo) / Objetivo + progreso/tiempo + mensaje. */
@@ -23,11 +45,13 @@ export function WeightSummaryCard({ reloadNonce }: { reloadNonce?: number }) {
   const router = useRouter();
   const [points, setPoints] = useState<TrendPoint[]>([]);
   const [goal, setGoal] = useState<Goal | null>(null);
+  const [prof, setProf] = useState<Profile>(null);
   const [adding, setAdding] = useState(false);
 
   const load = useCallback(async () => {
     setPoints(computeTrend(await listWeights(), 0.1));
     setGoal(await getGoal());
+    setProf(await getProfile());
   }, []);
 
   useFocusEffect(
@@ -58,6 +82,32 @@ export function WeightSummaryCard({ reloadNonce }: { reloadNonce?: number }) {
 
   const insight = weightInsight({ slopePerWeek: slope, currentTrendKg: last.trendKg, goalKg: goal?.targetKg ?? null, pointCount: points.length });
 
+  // Ritmo medio (tendencia suavizada): diario = semanal / 7.
+  const stage = prof?.stage ?? null;
+  const weeklyRate = points.length >= 2 ? slope : null;
+  const dailyRate = weeklyRate != null ? weeklyRate / 7 : null;
+
+  // Kcal del día: objetivo si hay meta con fecha, si no el mantenimiento (TDEE).
+  let kcalShown: number | null = null;
+  let kcalSub = 'al día';
+  if (prof && prof.heightCm != null && prof.age != null) {
+    const hasGoal = goal != null && goal.targetDate != null;
+    const daysRemaining = hasGoal ? Math.max(0, daysBetween(todayStr, goal!.targetDate!)) : 0;
+    const plan = liveKcalPlan({
+      sex: prof.sex,
+      age: prof.age,
+      heightCm: prof.heightCm,
+      activityLevel: prof.activityLevel,
+      trendKg: last.trendKg,
+      targetKg: goal?.targetKg ?? last.trendKg,
+      daysRemaining,
+      actualRatePerWeek: points.length >= 3 ? slope : null,
+    });
+    kcalShown = hasGoal ? plan.adjustedKcal ?? plan.targetKcal : plan.tdee;
+    kcalSub = hasGoal ? 'objetivo' : 'mantenimiento';
+  }
+  const showStats = kcalShown != null || dailyRate != null;
+
   return (
     <>
       <View style={styles.card}>
@@ -87,6 +137,26 @@ export function WeightSummaryCard({ reloadNonce }: { reloadNonce?: number }) {
             <Pressable onPress={() => router.push('/ajustes')}>
               <Text style={styles.link}>🎯 Definir un objetivo de peso</Text>
             </Pressable>
+          </View>
+        )}
+
+        {showStats && (
+          <View style={styles.statRow}>
+            <View style={styles.statCell}>
+              <Text style={styles.statWord}>{rateWord(stage)}</Text>
+              <Text style={styles.statVal}>{dailyRate != null ? rateStr(dailyRate, stage) : '—'}</Text>
+              <Text style={styles.statSub}>media diaria</Text>
+            </View>
+            <View style={[styles.statCell, styles.statCenter]}>
+              <Text style={styles.statWord}>Kcal</Text>
+              <Text style={[styles.statVal, styles.kcalVal]}>{kcalShown != null ? `≈ ${kcalFmt(kcalShown)}` : '—'}</Text>
+              <Text style={styles.statSub}>{kcalSub}</Text>
+            </View>
+            <View style={styles.statCell}>
+              <Text style={styles.statWord}>{rateWord(stage)}</Text>
+              <Text style={styles.statVal}>{weeklyRate != null ? rateStr(weeklyRate, stage) : '—'}</Text>
+              <Text style={styles.statSub}>media semanal</Text>
+            </View>
           </View>
         )}
 
@@ -150,6 +220,13 @@ const styles = StyleSheet.create({
   colDate: { color: Brand.textMuted, fontSize: 11 },
   ringLbl: { color: Brand.accent, fontSize: 13, fontWeight: '700' },
   ringKg: { color: Brand.text, fontSize: 24, fontWeight: '800', marginTop: 2 },
+  statRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderTopColor: Brand.cardBorder, borderTopWidth: 1, paddingTop: 12, marginTop: 2 },
+  statCell: { flex: 1, alignItems: 'center', gap: 1 },
+  statCenter: { borderLeftColor: Brand.cardBorder, borderRightColor: Brand.cardBorder, borderLeftWidth: 1, borderRightWidth: 1 },
+  statWord: { color: Brand.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700' },
+  statVal: { color: Brand.text, fontSize: 15, fontWeight: '800', marginTop: 2 },
+  kcalVal: { color: Brand.good },
+  statSub: { color: Brand.textMuted, fontSize: 10 },
   enter: { backgroundColor: Brand.accentStrong, borderRadius: 12, paddingVertical: 13, alignItems: 'center', marginTop: 2 },
   enterTxt: { color: '#fff', fontWeight: '800', fontSize: 15 },
   link: { color: Brand.accent, fontSize: 12, fontWeight: '700', textAlign: 'center' },
