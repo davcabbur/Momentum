@@ -83,6 +83,8 @@ export interface Theme {
   infoSurface: string; // cajas informativas / bienvenida
   infoText: string; // texto dentro de infoSurface
   warn: string;
+  warnSurface: string; // fondo de cajas de aviso (ámbar)
+  warnBorder: string; // borde de cajas de aviso
   bad: string;
   onAccent: string; // texto sobre botones de acento
   surface: string; // fondo de pantalla
@@ -105,6 +107,8 @@ export const darkTheme: Theme = {
   infoSurface: '#16202E',
   infoText: '#B9C4D0',
   warn: '#F2B34F',
+  warnSurface: '#2A2412',
+  warnBorder: '#5C4D1E',
   bad: '#F87171',
   onAccent: '#FFFFFF',
   surface: '#0E0F13',
@@ -127,6 +131,8 @@ export const lightTheme: Theme = {
   infoSurface: '#E8F0FE',
   infoText: '#3A4654',
   warn: '#C2710C',
+  warnSurface: '#FBEFD9',
+  warnBorder: '#EAD3A0',
   bad: '#DC2626',
   onAccent: '#FFFFFF',
   surface: '#F6F7F9',

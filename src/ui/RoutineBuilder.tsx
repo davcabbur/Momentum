@@ -321,7 +321,7 @@ const makeStyles = (c: Theme) =>
     volSets: { fontSize: 13, fontWeight: '700' },
     volNote: { fontSize: 12, lineHeight: 17 },
     volFoot: { color: c.textMuted, fontSize: 11, fontStyle: 'italic', marginTop: 2 },
-    shoulderBox: { backgroundColor: '#2a2412', borderColor: '#5c4d1e', borderWidth: 1, borderRadius: 14, padding: 14 },
+    shoulderBox: { backgroundColor: c.warnSurface, borderColor: c.warnBorder, borderWidth: 1, borderRadius: 14, padding: 14 },
     shoulderTxt: { color: c.warn, fontSize: 12, lineHeight: 18 },
     menuBackdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
     menu: { backgroundColor: c.card, padding: 12, borderTopLeftRadius: 20, borderTopRightRadius: 20, gap: 6 },
