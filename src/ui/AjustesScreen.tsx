@@ -298,7 +298,7 @@ const makeStyles = (c: Theme) =>
   twoCol: { flexDirection: 'row', gap: 10 },
   wrap: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   pill: { flex: 1, backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
-  pillOn: { borderColor: c.accentStrong, backgroundColor: '#241f3a' },
+  pillOn: { borderColor: c.accentStrong, backgroundColor: c.accentSurface },
   pillTxt: { color: c.textMuted, fontWeight: '700', fontSize: 13 },
   pillTxtOn: { color: c.text },
   chip: { backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 10, paddingVertical: 9, paddingHorizontal: 14 },
