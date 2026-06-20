@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, Vibration, View } from 'react-native';
+import { Alert, AppState, Modal, Pressable, ScrollView, StyleSheet, Text, Vibration, View } from 'react-native';
 import Body from 'react-native-body-highlighter';
 
 import { Brand } from '@/constants/theme';
@@ -14,6 +14,7 @@ import { exerciseMeta, isBodyweightLoaded } from '@/training/exercise-meta';
 import { schemeForLevel, type Level } from '@/training/levels';
 import { progressionHint, type ProgressionHint } from '@/training/progression';
 import { detectStall } from '@/training/intelligence';
+import { cancelScheduledNotification, scheduleRestDoneNotification } from '@/lib/notifications';
 import { recommendedRestSeconds } from '@/training/rest';
 import { exerciseSetWarning } from '@/training/volume';
 
@@ -67,10 +68,12 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
   const [editing, setEditing] = useState<Editing | null>(null);
   const [showHow, setShowHow] = useState(false);
   const [restGoal, setRestGoal] = useState(120);
-  const [restLeft, setRestLeft] = useState(0);
+  const [restEnd, setRestEnd] = useState<number | null>(null); // hora de fin (ms); fuente de verdad
+  const [restLeft, setRestLeft] = useState(0); // segundos mostrados, derivados de restEnd
   const [bodyweight, setBodyweight] = useState<number | null>(null);
   const [deload, setDeload] = useState<{ sessions: number; weight: number | null } | null>(null);
   const restRunning = useRef(false);
+  const restNotifId = useRef<string | null>(null);
 
   const info = exerciseInfo(exerciseName);
   const mv = muscleView(muscleGroup ?? '');
@@ -139,12 +142,29 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
     load();
   }, [load]);
 
-  // Cuenta atrás del descanso entre series.
+  // Cuenta atrás del descanso: se deriva de la hora de fin (restEnd) usando el reloj
+  // real, así no se desfasa al bloquear el móvil o cambiar de app (el hilo JS se pausa
+  // en segundo plano). Al volver a primer plano se recalcula al instante con AppState.
   useEffect(() => {
-    if (restLeft <= 0) return;
-    const id = setInterval(() => setRestLeft((r) => (r <= 1 ? 0 : r - 1)), 1000);
-    return () => clearInterval(id);
-  }, [restLeft > 0]);
+    if (restEnd == null) {
+      setRestLeft(0);
+      return;
+    }
+    const update = () => {
+      const left = Math.max(0, Math.round((restEnd - Date.now()) / 1000));
+      setRestLeft(left);
+      if (left <= 0) setRestEnd(null);
+    };
+    update();
+    const id = setInterval(update, 500);
+    const sub = AppState.addEventListener('change', (st) => {
+      if (st === 'active') update();
+    });
+    return () => {
+      clearInterval(id);
+      sub.remove();
+    };
+  }, [restEnd]);
 
   // Vibra una vez al terminar el descanso.
   useEffect(() => {
@@ -155,6 +175,29 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
       Vibration.vibrate(500);
     }
   }, [restLeft]);
+
+  // Aviso del sistema para cuando termine el descanso: lo dispara Android aunque la app
+  // esté en segundo plano o el móvil bloqueado. Se reprograma al cambiar restEnd (+30s) y
+  // se cancela al saltar o al terminar en primer plano (cuando restEnd se pone a null).
+  useEffect(() => {
+    if (restEnd == null) return;
+    let cancelled = false;
+    const secs = Math.round((restEnd - Date.now()) / 1000);
+    scheduleRestDoneNotification(secs).then((id) => {
+      if (cancelled) {
+        if (id) cancelScheduledNotification(id);
+      } else {
+        restNotifId.current = id;
+      }
+    });
+    return () => {
+      cancelled = true;
+      if (restNotifId.current) {
+        cancelScheduledNotification(restNotifId.current);
+        restNotifId.current = null;
+      }
+    };
+  }, [restEnd]);
 
   function openNew() {
     const n = sets.length + 1;
@@ -199,7 +242,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
     });
     const wasWarmup = editing.setType === 'warmup';
     setEditing(null);
-    if (!wasWarmup) setRestLeft(restGoal);
+    if (!wasWarmup) setRestEnd(Date.now() + restGoal * 1000);
     setSets(await listSets(cur, exerciseId));
   }
 
@@ -279,10 +322,10 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
               <View style={styles.restBox}>
                 <Ionicons name="timer-outline" size={20} color={Brand.good} />
                 <Text style={styles.restTime}>Descanso {mmss(restLeft)}</Text>
-                <Pressable style={styles.restBtn} onPress={() => setRestLeft((r) => r + 30)}>
+                <Pressable style={styles.restBtn} onPress={() => setRestEnd((e) => (e ?? Date.now()) + 30000)}>
                   <Text style={styles.restBtnTxt}>+30s</Text>
                 </Pressable>
-                <Pressable style={styles.restBtn} onPress={() => setRestLeft(0)}>
+                <Pressable style={styles.restBtn} onPress={() => { restRunning.current = false; setRestEnd(null); }}>
                   <Text style={styles.restBtnTxt}>Saltar</Text>
                 </Pressable>
               </View>

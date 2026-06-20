@@ -67,3 +67,42 @@ export async function cancelReminders(): Promise<void> {
   const N = await notifs();
   await N.cancelAllScheduledNotificationsAsync();
 }
+
+async function ensureRestChannel(N: typeof NotificationsType): Promise<void> {
+  if (Platform.OS === 'android') {
+    await N.setNotificationChannelAsync('descanso', {
+      name: 'Descanso entre series',
+      importance: N.AndroidImportance.HIGH, // heads-up + sonido aunque la pantalla esté bloqueada
+      vibrationPattern: [0, 400, 150, 400],
+    });
+  }
+}
+
+/**
+ * Programa un aviso para cuando termine el descanso. Lo dispara el sistema operativo,
+ * así que aparece/suena/vibra aunque la app esté en segundo plano o el móvil bloqueado.
+ * La notificación se queda en la bandeja hasta que el usuario la toca o la descarta.
+ * Devuelve el id para poder cancelarla. Si no hay permiso, devuelve null sin molestar.
+ */
+export async function scheduleRestDoneNotification(seconds: number): Promise<string | null> {
+  if (!(await ensureNotificationPermission())) return null;
+  const N = await notifs();
+  await ensureRestChannel(N);
+  return N.scheduleNotificationAsync({
+    content: {
+      title: '¡Descanso terminado! 💪',
+      body: 'Toca para volver y dar la siguiente serie.',
+    },
+    trigger: {
+      type: N.SchedulableTriggerInputTypes.TIME_INTERVAL,
+      seconds: Math.max(1, Math.round(seconds)),
+      channelId: 'descanso',
+    },
+  });
+}
+
+/** Cancela un aviso programado concreto por su id (no toca el resto de recordatorios). */
+export async function cancelScheduledNotification(id: string): Promise<void> {
+  const N = await notifs();
+  await N.cancelScheduledNotificationAsync(id);
+}
