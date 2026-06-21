@@ -57,7 +57,7 @@ function RootGate() {
   if (!welcomeDone) content = <WelcomeScreen onFinish={() => setWelcomeDone(true)} />;
   else if (loading) content = <Loading />;
   else if (session) content = <AppTabs />;
-  else content = <CuentaScreen gate />;
+  else content = <CuentaScreen />;
 
   return <NavThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>{content}</NavThemeProvider>;
 }
