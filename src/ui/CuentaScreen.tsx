@@ -60,63 +60,65 @@ export function CuentaScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <View style={styles.header}>
-        <Image source={require('../../assets/images/icon.png')} style={styles.tile} resizeMode="cover" />
-        <Text style={styles.brand}>Momentum</Text>
-      </View>
+      <View style={styles.main}>
+        <View style={styles.header}>
+          <Image source={require('../../assets/images/icon.png')} style={styles.tile} resizeMode="cover" />
+          <Text style={styles.brand}>Momentum</Text>
+        </View>
 
-      <Text style={styles.title}>{signup ? 'Crea tu cuenta' : 'Bienvenido de vuelta'}</Text>
-      <Text style={styles.subtitle}>
-        {signup
-          ? 'Crea tu cuenta para guardar tu progreso y recuperarlo en cualquier móvil.'
-          : 'Retoma tu progreso donde lo dejaste. Tu entrenador te espera.'}
-      </Text>
+        <Text style={styles.title}>{signup ? 'Crea tu cuenta' : 'Bienvenido de vuelta'}</Text>
+        <Text style={styles.subtitle}>
+          {signup
+            ? 'Crea tu cuenta para guardar tu progreso y recuperarlo en cualquier móvil.'
+            : 'Retoma tu progreso donde lo dejaste. Tu entrenador te espera.'}
+        </Text>
 
-      <Text style={styles.label}>Correo</Text>
-      <TextInput
-        value={email}
-        onChangeText={setEmail}
-        onFocus={() => setFocus('email')}
-        onBlur={() => setFocus(null)}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        placeholder="tu@correo.com"
-        placeholderTextColor={c.textMuted}
-        style={[styles.input, { borderColor: borderFor('email') }]}
-      />
+        <Text style={styles.label}>Correo</Text>
+        <TextInput
+          value={email}
+          onChangeText={setEmail}
+          onFocus={() => setFocus('email')}
+          onBlur={() => setFocus(null)}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          placeholder="tu@correo.com"
+          placeholderTextColor={c.textMuted}
+          style={[styles.input, { borderColor: borderFor('email') }]}
+        />
 
-      <Text style={styles.label}>Contraseña</Text>
-      <TextInput
-        value={pass}
-        onChangeText={setPass}
-        onFocus={() => setFocus('pass')}
-        onBlur={() => setFocus(null)}
-        secureTextEntry
-        placeholder="········"
-        placeholderTextColor={c.textMuted}
-        style={[styles.input, { borderColor: borderFor('pass') }]}
-      />
+        <Text style={styles.label}>Contraseña</Text>
+        <TextInput
+          value={pass}
+          onChangeText={setPass}
+          onFocus={() => setFocus('pass')}
+          onBlur={() => setFocus(null)}
+          secureTextEntry
+          placeholder="········"
+          placeholderTextColor={c.textMuted}
+          style={[styles.input, { borderColor: borderFor('pass') }]}
+        />
 
-      {!signup && (
-        <Pressable style={styles.forgot} onPress={forgot}>
-          <Text style={styles.forgotTxt}>¿Olvidaste tu contraseña?</Text>
+        {!signup && (
+          <Pressable style={styles.forgot} onPress={forgot}>
+            <Text style={styles.forgotTxt}>¿Olvidaste tu contraseña?</Text>
+          </Pressable>
+        )}
+
+        <Pressable style={[styles.primary, busy && styles.off]} disabled={busy} onPress={submit}>
+          <Text style={styles.primaryTxt}>{signup ? 'Crear cuenta' : 'Entrar'}</Text>
         </Pressable>
-      )}
 
-      <Pressable style={[styles.primary, busy && styles.off]} disabled={busy} onPress={submit}>
-        <Text style={styles.primaryTxt}>{signup ? 'Crear cuenta' : 'Entrar'}</Text>
-      </Pressable>
+        <View style={styles.dividerRow}>
+          <View style={styles.line} />
+          <Text style={styles.dividerTxt}>o continúa con</Text>
+          <View style={styles.line} />
+        </View>
 
-      <View style={styles.dividerRow}>
-        <View style={styles.line} />
-        <Text style={styles.dividerTxt}>o continúa con</Text>
-        <View style={styles.line} />
+        <Pressable style={[styles.social, busy && styles.off]} disabled={busy} onPress={google}>
+          <Ionicons name="logo-google" size={18} color={c.text} />
+          <Text style={styles.socialTxt}>Google</Text>
+        </Pressable>
       </View>
-
-      <Pressable style={[styles.social, busy && styles.off]} disabled={busy} onPress={google}>
-        <Ionicons name="logo-google" size={18} color={c.text} />
-        <Text style={styles.socialTxt}>Google</Text>
-      </Pressable>
 
       <View style={styles.footerRow}>
         <Text style={styles.footerTxt}>{signup ? '¿Ya tienes cuenta? ' : '¿Aún no tienes cuenta? '}</Text>
@@ -131,8 +133,9 @@ export function CuentaScreen() {
 const makeStyles = (c: Theme) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: c.surface },
-    content: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 16, paddingBottom: 24 },
-    header: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 22 },
+    content: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 16, paddingBottom: 20 },
+    main: { flex: 1, justifyContent: 'center' },
+    header: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 18 },
     tile: { width: 46, height: 46, borderRadius: 13 },
     brand: { color: c.text, fontSize: 20, fontWeight: '700', letterSpacing: 0.3 },
     title: { color: c.text, fontSize: 30, fontWeight: '800' },
@@ -161,7 +164,7 @@ const makeStyles = (c: Theme) =>
     dividerTxt: { color: c.textMuted, fontSize: 12 },
     social: { height: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14 },
     socialTxt: { color: c.text, fontSize: 14, fontWeight: '600' },
-    footerRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 'auto', paddingTop: 28 },
+    footerRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingTop: 16 },
     footerTxt: { color: c.textMuted, fontSize: 13 },
     footerLink: { color: c.accent, fontSize: 13, fontWeight: '700' },
   });
