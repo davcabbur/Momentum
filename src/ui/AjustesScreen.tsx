@@ -6,9 +6,12 @@ import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View
 import { addDays } from '@/bodyweight/goal';
 import { computeTrend } from '@/bodyweight/trend';
 import { getGoal, getProfile, listWeights, setLevel, setProfile } from '@/db/bodyweight-repo';
+import { exportData, importData } from '@/db/backup';
+import { seedExercises } from '@/db/exercise-repo';
 import { weightGoal } from '@/db/schema';
 import { reapplyLevelToRoutine } from '@/db/routine-repo';
 import { getSetting, setSetting } from '@/db/settings-repo';
+import { shareBackup, pickBackupJson } from '@/lib/backup-file';
 import { cancelReminders, ensureNotificationPermission, scheduleDailyReminder } from '@/lib/notifications';
 import { type Level } from '@/training/levels';
 import { SetGoalSheet } from '@/ui/SetGoalSheet';
@@ -131,6 +134,41 @@ export function AjustesScreen() {
     setReminderHour(h);
     await setSetting('reminder_hour', String(h));
     if (reminderOn) await scheduleDailyReminder(h);
+  }
+
+  async function exportBackup() {
+    try {
+      const json = await exportData();
+      await shareBackup(json, `momentum-backup-${today()}.json`);
+    } catch (e) {
+      Alert.alert('No se pudo exportar', String((e as Error)?.message ?? e));
+    }
+  }
+
+  function confirmImport() {
+    Alert.alert(
+      'Importar copia',
+      'Esto REEMPLAZARÁ todos tus datos actuales (entrenos, peso, comidas, ajustes) por los de la copia. ¿Seguir?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Importar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const json = await pickBackupJson();
+              if (!json) return;
+              const { rows } = await importData(json);
+              await seedExercises();
+              await load();
+              Alert.alert('Copia restaurada', `Se han importado ${rows} registros. Si algo no se actualiza, reabre la app.`);
+            } catch (e) {
+              Alert.alert('No se pudo importar', String((e as Error)?.message ?? e));
+            }
+          },
+        },
+      ],
+    );
   }
 
   function confirmReapply() {
@@ -258,6 +296,18 @@ export function AjustesScreen() {
           </View>
         )}
         <Text style={styles.note}>Un aviso al día para pesarte y registrar tu progreso. Quítalo cuando quieras.</Text>
+      </View>
+
+      {/* Copia de seguridad */}
+      <Text style={styles.section}>Copia de seguridad</Text>
+      <View style={styles.card}>
+        <Text style={styles.note}>Tus datos se guardan solo en este móvil. Exporta una copia para no perderlos y restáurala cuando quieras (o en otro dispositivo).</Text>
+        <Pressable style={styles.save} onPress={exportBackup}>
+          <Text style={styles.saveTxt}>Exportar copia</Text>
+        </Pressable>
+        <Pressable style={styles.secondary} onPress={confirmImport}>
+          <Text style={styles.secondaryTxt}>Importar copia</Text>
+        </Pressable>
       </View>
 
       {/* Glosario */}
