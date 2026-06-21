@@ -7,6 +7,12 @@
     "icon": "./assets/images/icon.png",
     "scheme": "momentum",
     "userInterfaceStyle": "automatic",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/58e0b7dd-3ada-4fab-b70a-93678d7e9adc"
+    },
     "ios": {
       "icon": "./assets/expo.icon"
     },
