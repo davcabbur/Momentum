@@ -3,6 +3,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 
 
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { addFoodEntry, listKnownFoods, type KnownFood } from '@/db/food-repo';
+import { searchBasicFoods } from '@/nutrition/basic-foods';
 import { portionMacros, type Macros } from '@/nutrition/macros';
 import { searchProducts } from '@/nutrition/openfoodfacts';
 
@@ -99,7 +100,7 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
   const canSave = name.trim().length > 0 && g > 0 && num(kcal) > 0;
 
   const q = name.trim().toLowerCase();
-  type Sugg = { name: string; per100: Macros; grams: number | null; src: 'hist' | 'mine' | 'off' };
+  type Sugg = { name: string; per100: Macros; grams: number | null; src: 'hist' | 'mine' | 'basic' | 'off' };
   let suggestions: Sugg[];
   if (q.length === 0) {
     // Historial: alimentos ya usados (recientes primero), al pulsar la barra de búsqueda.
@@ -107,9 +108,13 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
   } else {
     const localMatches = known.filter((k) => k.name.toLowerCase().includes(q) && k.name.toLowerCase() !== q);
     const localNames = new Set(localMatches.map((k) => k.name.toLowerCase()));
-    const offMatches = offResults.filter((o) => o.name.toLowerCase() !== q && !localNames.has(o.name.toLowerCase()));
+    // Básicos locales (genéricos sin procesar): instantáneos y sin conexión.
+    const basicMatches = searchBasicFoods(q).filter((b) => b.name.toLowerCase() !== q && !localNames.has(b.name.toLowerCase()));
+    const used = new Set([...localNames, ...basicMatches.map((b) => b.name.toLowerCase())]);
+    const offMatches = offResults.filter((o) => o.name.toLowerCase() !== q && !used.has(o.name.toLowerCase()));
     suggestions = [
       ...localMatches.map((k) => ({ ...k, src: 'mine' as const })),
+      ...basicMatches.map((b) => ({ name: b.name, per100: b.per100, grams: null, src: 'basic' as const })),
       ...offMatches.map((o) => ({ name: o.name, per100: o.per100, grams: null, src: 'off' as const })),
     ].slice(0, 8);
   }
@@ -163,7 +168,7 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
                   <Pressable key={s.src + ':' + s.name} style={styles.sugg} onPress={() => pick(s)}>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.suggName}>{s.name}</Text>
-                      <Text style={styles.suggSrc}>{s.src === 'off' ? 'Open Food Facts' : s.src === 'hist' ? 'Reciente' : 'Ya registrado'}</Text>
+                      <Text style={styles.suggSrc}>{s.src === 'off' ? 'Open Food Facts' : s.src === 'hist' ? 'Reciente' : s.src === 'basic' ? 'Básico' : 'Ya registrado'}</Text>
                     </View>
                     <Text style={styles.suggMacro}>{s.per100.kcal} kcal/100 g</Text>
                   </Pressable>
