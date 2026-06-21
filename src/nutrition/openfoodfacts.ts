@@ -34,12 +34,16 @@ export function parseOffProduct(json: any): OffProduct | null {
   return fromProduct(json.product);
 }
 
-/** Parsea la respuesta de búsqueda por texto (lista de productos). */
+/**
+ * Parsea la respuesta de búsqueda por texto. Soporta el servicio nuevo (search-a-licious,
+ * campo `hits`) y el antiguo (`products`).
+ */
 export function parseOffSearch(json: any): OffProduct[] {
-  if (!json || !Array.isArray(json.products)) return [];
+  const arr = json && (Array.isArray(json.hits) ? json.hits : Array.isArray(json.products) ? json.products : null);
+  if (!arr) return [];
   const out: OffProduct[] = [];
   const seen = new Set<string>();
-  for (const p of json.products) {
+  for (const p of arr) {
     const r = fromProduct(p);
     if (r && !seen.has(r.name.toLowerCase())) {
       seen.add(r.name.toLowerCase());
@@ -51,24 +55,40 @@ export function parseOffSearch(json: any): OffProduct[] {
 
 const UA = { 'User-Agent': 'Momentum/1.0 (app de gimnasio)' };
 
+/** fetch con timeout (aborta si tarda demasiado, para no dejar la búsqueda colgada). */
+async function fetchWithTimeout(url: string, ms: number): Promise<Response | null> {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { headers: UA, signal: ctrl.signal });
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(id);
+  }
+}
+
 /** Busca un producto por código de barras en Open Food Facts (requiere internet). */
 export async function fetchProduct(barcode: string): Promise<OffProduct | null> {
+  const url = `https://world.openfoodfacts.org/api/v2/product/${barcode}.json?fields=product_name,nutriments`;
+  const res = await fetchWithTimeout(url, 8000);
+  if (!res || !res.ok) return null;
   try {
-    const url = `https://world.openfoodfacts.org/api/v2/product/${barcode}.json?fields=product_name,nutriments`;
-    const res = await fetch(url, { headers: UA });
-    if (!res.ok) return null;
     return parseOffProduct(await res.json());
   } catch {
     return null;
   }
 }
 
-/** Busca productos por nombre en Open Food Facts (autocompletar; requiere internet). */
+/**
+ * Busca productos por nombre (autocompletar; requiere internet). Usa el servicio de
+ * búsqueda nuevo de OFF (search-a-licious), mucho más rápido que el cgi antiguo.
+ */
 export async function searchProducts(query: string): Promise<OffProduct[]> {
+  const url = `https://search.openfoodfacts.org/search?q=${encodeURIComponent(query)}&page_size=20&fields=product_name,nutriments`;
+  const res = await fetchWithTimeout(url, 8000);
+  if (!res || !res.ok) return [];
   try {
-    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=12&fields=product_name,nutriments`;
-    const res = await fetch(url, { headers: UA });
-    if (!res.ok) return [];
     return parseOffSearch(await res.json());
   } catch {
     return [];

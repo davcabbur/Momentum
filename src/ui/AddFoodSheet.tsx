@@ -86,7 +86,7 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
         setOffResults(res);
         setSearching(false);
       }
-    }, 450);
+    }, 300);
     return () => {
       active = false;
       clearTimeout(id);
