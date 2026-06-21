@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { resetPassword, signInEmail, signInWithGoogle, signUpEmail } from '@/auth/auth';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
@@ -9,6 +10,7 @@ import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 export function CuentaScreen() {
   const { c } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [pass, setPass] = useState('');
@@ -59,7 +61,10 @@ export function CuentaScreen() {
   const borderFor = (f: 'email' | 'pass') => (focus === f ? c.accentStrong : c.cardBorder);
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 16 }]}
+      keyboardShouldPersistTaps="handled">
       <View style={styles.main}>
         <View style={styles.header}>
           <Image source={require('../../assets/images/icon.png')} style={styles.tile} resizeMode="cover" />
@@ -133,7 +138,7 @@ export function CuentaScreen() {
 const makeStyles = (c: Theme) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: c.surface },
-    content: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 16, paddingBottom: 20 },
+    content: { flexGrow: 1, paddingHorizontal: 28 },
     main: { flex: 1, justifyContent: 'center' },
     header: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 18 },
     tile: { width: 46, height: 46, borderRadius: 13 },
