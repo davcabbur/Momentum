@@ -46,7 +46,8 @@
         {
           "cameraPermission": "Momentum usa la cámara para escanear el código de barras de los alimentos."
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -3,6 +3,7 @@ import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { ActivityIndicator, StyleSheet, Text, View, useColorScheme } from 'react-native';
 
 import AppTabs from '@/components/app-tabs';
+import { AuthProvider } from '@/auth/AuthProvider';
 import { db } from '@/db/client';
 import { ThemeProvider as AppThemeProvider } from '@/ui/theme';
 import migrations from '../../drizzle/migrations';
@@ -29,9 +30,11 @@ export default function RootLayout() {
 
   return (
     <AppThemeProvider>
-      <NavThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <AppTabs />
-      </NavThemeProvider>
+      <AuthProvider>
+        <NavThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <AppTabs />
+        </NavThemeProvider>
+      </AuthProvider>
     </AppThemeProvider>
   );
 }
