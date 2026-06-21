@@ -131,7 +131,7 @@ export function CuentaScreen() {
 const makeStyles = (c: Theme) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: c.surface },
-    content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 28, paddingVertical: 28 },
+    content: { flexGrow: 1, paddingHorizontal: 28, paddingTop: 16, paddingBottom: 24 },
     header: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 22 },
     tile: { width: 46, height: 46, borderRadius: 13 },
     brand: { color: c.text, fontSize: 20, fontWeight: '700', letterSpacing: 0.3 },
@@ -161,7 +161,7 @@ const makeStyles = (c: Theme) =>
     dividerTxt: { color: c.textMuted, fontSize: 12 },
     social: { height: 50, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14 },
     socialTxt: { color: c.text, fontSize: 14, fontWeight: '600' },
-    footerRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 24 },
+    footerRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 'auto', paddingTop: 28 },
     footerTxt: { color: c.textMuted, fontSize: 13 },
     footerLink: { color: c.accent, fontSize: 13, fontWeight: '700' },
   });
