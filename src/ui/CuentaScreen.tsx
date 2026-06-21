@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { resetPassword, signInEmail, signInWithGoogle, signUpEmail } from '@/auth/auth';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
@@ -65,9 +65,12 @@ export function CuentaScreen({ gate = false }: { gate?: boolean }) {
           <Text style={styles.back}>Ajustes</Text>
         </Pressable>
       )}
-      {gate && <Text style={styles.brand}>Momentum</Text>}
-      <Text style={styles.h1}>{mode === 'signup' ? 'Crear cuenta' : 'Iniciar sesión'}</Text>
-      <Text style={styles.note}>Con cuenta, tus datos se guardan en la nube y los recuperas en cualquier móvil. Es opcional.</Text>
+      <View style={styles.header}>
+        <Image source={require('../../assets/images/android-icon-foreground.png')} style={styles.logo} resizeMode="contain" />
+        <Text style={styles.brand}>Momentum</Text>
+        <Text style={styles.h1}>{mode === 'signup' ? 'Crear cuenta' : 'Iniciar sesión'}</Text>
+        <Text style={styles.note}>Guarda tus entrenos y tu peso en tu cuenta y recupéralos en cualquier móvil.</Text>
+      </View>
 
       <Text style={styles.lbl}>Email</Text>
       <TextInput
@@ -105,12 +108,14 @@ export function CuentaScreen({ gate = false }: { gate?: boolean }) {
 const makeStyles = (c: Theme) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: c.surface },
-    content: { padding: 14, gap: 8 },
-    backRow: { flexDirection: 'row', alignItems: 'center' },
+    content: { flexGrow: 1, justifyContent: 'center', padding: 24, gap: 8 },
+    backRow: { flexDirection: 'row', alignItems: 'center', position: 'absolute', top: 8, left: 8 },
     back: { color: c.accent, fontWeight: '700', fontSize: 15 },
-    brand: { color: c.accent, fontSize: 16, fontWeight: '800', letterSpacing: 0.5, marginTop: 8 },
-    h1: { color: c.text, fontSize: 22, fontWeight: '800', marginTop: 4 },
-    note: { color: c.textMuted, fontSize: 13, marginBottom: 8 },
+    header: { alignItems: 'center', gap: 4, marginBottom: 12 },
+    logo: { width: 92, height: 92 },
+    brand: { color: c.accent, fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
+    h1: { color: c.text, fontSize: 22, fontWeight: '800', marginTop: 6, textAlign: 'center' },
+    note: { color: c.textMuted, fontSize: 13, textAlign: 'center', paddingHorizontal: 8 },
     lbl: { color: c.textMuted, fontSize: 12, marginTop: 8 },
     input: { color: c.text, fontSize: 16, fontWeight: '600', backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, marginTop: 4 },
     primary: { backgroundColor: c.accentStrong, borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 14 },

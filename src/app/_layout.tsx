@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavThemeProvider } from '@react-navigation/native';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { ActivityIndicator, StyleSheet, Text, View, useColorScheme } from 'react-native';
@@ -7,8 +8,8 @@ import { AuthProvider, useSession } from '@/auth/AuthProvider';
 import { db } from '@/db/client';
 import { useReconcileOnLogin } from '@/db/use-reconcile';
 import { CuentaScreen } from '@/ui/CuentaScreen';
-import { Loading } from '@/ui/Loading';
 import { ThemeProvider as AppThemeProvider } from '@/ui/theme';
+import { WelcomeScreen } from '@/ui/WelcomeScreen';
 import migrations from '../../drizzle/migrations';
 
 export default function RootLayout() {
@@ -48,11 +49,19 @@ function RootGate() {
   const { session, loading } = useSession();
   useReconcileOnLogin(session?.user?.id ?? null);
 
-  return (
-    <NavThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      {loading ? <Loading /> : session ? <AppTabs /> : <CuentaScreen gate />}
-    </NavThemeProvider>
-  );
+  // Bienvenida breve al abrir (mínimo ~1,8 s y mientras se resuelve la sesión).
+  const [showWelcome, setShowWelcome] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setShowWelcome(false), 1800);
+    return () => clearTimeout(t);
+  }, []);
+
+  let content;
+  if (showWelcome || loading) content = <WelcomeScreen />;
+  else if (session) content = <AppTabs />;
+  else content = <CuentaScreen gate />;
+
+  return <NavThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>{content}</NavThemeProvider>;
 }
 
 const styles = StyleSheet.create({
