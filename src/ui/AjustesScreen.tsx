@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
@@ -9,8 +9,7 @@ import { addDays } from '@/bodyweight/goal';
 import { computeTrend } from '@/bodyweight/trend';
 import { getGoal, getProfile, listWeights, setLevel, setProfile } from '@/db/bodyweight-repo';
 import { exportData, importData } from '@/db/backup';
-import { getRemoteMeta, localHasData, pullSnapshot, pushSnapshot } from '@/db/cloud-sync';
-import { reconcileDecision } from '@/db/cloud-sync-logic';
+import { pushSnapshot } from '@/db/cloud-sync';
 import { seedExercises } from '@/db/exercise-repo';
 import { weightGoal } from '@/db/schema';
 import { reapplyLevelToRoutine } from '@/db/routine-repo';
@@ -100,35 +99,6 @@ export function AjustesScreen() {
   );
 
   const { control } = useRefresh(load);
-
-  // Al iniciar sesión, reconcilia los datos del móvil con los de la cuenta.
-  useEffect(() => {
-    if (!user) return;
-    let active = true;
-    (async () => {
-      try {
-        const [meta, hasLocal] = await Promise.all([getRemoteMeta(user.id), localHasData()]);
-        if (!active) return;
-        const action = reconcileDecision({ localHasData: hasLocal, remoteExists: meta.exists });
-        if (action === 'pull') {
-          await pullSnapshot(user.id);
-          await load();
-        } else if (action === 'push') {
-          await pushSnapshot(user.id);
-        } else if (action === 'ask') {
-          Alert.alert('Sincronizar', 'Tienes datos en este móvil y en tu cuenta. ¿Cuáles quieres conservar?', [
-            { text: 'Usar los de la nube', onPress: async () => { await pullSnapshot(user.id); await load(); } },
-            { text: 'Subir los de este móvil', onPress: async () => { await pushSnapshot(user.id); } },
-          ]);
-        }
-      } catch {
-        Alert.alert('Sincronización', 'No se pudo sincronizar ahora (¿sin conexión?). Tus datos siguen en el móvil.');
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [user, load]);
 
   async function syncNow() {
     if (!user) return;
@@ -321,27 +291,20 @@ export function AjustesScreen() {
       </View>
 
       {/* Cuenta */}
-      <Text style={styles.section}>Cuenta</Text>
-      <View style={styles.card}>
-        {user ? (
-          <>
-            <Text style={styles.note}>Sesión iniciada como {user.email}. Tus datos se guardan en tu cuenta.</Text>
+      {user && (
+        <>
+          <Text style={styles.section}>Cuenta</Text>
+          <View style={styles.card}>
+            <Text style={styles.note}>Sesión iniciada como {user.email}. Tus datos se guardan en tu cuenta y se restauran al iniciar sesión.</Text>
             <Pressable style={[styles.save, syncing && { opacity: 0.5 }]} disabled={syncing} onPress={syncNow}>
               <Text style={styles.saveTxt}>{syncing ? 'Sincronizando…' : 'Sincronizar ahora'}</Text>
             </Pressable>
             <Pressable style={styles.secondary} onPress={cerrarSesion}>
               <Text style={styles.secondaryTxt}>Cerrar sesión</Text>
             </Pressable>
-          </>
-        ) : (
-          <>
-            <Text style={styles.note}>Inicia sesión para guardar tus datos en la nube y recuperarlos en otro móvil. Es opcional.</Text>
-            <Pressable style={styles.save} onPress={() => router.push('/cuenta')}>
-              <Text style={styles.saveTxt}>Iniciar sesión / Registrarse</Text>
-            </Pressable>
-          </>
-        )}
-      </View>
+          </View>
+        </>
+      )}
 
       {/* Apariencia */}
       <Text style={styles.section}>Apariencia</Text>

@@ -50,7 +50,6 @@ export default function AppTabs() {
       />
       {/* Rutas fuera de la barra */}
       <Tabs.Screen name="ajustes" options={{ href: null }} />
-      <Tabs.Screen name="cuenta" options={{ href: null }} />
       <Tabs.Screen name="glosario" options={{ href: null }} />
       <Tabs.Screen name="historial" options={{ href: null }} />
       </Tabs>

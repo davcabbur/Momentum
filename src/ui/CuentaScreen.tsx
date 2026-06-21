@@ -6,7 +6,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 
 import { resetPassword, signInEmail, signInWithGoogle, signUpEmail } from '@/auth/auth';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 
-export function CuentaScreen() {
+export function CuentaScreen({ gate = false }: { gate?: boolean }) {
   const router = useRouter();
   const { c } = useTheme();
   const styles = useThemedStyles(makeStyles);
@@ -34,7 +34,7 @@ export function CuentaScreen() {
         const { error } = await signInEmail(email, pass);
         if (error) return Alert.alert('No se pudo entrar', error.message);
       }
-      router.back();
+      if (!gate) router.back();
     } finally {
       setBusy(false);
     }
@@ -45,7 +45,7 @@ export function CuentaScreen() {
     try {
       const { error } = await signInWithGoogle();
       if (error) Alert.alert('Google', error.message);
-      else router.back();
+      else if (!gate) router.back();
     } finally {
       setBusy(false);
     }
@@ -59,10 +59,13 @@ export function CuentaScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <Pressable onPress={() => router.back()} hitSlop={10} style={styles.backRow}>
-        <Ionicons name="chevron-back" size={22} color={c.accent} />
-        <Text style={styles.back}>Ajustes</Text>
-      </Pressable>
+      {!gate && (
+        <Pressable onPress={() => router.back()} hitSlop={10} style={styles.backRow}>
+          <Ionicons name="chevron-back" size={22} color={c.accent} />
+          <Text style={styles.back}>Ajustes</Text>
+        </Pressable>
+      )}
+      {gate && <Text style={styles.brand}>Momentum</Text>}
       <Text style={styles.h1}>{mode === 'signup' ? 'Crear cuenta' : 'Iniciar sesión'}</Text>
       <Text style={styles.note}>Con cuenta, tus datos se guardan en la nube y los recuperas en cualquier móvil. Es opcional.</Text>
 
@@ -105,6 +108,7 @@ const makeStyles = (c: Theme) =>
     content: { padding: 14, gap: 8 },
     backRow: { flexDirection: 'row', alignItems: 'center' },
     back: { color: c.accent, fontWeight: '700', fontSize: 15 },
+    brand: { color: c.accent, fontSize: 16, fontWeight: '800', letterSpacing: 0.5, marginTop: 8 },
     h1: { color: c.text, fontSize: 22, fontWeight: '800', marginTop: 4 },
     note: { color: c.textMuted, fontSize: 13, marginBottom: 8 },
     lbl: { color: c.textMuted, fontSize: 12, marginTop: 8 },
