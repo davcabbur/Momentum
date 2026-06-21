@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
-import { addFoodEntry, listKnownFoods } from '@/db/food-repo';
+import { addFoodEntry, listKnownFoods, type KnownFood } from '@/db/food-repo';
 import { portionMacros, type Macros } from '@/nutrition/macros';
 import { searchProducts } from '@/nutrition/openfoodfacts';
 
@@ -34,9 +34,10 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
   const [carb, setCarb] = useState('');
   const [fat, setFat] = useState('');
   const [barcode, setBarcode] = useState<string | null>(null);
-  const [known, setKnown] = useState<{ name: string; per100: Macros }[]>([]);
+  const [known, setKnown] = useState<KnownFood[]>([]);
   const [offResults, setOffResults] = useState<{ name: string; per100: Macros }[]>([]);
   const [searching, setSearching] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false); // mostrar historial al enfocar la barra vacía
 
   function reset() {
     setName('');
@@ -46,6 +47,7 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
     setCarb('');
     setFat('');
     setBarcode(null);
+    setHistoryOpen(false);
   }
 
   // Al abrir, prerellenar desde el escáner (o limpiar para alta manual).
@@ -97,20 +99,29 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
   const canSave = name.trim().length > 0 && g > 0 && num(kcal) > 0;
 
   const q = name.trim().toLowerCase();
-  const localMatches = q.length >= 1 ? known.filter((k) => k.name.toLowerCase().includes(q) && k.name.toLowerCase() !== q) : [];
-  const localNames = new Set(localMatches.map((k) => k.name.toLowerCase()));
-  const offMatches = offResults.filter((o) => o.name.toLowerCase() !== q && !localNames.has(o.name.toLowerCase()));
-  const suggestions = [
-    ...localMatches.map((k) => ({ ...k, fromDb: false })),
-    ...offMatches.map((o) => ({ ...o, fromDb: true })),
-  ].slice(0, 8);
+  type Sugg = { name: string; per100: Macros; grams: number | null; src: 'hist' | 'mine' | 'off' };
+  let suggestions: Sugg[];
+  if (q.length === 0) {
+    // Historial: alimentos ya usados (recientes primero), al pulsar la barra de búsqueda.
+    suggestions = historyOpen ? known.slice(0, 8).map((k) => ({ ...k, src: 'hist' as const })) : [];
+  } else {
+    const localMatches = known.filter((k) => k.name.toLowerCase().includes(q) && k.name.toLowerCase() !== q);
+    const localNames = new Set(localMatches.map((k) => k.name.toLowerCase()));
+    const offMatches = offResults.filter((o) => o.name.toLowerCase() !== q && !localNames.has(o.name.toLowerCase()));
+    suggestions = [
+      ...localMatches.map((k) => ({ ...k, src: 'mine' as const })),
+      ...offMatches.map((o) => ({ name: o.name, per100: o.per100, grams: null, src: 'off' as const })),
+    ].slice(0, 8);
+  }
 
-  function pick(s: { name: string; per100: Macros }) {
+  function pick(s: { name: string; per100: Macros; grams?: number | null }) {
     setName(s.name);
     setKcal(String(s.per100.kcal));
     setProt(String(s.per100.protein));
     setCarb(String(s.per100.carbs));
     setFat(String(s.per100.fat));
+    if (s.grams != null && s.grams > 0) setGrams(String(s.grams));
+    setHistoryOpen(false);
   }
 
   async function save() {
@@ -133,18 +144,26 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
         <Pressable style={styles.sheet} onPress={() => {}}>
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             <Text style={styles.title}>Añadir alimento</Text>
 
             <Text style={styles.lbl}>Nombre</Text>
-            <TextInput value={name} onChangeText={setName} placeholder="p. ej. Avena" placeholderTextColor={c.textMuted} style={styles.input} />
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              onFocus={() => setHistoryOpen(true)}
+              placeholder="Busca o escribe un alimento"
+              placeholderTextColor={c.textMuted}
+              style={styles.input}
+            />
             {(suggestions.length > 0 || searching) && (
               <View style={styles.suggBox}>
+                {q.length === 0 && suggestions.length > 0 && <Text style={styles.suggHead}>Recientes</Text>}
                 {suggestions.map((s) => (
-                  <Pressable key={(s.fromDb ? 'off:' : 'mio:') + s.name} style={styles.sugg} onPress={() => pick(s)}>
+                  <Pressable key={s.src + ':' + s.name} style={styles.sugg} onPress={() => pick(s)}>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.suggName}>{s.name}</Text>
-                      <Text style={styles.suggSrc}>{s.fromDb ? 'Open Food Facts' : 'Ya registrado'}</Text>
+                      <Text style={styles.suggSrc}>{s.src === 'off' ? 'Open Food Facts' : s.src === 'hist' ? 'Reciente' : 'Ya registrado'}</Text>
                     </View>
                     <Text style={styles.suggMacro}>{s.per100.kcal} kcal/100 g</Text>
                   </Pressable>
@@ -205,6 +224,7 @@ const makeStyles = (c: Theme) =>
     section: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 14 },
     input: { color: c.text, fontSize: 18, fontWeight: '700', backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10, marginTop: 4 },
     suggBox: { backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, marginTop: 6, overflow: 'hidden' },
+    suggHead: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', paddingHorizontal: 12, paddingTop: 10, paddingBottom: 2 },
     sugg: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: c.cardBorder },
     suggName: { color: c.text, fontSize: 14, fontWeight: '600' },
     suggSrc: { color: c.textMuted, fontSize: 10, marginTop: 1 },

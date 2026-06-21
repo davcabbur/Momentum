@@ -35,11 +35,20 @@ export async function intakeByDay(fromDate: string): Promise<{ date: string; kca
   return [...map.entries()].map(([date, kcal]) => ({ date, kcal }));
 }
 
-/** Alimentos conocidos (registrados o escaneados) con sus valores por 100 g, para autocompletar. */
-export async function listKnownFoods(): Promise<{ name: string; per100: Macros }[]> {
+export interface KnownFood {
+  name: string;
+  per100: Macros;
+  grams: number | null; // ración usada la última vez (para pre-rellenarla)
+}
+
+/**
+ * Alimentos conocidos (registrados o escaneados) con sus valores por 100 g, para el
+ * historial y el autocompletado. Ordenados por uso más reciente; sin duplicados por nombre.
+ */
+export async function listKnownFoods(): Promise<KnownFood[]> {
   const entries = await db.select().from(foodEntry).orderBy(desc(foodEntry.id));
   const products = await db.select().from(foodProduct);
-  const out: { name: string; per100: Macros }[] = [];
+  const out: KnownFood[] = [];
   const seen = new Set<string>();
   for (const e of entries) {
     const key = e.name.toLowerCase();
@@ -54,13 +63,14 @@ export async function listKnownFoods(): Promise<{ name: string; per100: Macros }
         carbs: Math.round(e.carbs * f * 10) / 10,
         fat: Math.round(e.fat * f * 10) / 10,
       },
+      grams: e.grams,
     });
   }
   for (const p of products) {
     const key = p.name.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push({ name: p.name, per100: { kcal: p.kcal100, protein: p.protein100, carbs: p.carbs100, fat: p.fat100 } });
+    out.push({ name: p.name, per100: { kcal: p.kcal100, protein: p.protein100, carbs: p.carbs100, fat: p.fat100 }, grams: null });
   }
   return out;
 }
