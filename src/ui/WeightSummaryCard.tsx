@@ -165,7 +165,7 @@ export function WeightSummaryCard({ reloadNonce }: { reloadNonce?: number }) {
         <Pressable style={styles.enter} onPress={() => setAdding(true)}>
           <Text style={styles.enterTxt}>＋ Entrar peso</Text>
         </Pressable>
-        <Pressable onPress={() => router.navigate('/progreso')}>
+        <Pressable onPress={() => router.navigate({ pathname: '/progreso', params: { tab: 'peso' } })}>
           <Text style={styles.link}>Ver gráfica e historial ›</Text>
         </Pressable>
       </View>

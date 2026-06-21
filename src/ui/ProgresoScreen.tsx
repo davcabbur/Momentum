@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { getHistoryRows } from '@/db/workout-repo';
@@ -20,12 +20,20 @@ type Tab = 'fuerza' | 'peso';
 
 export function ProgresoScreen() {
   const router = useRouter();
+  const { tab: tabParam } = useLocalSearchParams<{ tab?: string }>();
   const { c } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const [items, setItems] = useState<ExerciseProgress[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const [tab, setTab] = useState<Tab>('fuerza');
+  const [tab, setTab] = useState<Tab>(tabParam === 'peso' ? 'peso' : 'fuerza');
   const [open, setOpen] = useState<Set<number>>(new Set());
+
+  // Abre la pestaña que pida la navegación (p. ej. desde Inicio → "Ver gráfica e historial").
+  useFocusEffect(
+    useCallback(() => {
+      if (tabParam === 'peso' || tabParam === 'fuerza') setTab(tabParam);
+    }, [tabParam]),
+  );
 
   const load = useCallback(async () => {
     const rows = await getHistoryRows();
