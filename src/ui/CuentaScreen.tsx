@@ -155,7 +155,7 @@ const makeStyles = (c: Theme) =>
       borderRadius: 14,
       alignItems: 'center',
       justifyContent: 'center',
-      marginTop: 18,
+      marginTop: 32,
       shadowColor: c.accentStrong,
       shadowOpacity: 0.45,
       shadowRadius: 16,
