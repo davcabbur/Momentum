@@ -109,8 +109,6 @@ export function CuentaScreen() {
           </Pressable>
         )}
 
-        <View style={styles.spacer} />
-
         <Pressable style={[styles.primary, busy && styles.off]} disabled={busy} onPress={submit}>
           <Text style={styles.primaryTxt}>{signup ? 'Crear cuenta' : 'Entrar'}</Text>
         </Pressable>
@@ -141,8 +139,7 @@ const makeStyles = (c: Theme) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: c.surface },
     content: { flexGrow: 1, paddingHorizontal: 28 },
-    main: { flex: 1 },
-    spacer: { flex: 1, minHeight: 24 },
+    main: { flex: 1, justifyContent: 'center' },
     header: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 18 },
     tile: { width: 46, height: 46, borderRadius: 13 },
     brand: { color: c.text, fontSize: 20, fontWeight: '700', letterSpacing: 0.3 },
@@ -158,7 +155,7 @@ const makeStyles = (c: Theme) =>
       borderRadius: 14,
       alignItems: 'center',
       justifyContent: 'center',
-      marginTop: 8,
+      marginTop: 18,
       shadowColor: c.accentStrong,
       shadowOpacity: 0.45,
       shadowRadius: 16,
