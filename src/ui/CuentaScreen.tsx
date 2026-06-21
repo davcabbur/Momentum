@@ -131,7 +131,7 @@ export function CuentaScreen() {
 const makeStyles = (c: Theme) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: c.surface },
-    content: { paddingHorizontal: 28, paddingTop: 24, paddingBottom: 32 },
+    content: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 28, paddingVertical: 28 },
     header: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 22 },
     tile: { width: 46, height: 46, borderRadius: 13 },
     brand: { color: c.text, fontSize: 20, fontWeight: '700', letterSpacing: 0.3 },
