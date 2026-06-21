@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { formatDate, parseDmy } from '@/bodyweight/format';
 import { addDays } from '@/bodyweight/goal';
@@ -23,6 +24,7 @@ interface Props {
 
 export function SetGoalSheet({ visible, initialTargetKg, initialTargetDate, startKg, startDate, canClear, onClose }: Props) {
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const [value, setValue] = useState(String(initialTargetKg));
   const [dateStr, setDateStr] = useState(formatDate(initialTargetDate));
 
@@ -50,7 +52,7 @@ export function SetGoalSheet({ visible, initialTargetKg, initialTargetDate, star
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
+        <Pressable style={[styles.sheet, { paddingBottom: insets.bottom + 18 }]} onPress={() => {}}>
           <Text style={styles.title}>🎯 Tu objetivo</Text>
           <Text style={styles.hint}>
             Guía orientativa, no una fecha límite. La estimación a tu ritmo real se recalcula sola con tus pesajes.

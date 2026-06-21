@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { getProfile, setLevel } from '@/db/bodyweight-repo';
@@ -29,6 +30,7 @@ const LEVELS = ['principiante', 'intermedio', 'avanzado'];
 export function RoutineBuilder({ onDone }: { onDone: () => void }) {
   const { c } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const [days, setDays] = useState<RoutineDay[]>([]);
   const [exByDay, setExByDay] = useState<Record<number, DayExercise[]>>({});
   const [level, setLvl] = useState('intermedio');
@@ -248,7 +250,7 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
       {menuEx && (
         <Modal visible transparent animationType="fade" onRequestClose={() => setMenuEx(null)}>
           <Pressable style={styles.menuBackdrop} onPress={() => setMenuEx(null)}>
-            <Pressable style={styles.menu} onPress={() => {}}>
+            <Pressable style={[styles.menu, { paddingBottom: insets.bottom + 12 }]} onPress={() => {}}>
               <Text style={styles.menuTitle}>{menuEx.exercise.name}</Text>
               <Pressable style={styles.menuBtn} onPress={() => { setEditEx(menuEx); setMenuEx(null); }}>
                 <Text style={styles.menuBtnTxt}>Editar series/reps</Text>

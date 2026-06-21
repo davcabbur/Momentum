@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { addFoodEntry, listKnownFoods, type KnownFood } from '@/db/food-repo';
@@ -28,6 +29,7 @@ interface Props {
 export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
   const { c } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
   const [grams, setGrams] = useState('100');
   const [kcal, setKcal] = useState('');
@@ -148,7 +150,7 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
+        <Pressable style={[styles.sheet, { paddingBottom: insets.bottom + 18 }]} onPress={() => {}}>
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             <Text style={styles.title}>Añadir alimento</Text>
 

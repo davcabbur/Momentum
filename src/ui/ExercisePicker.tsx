@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { addExercise, listExercises, type Exercise } from '@/db/exercise-repo';
 import { recommendForMuscle, type EquipmentScope } from '@/training/recommend';
@@ -20,6 +21,7 @@ const SCOPES: { key: EquipmentScope; label: string }[] = [
 export function ExercisePicker({ visible, onPick, onClose }: Props) {
   const { c } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const [items, setItems] = useState<Exercise[]>([]);
   const [name, setName] = useState('');
   const [showNew, setShowNew] = useState(false);
@@ -58,7 +60,7 @@ export function ExercisePicker({ visible, onPick, onClose }: Props) {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
+        <Pressable style={[styles.sheet, { paddingBottom: insets.bottom + 18 }]} onPress={() => {}}>
           <Text style={styles.title}>Elige un ejercicio</Text>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>

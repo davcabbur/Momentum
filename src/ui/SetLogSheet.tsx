@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert, AppState, Modal, Pressable, ScrollView, StyleSheet, Text, Vibration, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Body from 'react-native-body-highlighter';
 
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
@@ -70,6 +71,7 @@ type Editing = { setNumber: number; weightKg: number; reps: number; rir: number 
 export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerciseName, muscleGroup, targetSets, repMin, repMax, onSessionCreated, onClose }: Props) {
   const { c } = useTheme();
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const [sid, setSid] = useState<number | null>(sessionId);
   const [sets, setSets] = useState<SetLog[]>([]);
   const [last, setLast] = useState<{ date: string; sets: SetLog[] } | null>(null);
@@ -295,7 +297,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
+        <Pressable style={[styles.sheet, { paddingBottom: insets.bottom + 18 }]} onPress={() => {}}>
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text style={styles.title}>{exerciseName}</Text>
             <Text style={styles.target}>🎯 {target}</Text>

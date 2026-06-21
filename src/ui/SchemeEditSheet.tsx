@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { updateDayExerciseScheme } from '@/db/routine-repo';
 import { useThemedStyles, type Theme } from '@/ui/theme';
@@ -34,6 +35,7 @@ function Stepper({ label, value, onChange, min }: { label: string; value: number
 
 export function SchemeEditSheet({ visible, rdeId, name, sets, repMin, repMax, onClose }: Props) {
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const [s, setS] = useState(sets);
   const [lo, setLo] = useState(repMin);
   const [hi, setHi] = useState(repMax);
@@ -54,7 +56,7 @@ export function SchemeEditSheet({ visible, rdeId, name, sets, repMin, repMax, on
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
+        <Pressable style={[styles.sheet, { paddingBottom: insets.bottom + 18 }]} onPress={() => {}}>
           <Text style={styles.title}>{name}</Text>
           <Stepper label="Series" value={s} onChange={setS} min={1} />
           <Stepper label="Reps mínimas" value={lo} onChange={setLo} min={1} />

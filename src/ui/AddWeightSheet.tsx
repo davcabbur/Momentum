@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { deleteWeight, upsertWeight } from '@/db/bodyweight-repo';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
@@ -23,6 +24,7 @@ function prettyDate(iso: string): string {
 
 export function AddWeightSheet({ visible, date, initialKg, isExisting, onClose }: Props) {
   const styles = useThemedStyles(makeStyles);
+  const insets = useSafeAreaInsets();
   const [value, setValue] = useState(String(initialKg));
 
   useEffect(() => {
@@ -51,7 +53,7 @@ export function AddWeightSheet({ visible, date, initialKg, isExisting, onClose }
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
+        <Pressable style={[styles.sheet, { paddingBottom: insets.bottom + 18 }]} onPress={() => {}}>
           <Text style={styles.title}>Peso de {prettyDate(date)} (kg)</Text>
           <View style={styles.row}>
             <Pressable style={styles.stepBtn} onPress={() => step(-0.1)}>
