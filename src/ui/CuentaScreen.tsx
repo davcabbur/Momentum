@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { resetPassword, signInEmail, signInWithGoogle, signUpEmail } from '@/auth/auth';
+import { GoogleG } from '@/ui/GoogleG';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 
 /** Login/registro (pantalla de entrada). Diseño del handoff de marca. Email + Google. */
@@ -120,7 +120,7 @@ export function CuentaScreen() {
         </View>
 
         <Pressable style={[styles.social, busy && styles.off]} disabled={busy} onPress={google}>
-          <Ionicons name="logo-google" size={18} color={c.text} />
+          <GoogleG size={18} />
           <Text style={styles.socialTxt}>Google</Text>
         </Pressable>
       </View>
