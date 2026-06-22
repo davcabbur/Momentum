@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -19,9 +19,11 @@ interface Props {
   dayId: number;
   dayName: string;
   onBack: () => void;
+  /** Sesión en curso bloqueada: oculta "Volver"; solo se sale con "Terminar entreno". */
+  locked?: boolean;
 }
 
-export function SessionScreen({ dayId, dayName, onBack }: Props) {
+export function SessionScreen({ dayId, dayName, onBack, locked = false }: Props) {
   const { c: theme } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const [sessionId, setSessionId] = useState<number | null>(null);
@@ -29,6 +31,7 @@ export function SessionScreen({ dayId, dayName, onBack }: Props) {
   const [counts, setCounts] = useState<Record<number, number>>({});
   const [openItem, setOpenItem] = useState<DayExercise | null>(null);
   const [note, setNote] = useState('');
+  const scrollRef = useRef<ScrollView>(null);
 
   const load = useCallback(async () => {
     const sid = await findSession(today(), dayId);
@@ -56,10 +59,13 @@ export function SessionScreen({ dayId, dayName, onBack }: Props) {
   const pct = total > 0 ? (done / total) * 100 : 0;
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Pressable onPress={onBack} hitSlop={8}>
-        <Text style={styles.back}>‹ Volver</Text>
-      </Pressable>
+    <ScrollView ref={scrollRef} style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      {!locked && (
+        <Pressable onPress={onBack} hitSlop={8}>
+          <Text style={styles.back}>‹ Volver</Text>
+        </Pressable>
+      )}
+      {locked && <Text style={styles.live}>● Entreno en curso</Text>}
       <Text style={styles.h1}>{dayName}</Text>
 
       {total > 0 && (
@@ -103,19 +109,23 @@ export function SessionScreen({ dayId, dayName, onBack }: Props) {
             value={note}
             onChangeText={setNote}
             onBlur={saveNote}
+            onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150)}
             placeholder="Cómo te sentiste, molestias, energía…"
             placeholderTextColor={theme.textMuted}
             multiline
           />
-          <Pressable
-            style={styles.finish}
-            onPress={async () => {
-              await saveNote();
-              onBack();
-            }}>
-            <Text style={styles.finishTxt}>✓ Terminar entreno</Text>
-          </Pressable>
         </>
+      )}
+
+      {(locked || sessionId != null) && (
+        <Pressable
+          style={styles.finish}
+          onPress={async () => {
+            await saveNote();
+            onBack();
+          }}>
+          <Text style={styles.finishTxt}>✓ Terminar entreno</Text>
+        </Pressable>
       )}
 
       <SetLogSheet
@@ -142,8 +152,9 @@ export function SessionScreen({ dayId, dayName, onBack }: Props) {
 const makeStyles = (c: Theme) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: c.surface },
-    content: { padding: 14, gap: 10 },
+    content: { padding: 14, paddingBottom: 28, gap: 10 },
     back: { color: c.accent, fontWeight: '700' },
+    live: { color: c.good, fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.3 },
     h1: { color: c.text, fontSize: 22, fontWeight: '800' },
     progress: { gap: 6 },
     progressTxt: { color: c.textMuted, fontSize: 12, fontWeight: '700' },

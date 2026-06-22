@@ -8,11 +8,15 @@ import { computeTrend, trendSlopePerWeek } from '@/bodyweight/trend';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { getGoal, getProfile, listWeights } from '@/db/bodyweight-repo';
 import { cacheProduct, deleteFoodEntry, getCachedProduct, listFoodEntries, type FoodEntry } from '@/db/food-repo';
+import { getCustomMacros } from '@/nutrition/custom-targets';
 import { liveKcalPlan } from '@/nutrition/kcal';
 import { macroTargets, sumMacros, type Macros } from '@/nutrition/macros';
 import { fetchProduct } from '@/nutrition/openfoodfacts';
 import { AddFoodSheet, type FoodPrefill } from '@/ui/AddFoodSheet';
+import { MacroGoalsSheet } from '@/ui/MacroGoalsSheet';
 import { ScannerSheet } from '@/ui/ScannerSheet';
+
+const DEFAULT_GOALS: Macros = { kcal: 2000, protein: 150, carbs: 200, fat: 65 };
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -26,8 +30,10 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
   const styles = useThemedStyles(makeStyles);
   const [foods, setFoods] = useState<FoodEntry[]>([]);
   const [targets, setTargets] = useState<Macros | null>(null);
+  const [custom, setCustom] = useState<Macros | null>(null);
   const [sheet, setSheet] = useState(false);
   const [scanner, setScanner] = useState(false);
+  const [goalsSheet, setGoalsSheet] = useState(false);
   const [prefill, setPrefill] = useState<FoodPrefill | null>(null);
   const date = today();
 
@@ -52,6 +58,7 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
 
   const load = useCallback(async () => {
     setFoods(await listFoodEntries(date));
+    setCustom(await getCustomMacros());
     const prof = await getProfile();
     const weights = await listWeights();
     const goal = await getGoal();
@@ -85,6 +92,7 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
   );
 
   const consumed = sumMacros(foods);
+  const goals = custom ?? targets; // personalizados mandan sobre los automáticos
 
   return (
     <View style={styles.wrap}>
@@ -103,11 +111,17 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
       </View>
 
       <View style={styles.card}>
-        <MacroBar label="Kcal" consumed={r0(consumed.kcal)} target={targets?.kcal ?? null} color={c.good} unit="" />
-        <MacroBar label="Proteína" consumed={r0(consumed.protein)} target={targets?.protein ?? null} color={c.accent} unit="g" />
-        <MacroBar label="Carbos" consumed={r0(consumed.carbs)} target={targets?.carbs ?? null} color={c.info} unit="g" />
-        <MacroBar label="Grasa" consumed={r0(consumed.fat)} target={targets?.fat ?? null} color={c.warn} unit="g" />
-        {!targets && <Text style={styles.noTarget}>Completa perfil y peso para ver tus objetivos de macros.</Text>}
+        <View style={styles.cardHead}>
+          <Text style={styles.cardHeadTxt}>Objetivos del día{custom ? ' · a tu gusto' : ''}</Text>
+          <Pressable hitSlop={8} onPress={() => setGoalsSheet(true)}>
+            <Text style={styles.editTxt}>Editar</Text>
+          </Pressable>
+        </View>
+        <MacroBar label="Kcal" consumed={r0(consumed.kcal)} target={goals?.kcal ?? null} color={c.good} unit="" />
+        <MacroBar label="Proteína" consumed={r0(consumed.protein)} target={goals?.protein ?? null} color={c.accent} unit="g" />
+        <MacroBar label="Carbos" consumed={r0(consumed.carbs)} target={goals?.carbs ?? null} color={c.info} unit="g" />
+        <MacroBar label="Grasa" consumed={r0(consumed.fat)} target={goals?.fat ?? null} color={c.warn} unit="g" />
+        {!goals && <Text style={styles.noTarget}>Completa tu perfil y peso, o pulsa "Editar" para fijar tus objetivos a mano.</Text>}
       </View>
 
       {foods.length === 0 ? (
@@ -130,6 +144,12 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
 
       <AddFoodSheet visible={sheet} date={date} prefill={prefill} onClose={() => { setSheet(false); setPrefill(null); load(); }} />
       <ScannerSheet visible={scanner} onClose={() => setScanner(false)} onScanned={onScanned} />
+      <MacroGoalsSheet
+        visible={goalsSheet}
+        initial={goals ?? DEFAULT_GOALS}
+        isCustom={custom != null}
+        onClose={() => { setGoalsSheet(false); load(); }}
+      />
     </View>
   );
 }
@@ -164,6 +184,9 @@ const makeStyles = (c: Theme) =>
     add: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.accentStrong, borderRadius: 10, paddingVertical: 7, paddingHorizontal: 12 },
     addTxt: { color: c.onAccent, fontWeight: '700', fontSize: 13 },
     card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 10 },
+    cardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    cardHeadTxt: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700' },
+    editTxt: { color: c.accent, fontSize: 13, fontWeight: '700' },
     bar: {},
     barTop: { flexDirection: 'row', justifyContent: 'space-between' },
     barLbl: { color: c.textMuted, fontSize: 12 },

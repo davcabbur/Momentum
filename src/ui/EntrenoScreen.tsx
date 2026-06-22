@@ -6,6 +6,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { daysBetween } from '@/bodyweight/goal';
 import { seedExercises } from '@/db/exercise-repo';
 import { getActiveRoutine, listDayExercises, listDays, type RoutineDay } from '@/db/routine-repo';
+import { getSetting, setSetting } from '@/db/settings-repo';
 import { deleteEmptySessions, lastSessionDate, lastSessionDayId } from '@/db/workout-repo';
 import { welcomeBackAdvice } from '@/training/intelligence';
 import { nextDay } from '@/training/next-day';
@@ -19,7 +20,8 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-type EntrenoView = 'home' | 'builder' | { dayId: number; dayName: string };
+type EntrenoView = 'home' | 'builder';
+type ActiveSession = { dayId: number; dayName: string };
 
 export function EntrenoScreen() {
   const { c } = useTheme();
@@ -27,6 +29,7 @@ export function EntrenoScreen() {
   const [routineId, setRoutineId] = useState<number | null>(null);
   const [days, setDays] = useState<RoutineDay[]>([]);
   const [view, setView] = useState<EntrenoView>('home');
+  const [active, setActive] = useState<ActiveSession | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [welcome, setWelcome] = useState<string | null>(null);
   const [suggestedId, setSuggestedId] = useState<number | null>(null);
@@ -39,6 +42,19 @@ export function EntrenoScreen() {
     setRoutineId(r?.id ?? null);
     const ds = r ? await listDays(r.id) : [];
     setDays(Array.isArray(ds) ? ds : []);
+    // Sesión en curso (persistida): si hay una, Entreno muestra solo ese entreno.
+    const raw = await getSetting('active_session');
+    let act: ActiveSession | null = null;
+    if (raw) {
+      try {
+        const p = JSON.parse(raw);
+        if (p && ds.some((d) => d.id === p.dayId)) act = { dayId: p.dayId, dayName: String(p.dayName) };
+      } catch {
+        /* ignora json inválido */
+      }
+    }
+    if (raw && !act) await setSetting('active_session', ''); // el día ya no existe
+    setActive(act);
     const last = await lastSessionDate();
     setWelcome(last ? welcomeBackAdvice(daysBetween(last, today()))?.text ?? null : null);
     const suggested = nextDay(ds.map((d) => ({ id: d.id, name: d.name })), await lastSessionDayId());
@@ -55,11 +71,20 @@ export function EntrenoScreen() {
 
   const { control } = useRefresh(load);
 
-  if (!loaded) return <Loading />;
-  if (view === 'builder') return <RoutineBuilder onDone={() => { setView('home'); load(); }} />;
-  if (typeof view === 'object') {
-    return <SessionScreen dayId={view.dayId} dayName={view.dayName} onBack={() => { setView('home'); load(); }} />;
+  async function startDay(dayId: number, dayName: string) {
+    await setSetting('active_session', JSON.stringify({ dayId, dayName }));
+    setActive({ dayId, dayName });
   }
+
+  async function finishSession() {
+    await setSetting('active_session', '');
+    setActive(null);
+    load();
+  }
+
+  if (!loaded) return <Loading />;
+  if (active) return <SessionScreen dayId={active.dayId} dayName={active.dayName} locked onBack={finishSession} />;
+  if (view === 'builder') return <RoutineBuilder onDone={() => { setView('home'); load(); }} />;
 
   const suggested = days.find((d) => d.id === suggestedId) ?? null;
   const others = days.filter((d) => d.id !== suggestedId);
@@ -93,7 +118,7 @@ export function EntrenoScreen() {
               <Text style={styles.heroLbl}>Hoy te toca</Text>
               <Text style={styles.heroDay}>{suggested.name}</Text>
               {preview.length > 0 && <Text style={styles.heroPreview}>{preview.join(' · ')}</Text>}
-              <Pressable style={styles.heroBtn} onPress={() => setView({ dayId: suggested.id, dayName: suggested.name })}>
+              <Pressable style={styles.heroBtn} onPress={() => startDay(suggested.id, suggested.name)}>
                 <Ionicons name="play" size={18} color={c.onGood} />
                 <Text style={styles.heroBtnTxt}>Empezar entreno</Text>
               </Pressable>
@@ -102,7 +127,7 @@ export function EntrenoScreen() {
 
           {others.length > 0 && <Text style={styles.section}>Otros días</Text>}
           {others.map((d) => (
-            <Pressable key={d.id} style={styles.dayCard} onPress={() => setView({ dayId: d.id, dayName: d.name })}>
+            <Pressable key={d.id} style={styles.dayCard} onPress={() => startDay(d.id, d.name)}>
               <Text style={styles.dayName}>{d.name}</Text>
               <Text style={styles.dayGo}>Entrenar ›</Text>
             </Pressable>

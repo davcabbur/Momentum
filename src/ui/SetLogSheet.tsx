@@ -243,11 +243,15 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
       lastSameWeightKg: lastSame?.weightKg ?? null,
       bodyweightLoaded: bwLoaded,
     });
-    setRec(r);
+    // Continúa con lo de la serie anterior de ESTA sesión (tiene en cuenta lo ya hecho hoy).
+    const continueW = todayPrev?.weightKg ?? null;
+    const continueReps = todayPrev?.reps ?? null;
+    const recShown = continueW != null ? { ...r, weightKg: continueW } : r;
+    setRec(recShown);
     setEditing({
       setNumber: n,
-      weightKg: r.weightKg ?? todayPrev?.weightKg ?? base,
-      reps: lastSame?.reps ?? todayPrev?.reps ?? r.repMin,
+      weightKg: continueW ?? r.weightKg ?? base,
+      reps: continueReps ?? lastSame?.reps ?? r.repMin,
       rir: 2,
       setType: r.setType,
       exists: false,

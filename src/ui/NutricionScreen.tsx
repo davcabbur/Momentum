@@ -7,6 +7,7 @@ import { computeTrend, trendSlopePerWeek } from '@/bodyweight/trend';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { getGoal, getProfile, listWeights } from '@/db/bodyweight-repo';
 import { intakeByDay } from '@/db/food-repo';
+import { getCustomMacros } from '@/nutrition/custom-targets';
 import { estimateRealTdee } from '@/nutrition/tdee-estimate';
 import { liveKcalPlan, proteinTarget, type LiveKcalPlan } from '@/nutrition/kcal';
 import { dietBreakAdvice } from '@/training/intelligence';
@@ -42,6 +43,7 @@ interface State {
   dietBreak: string | null;
   realTdee: number | null; // gasto real estimado por ingesta vs cambio de peso
   missing: string | null; // qué falta para poder calcular
+  customKcal: number | null; // objetivo de kcal fijado a mano por el usuario
 }
 
 export function NutricionScreen() {
@@ -102,7 +104,8 @@ export function NutricionScreen() {
       });
     }
 
-    setS({ plan, protein, stage: prof?.stage ?? null, hasGoal: goal != null && goal.targetDate != null, trendKg, dietBreak, realTdee, missing });
+    const cm = await getCustomMacros();
+    setS({ plan, protein, stage: prof?.stage ?? null, hasGoal: goal != null && goal.targetDate != null, trendKg, dietBreak, realTdee, missing, customKcal: cm?.kcal ?? null });
   }, []);
 
   useFocusEffect(
@@ -173,7 +176,13 @@ export function NutricionScreen() {
             </View>
           )}
 
-          {s.hasGoal ? (
+          {s.customKcal != null ? (
+            <View style={styles.card}>
+              <Text style={styles.cardLbl}>Tu objetivo · a tu gusto</Text>
+              <Text style={[styles.big, { color: c.good }]}>≈ {kcal(s.customKcal)} kcal/día</Text>
+              <Text style={styles.note}>Lo has ajustado a mano. Cámbialo (o vuelve al automático) desde «Objetivos del día», arriba.</Text>
+            </View>
+          ) : s.hasGoal ? (
             <View style={styles.card}>
               <Text style={styles.cardLbl}>Objetivo {s.stage ? `· ${STAGE_LABEL[s.stage] ?? s.stage}` : ''}</Text>
               <Text style={[styles.big, { color: c.good }]}>≈ {kcal(s.plan.targetKcal)} kcal/día</Text>

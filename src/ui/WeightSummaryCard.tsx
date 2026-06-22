@@ -8,6 +8,7 @@ import { weightInsight } from '@/bodyweight/insight';
 import { computeTrend, trendSlopePerWeek, type TrendPoint } from '@/bodyweight/trend';
 import { getGoal, getProfile, listWeights } from '@/db/bodyweight-repo';
 import { weightGoal } from '@/db/schema';
+import { getCustomMacros } from '@/nutrition/custom-targets';
 import { liveKcalPlan } from '@/nutrition/kcal';
 import { AddWeightSheet } from '@/ui/AddWeightSheet';
 import { ProgressRing } from '@/ui/ProgressRing';
@@ -48,12 +49,14 @@ export function WeightSummaryCard({ reloadNonce }: { reloadNonce?: number }) {
   const [points, setPoints] = useState<TrendPoint[]>([]);
   const [goal, setGoal] = useState<Goal | null>(null);
   const [prof, setProf] = useState<Profile>(null);
+  const [customKcal, setCustomKcal] = useState<number | null>(null);
   const [adding, setAdding] = useState(false);
 
   const load = useCallback(async () => {
     setPoints(computeTrend(await listWeights(), 0.1));
     setGoal(await getGoal());
     setProf(await getProfile());
+    setCustomKcal((await getCustomMacros())?.kcal ?? null);
   }, []);
 
   useFocusEffect(
@@ -89,10 +92,10 @@ export function WeightSummaryCard({ reloadNonce }: { reloadNonce?: number }) {
   const weeklyRate = points.length >= 2 ? slope : null;
   const dailyRate = weeklyRate != null ? weeklyRate / 7 : null;
 
-  // Kcal del día: objetivo si hay meta con fecha, si no el mantenimiento (TDEE).
-  let kcalShown: number | null = null;
-  let kcalSub = 'al día';
-  if (prof && prof.heightCm != null && prof.age != null) {
+  // Kcal del día: lo personalizado manda; si no, objetivo (con meta) o mantenimiento (TDEE).
+  let kcalShown: number | null = customKcal;
+  let kcalSub = 'a tu gusto';
+  if (kcalShown == null && prof && prof.heightCm != null && prof.age != null) {
     const hasGoal = goal != null && goal.targetDate != null;
     const daysRemaining = hasGoal ? Math.max(0, daysBetween(todayStr, goal!.targetDate!)) : 0;
     const plan = liveKcalPlan({
