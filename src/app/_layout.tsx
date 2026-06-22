@@ -48,7 +48,7 @@ export default function RootLayout() {
 function RootGate() {
   const colorScheme = useColorScheme();
   const { session, loading } = useSession();
-  useReconcileOnLogin(session?.user?.id ?? null);
+  const reconciling = useReconcileOnLogin();
 
   // La bienvenida se desmonta cuando termina su propia animación (onFinish).
   const [welcomeDone, setWelcomeDone] = useState(false);
@@ -56,8 +56,9 @@ function RootGate() {
   let content;
   if (!welcomeDone) content = <WelcomeScreen onFinish={() => setWelcomeDone(true)} />;
   else if (loading) content = <Loading />;
-  else if (session) content = <AppTabs />;
-  else content = <CuentaScreen />;
+  else if (!session) content = <CuentaScreen />;
+  else if (reconciling) content = <Loading />; // restaurando tus datos tras iniciar sesión
+  else content = <AppTabs />;
 
   return <NavThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>{content}</NavThemeProvider>;
 }
