@@ -82,12 +82,11 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
             <Text style={styles.editTxt}>Editar</Text>
           </Pressable>
         </View>
-        <MacroBar label="Kcal" consumed={r0(consumed.kcal)} target={goals?.kcal ?? null} color={c.good} unit="" />
-        <MacroBar label="Proteína" consumed={r0(consumed.protein)} target={goals?.protein ?? null} color={c.accent} unit="g" />
-        <MacroBar label="Carbos" consumed={r0(consumed.carbs)} target={goals?.carbs ?? null} color={c.info} unit="g" />
-        <MacroBar label="Grasa" consumed={r0(consumed.fat)} target={goals?.fat ?? null} color={c.warn} unit="g" />
         {!goals && <Text style={styles.noTarget}>Completa tu perfil y peso, o pulsa "Editar" para fijar tus objetivos a mano.</Text>}
-        <Text style={styles.detailHint}>Toca para ver el detalle ›</Text>
+        <View style={styles.detailRow}>
+          <Text style={styles.detailHint}>Toca para ver el detalle de nutrientes</Text>
+          <Ionicons name="chevron-forward" size={16} color={c.accent} />
+        </View>
       </Pressable>
 
       {foods.length === 0 ? (
@@ -119,40 +118,16 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
   );
 }
 
-function MacroBar({ label, consumed, target, color, unit }: { label: string; consumed: number; target: number | null; color: string; unit: string }) {
-  const styles = useThemedStyles(makeStyles);
-  const pct = target && target > 0 ? Math.min(100, (consumed / target) * 100) : 0;
-  return (
-    <View style={styles.bar}>
-      <View style={styles.barTop}>
-        <Text style={styles.barLbl}>{label}</Text>
-        <Text style={styles.barVal}>
-          {consumed}
-          {target != null ? ` / ${target}` : ''} {unit}
-        </Text>
-      </View>
-      <View style={styles.track}>
-        <View style={[styles.fill, { width: `${pct}%`, backgroundColor: color }]} />
-      </View>
-    </View>
-  );
-}
-
 const makeStyles = (c: Theme) =>
   StyleSheet.create({
     wrap: { gap: 8 },
     title: { color: c.text, fontSize: 16, fontWeight: '800' },
-    card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 10 },
+    card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 8 },
     cardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     cardHeadTxt: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700' },
     editTxt: { color: c.accent, fontSize: 13, fontWeight: '700' },
-    detailHint: { color: c.accent, fontSize: 12, fontWeight: '700', textAlign: 'center', marginTop: 2 },
-    bar: {},
-    barTop: { flexDirection: 'row', justifyContent: 'space-between' },
-    barLbl: { color: c.textMuted, fontSize: 12 },
-    barVal: { color: c.text, fontSize: 12, fontWeight: '700' },
-    track: { height: 8, backgroundColor: c.track, borderRadius: 99, overflow: 'hidden', marginTop: 4 },
-    fill: { height: '100%', borderRadius: 99 },
+    detailRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    detailHint: { color: c.accent, fontSize: 13, fontWeight: '700' },
     noTarget: { color: c.textMuted, fontSize: 12 },
     empty: { color: c.textMuted, fontSize: 13, fontStyle: 'italic' },
     foodRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, padding: 12, gap: 10 },

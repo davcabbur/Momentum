@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
@@ -96,9 +97,9 @@ export function KcalDashboard({ goalKcal, foodKcal, burnedKcal, protein, carbs, 
                 <Text style={styles.bigLbl}>kcal restantes</Text>
               </Ring>
               <View style={styles.legend}>
-                <Legend color={c.text} label="Total" value={r0(goalKcal)} />
-                <Legend color={c.accent} label="Alimentos" value={r0(foodKcal)} />
-                <Legend color={c.info} label="Ejercicio" value={r0(burnedKcal)} />
+                <Legend icon="flag-outline" color={c.text} label="Total" value={r0(goalKcal)} />
+                <Legend icon="restaurant-outline" color={c.accent} label="Alimentos" value={r0(foodKcal)} />
+                <Legend icon="barbell-outline" color={c.info} label="Ejercicio" value={r0(burnedKcal)} />
               </View>
             </View>
             <Text style={styles.foot}>Restantes = Total − Alimentos + Ejercicio. El ejercicio se estima a partir de tus series.</Text>
@@ -128,11 +129,11 @@ export function KcalDashboard({ goalKcal, foodKcal, burnedKcal, protein, carbs, 
   );
 }
 
-function Legend({ color, label, value }: { color: string; label: string; value: number }) {
+function Legend({ icon, color, label, value }: { icon: keyof typeof Ionicons.glyphMap; color: string; label: string; value: number }) {
   const styles = useThemedStyles(makeStyles);
   return (
     <View style={styles.legendRow}>
-      <View style={[styles.legendDot, { backgroundColor: color }]} />
+      <Ionicons name={icon} size={18} color={color} style={styles.legendIcon} />
       <Text style={styles.legendLbl}>{label}</Text>
       <Text style={styles.legendVal}>{value}</Text>
     </View>
@@ -164,7 +165,7 @@ const makeStyles = (c: Theme) =>
     bigLbl: { color: c.textMuted, fontSize: 12, marginTop: -2 },
     legend: { flex: 1, gap: 10 },
     legendRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    legendDot: { width: 10, height: 10, borderRadius: 5 },
+    legendIcon: { width: 22, textAlign: 'center' },
     legendLbl: { color: c.textMuted, fontSize: 14, flex: 1 },
     legendVal: { color: c.text, fontSize: 16, fontWeight: '800' },
     macroRow: { flexDirection: 'row', justifyContent: 'space-around' },
