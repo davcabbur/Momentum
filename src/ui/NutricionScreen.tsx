@@ -8,7 +8,7 @@ import { addDays, daysBetween } from '@/bodyweight/goal';
 import { computeTrend, trendSlopePerWeek } from '@/bodyweight/trend';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { getGoal, getProfile, listWeights } from '@/db/bodyweight-repo';
-import { cacheProduct, getCachedProduct, intakeByDay, listFoodEntries } from '@/db/food-repo';
+import { cacheProduct, deleteFoodEntry, getCachedProduct, intakeByDay, listFoodEntries, type FoodEntry } from '@/db/food-repo';
 import { workingSetsOn } from '@/db/workout-repo';
 import { getCustomMacros } from '@/nutrition/custom-targets';
 import { estimateRealTdee } from '@/nutrition/tdee-estimate';
@@ -18,11 +18,15 @@ import { fetchProduct } from '@/nutrition/openfoodfacts';
 import { estimateWorkoutKcal } from '@/training/energy';
 import { dietBreakAdvice } from '@/training/intelligence';
 import { AddFoodFlow, type InitialProduct } from '@/ui/AddFoodFlow';
-import { ComidaHoy } from '@/ui/ComidaHoy';
+import { DayDetailSheet } from '@/ui/DayDetailSheet';
 import { KcalDashboard } from '@/ui/KcalDashboard';
 import { Loading } from '@/ui/Loading';
+import { MacroGoalsSheet } from '@/ui/MacroGoalsSheet';
 import { ScannerSheet } from '@/ui/ScannerSheet';
 import { useRefresh } from '@/ui/useRefresh';
+
+const DEFAULT_GOALS: Macros = { kcal: 2000, protein: 150, carbs: 200, fat: 65 };
+const r0 = (n: number) => Math.round(n);
 
 const STAGE_LABEL: Record<string, string> = {
   definicion: 'Déficit calórico',
@@ -56,6 +60,7 @@ interface State {
   goals: Macros | null; // objetivos del día (kcal + macros) para el dashboard
   consumed: FoodTotals; // lo comido hoy
   burned: number; // kcal estimadas quemadas en el entreno de hoy
+  foods: FoodEntry[]; // alimentos registrados hoy
 }
 
 export function NutricionScreen() {
@@ -128,7 +133,8 @@ export function NutricionScreen() {
     const goals = cm ?? autoGoals;
 
     // Lo comido hoy y las kcal estimadas del entreno de hoy.
-    const consumed = sumMacros(await listFoodEntries(today()));
+    const foods = await listFoodEntries(today());
+    const consumed = sumMacros(foods);
     const workingSets = await workingSetsOn(today());
     const burned = estimateWorkoutKcal({ workingSets, bodyweightKg: trendKg ?? 0 });
 
@@ -145,6 +151,7 @@ export function NutricionScreen() {
       goals,
       consumed,
       burned,
+      foods,
     });
   }, []);
 
@@ -154,13 +161,14 @@ export function NutricionScreen() {
     }, [load]),
   );
 
-  const { control, nonce } = useRefresh(load);
+  const { control } = useRefresh(load);
   const insets = useSafeAreaInsets();
   const [fabOpen, setFabOpen] = useState(false);
   const [scanner, setScanner] = useState(false);
   const [addFlow, setAddFlow] = useState(false);
   const [initialProduct, setInitialProduct] = useState<InitialProduct | null>(null);
-  const [foodReload, setFoodReload] = useState(0);
+  const [detail, setDetail] = useState(false);
+  const [goalsSheet, setGoalsSheet] = useState(false);
 
   async function onScanned(barcode: string) {
     setScanner(false);
@@ -217,10 +225,28 @@ export function NutricionScreen() {
           protein={{ goal: s.goals.protein, consumed: s.consumed.protein }}
           carbs={{ goal: s.goals.carbs, consumed: s.consumed.carbs }}
           fat={{ goal: s.goals.fat, consumed: s.consumed.fat }}
+          onPress={() => setDetail(true)}
         />
       )}
 
-      <ComidaHoy reloadNonce={nonce + foodReload} />
+      <Text style={styles.h2}>Hoy comido</Text>
+      {s.foods.length === 0 ? (
+        <Text style={styles.emptyFood}>Aún no has registrado nada hoy. Usa el botón + para añadir.</Text>
+      ) : (
+        s.foods.map((f) => (
+          <View key={f.id} style={styles.foodRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.foodName}>{f.name}</Text>
+              <Text style={styles.foodSub}>
+                {f.grams ? `${r0(f.grams)} g · ` : ''}{r0(f.kcal)} kcal · P {f.protein} · C {f.carbs} · G {f.fat}
+              </Text>
+            </View>
+            <Pressable hitSlop={8} onPress={async () => { await deleteFoodEntry(f.id); load(); }}>
+              <Ionicons name="trash-outline" size={18} color={c.bad} />
+            </Pressable>
+          </View>
+        ))
+      )}
 
       {s.missing === 'perfil' && (
         <View style={styles.card}>
@@ -258,7 +284,7 @@ export function NutricionScreen() {
             <View style={styles.card}>
               <Text style={styles.cardLbl}>Tu objetivo · a tu gusto</Text>
               <Text style={[styles.big, { color: c.good }]}>≈ {kcal(s.customKcal)} kcal/día</Text>
-              <Text style={styles.note}>Lo has ajustado a mano. Cámbialo (o vuelve al automático) desde «Objetivos del día», arriba.</Text>
+              <Text style={styles.note}>Lo has ajustado a mano. Cámbialo (o vuelve al automático) tocando el panel de arriba → «Editar objetivos».</Text>
             </View>
           ) : s.hasGoal ? (
             <View style={styles.card}>
@@ -322,7 +348,21 @@ export function NutricionScreen() {
         date={today()}
         initial={initialProduct}
         onClose={() => { setAddFlow(false); setInitialProduct(null); }}
-        onAdded={() => { setAddFlow(false); setInitialProduct(null); setFoodReload((n) => n + 1); }}
+        onAdded={() => { setAddFlow(false); setInitialProduct(null); load(); }}
+      />
+      <DayDetailSheet
+        visible={detail}
+        consumed={s.consumed}
+        goals={s.goals}
+        foods={s.foods}
+        onClose={() => setDetail(false)}
+        onEditGoals={() => { setDetail(false); setGoalsSheet(true); }}
+      />
+      <MacroGoalsSheet
+        visible={goalsSheet}
+        initial={s.goals ?? DEFAULT_GOALS}
+        isCustom={s.customKcal != null}
+        onClose={() => { setGoalsSheet(false); load(); }}
       />
     </View>
   );
@@ -354,7 +394,12 @@ const makeStyles = (c: Theme) =>
     menuTxt: { color: c.text, fontSize: 18, fontWeight: '700' },
     menuSep: { height: 1, backgroundColor: c.cardBorder },
     h1: { color: c.text, fontSize: 20, fontWeight: '800' },
+    h2: { color: c.text, fontSize: 16, fontWeight: '800', marginTop: 4 },
     intro: { color: c.textMuted, fontSize: 13, marginBottom: 4 },
+    emptyFood: { color: c.textMuted, fontSize: 13, fontStyle: 'italic' },
+    foodRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, padding: 12, gap: 10 },
+    foodName: { color: c.text, fontSize: 14, fontWeight: '600' },
+    foodSub: { color: c.textMuted, fontSize: 12, marginTop: 1 },
     card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 4 },
     cardLbl: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700' },
     big: { color: c.text, fontSize: 24, fontWeight: '800' },

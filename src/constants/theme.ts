@@ -85,6 +85,7 @@ export interface Theme {
   warn: string;
   warnSurface: string; // fondo de cajas de aviso (ámbar)
   warnBorder: string; // borde de cajas de aviso
+  flame: string; // naranja para energía (kcal quemadas / ejercicio)
   bad: string;
   onAccent: string; // texto sobre botones de acento
   surface: string; // fondo de pantalla
@@ -109,6 +110,7 @@ export const darkTheme: Theme = {
   warn: '#F2B34F',
   warnSurface: '#2A2412',
   warnBorder: '#5C4D1E',
+  flame: '#FB923C',
   bad: '#F87171',
   onAccent: '#FFFFFF',
   surface: '#0E0F13',
@@ -133,6 +135,7 @@ export const lightTheme: Theme = {
   warn: '#C2710C',
   warnSurface: '#FBEFD9',
   warnBorder: '#EAD3A0',
+  flame: '#EA580C',
   bad: '#DC2626',
   onAccent: '#FFFFFF',
   surface: '#F6F7F9',

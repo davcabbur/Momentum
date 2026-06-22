@@ -15,12 +15,14 @@ export function DayDetailSheet({
   goals,
   foods,
   onClose,
+  onEditGoals,
 }: {
   visible: boolean;
   consumed: FoodTotals;
   goals: Macros | null;
   foods: FoodEntry[];
   onClose: () => void;
+  onEditGoals?: () => void;
 }) {
   const { c } = useTheme();
   const styles = useThemedStyles(makeStyles);
@@ -48,7 +50,14 @@ export function DayDetailSheet({
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose}>
         <Pressable style={[styles.sheet, { paddingBottom: insets.bottom + 18 }]} onPress={() => {}}>
-          <Text style={styles.title}>Hoy · detalle nutricional</Text>
+          <View style={styles.head}>
+            <Text style={styles.title}>Hoy · detalle nutricional</Text>
+            {onEditGoals && (
+              <Pressable hitSlop={8} onPress={onEditGoals}>
+                <Text style={styles.edit}>Editar objetivos</Text>
+              </Pressable>
+            )}
+          </View>
           <ScrollView showsVerticalScrollIndicator={false}>
             {rows.map((r) => {
               const remaining = r.goal != null ? r.goal - r.val : null;
@@ -110,7 +119,9 @@ const makeStyles = (c: Theme) =>
   StyleSheet.create({
     backdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#0008' },
     sheet: { backgroundColor: c.card, padding: 18, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '88%' },
-    title: { color: c.text, fontSize: 18, fontWeight: '800', marginBottom: 10 },
+    head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+    title: { color: c.text, fontSize: 18, fontWeight: '800' },
+    edit: { color: c.accent, fontSize: 13, fontWeight: '700' },
     row: { marginBottom: 14 },
     rowTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     rowLbl: { color: c.text, fontSize: 14, fontWeight: '700' },

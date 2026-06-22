@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
@@ -19,6 +19,7 @@ interface Props {
   protein: MacroProgress;
   carbs: MacroProgress;
   fat: MacroProgress;
+  onPress?: () => void; // abrir el detalle nutricional del día
 }
 
 /** Anillo de progreso con contenido centrado. */
@@ -68,7 +69,7 @@ function Ring({
 }
 
 /** Dashboard deslizable: página 1 = calorías (restantes), página 2 = macros restantes. */
-export function KcalDashboard({ goalKcal, foodKcal, burnedKcal, protein, carbs, fat }: Props) {
+export function KcalDashboard({ goalKcal, foodKcal, burnedKcal, protein, carbs, fat, onPress }: Props) {
   const { c } = useTheme();
   const styles = useThemedStyles(makeStyles);
   const { width } = useWindowDimensions();
@@ -89,34 +90,38 @@ export function KcalDashboard({ goalKcal, foodKcal, burnedKcal, protein, carbs, 
       >
         {/* Página 1 — Calorías */}
         <View style={[styles.page, { width: pageW }]}>
-          <View style={styles.card}>
+          <Pressable style={styles.card} onPress={onPress}>
             <Text style={styles.title}>Calorías de hoy</Text>
-            <View style={styles.kcalRow}>
-              <Ring size={150} stroke={14} progress={kcalProg} color={c.good} track={c.track}>
-                <Text style={[styles.bigNum, remaining < 0 && { color: c.bad }]}>{remaining}</Text>
-                <Text style={styles.bigLbl}>kcal restantes</Text>
-              </Ring>
-              <View style={styles.legend}>
-                <Legend icon="flag-outline" color={c.text} label="Total" value={r0(goalKcal)} />
-                <Legend icon="restaurant-outline" color={c.accent} label="Alimentos" value={r0(foodKcal)} />
-                <Legend icon="barbell-outline" color={c.info} label="Ejercicio" value={r0(burnedKcal)} />
+            <View style={styles.body}>
+              <View style={styles.kcalRow}>
+                <Ring size={150} stroke={14} progress={kcalProg} color={c.good} track={c.track}>
+                  <Text style={[styles.bigNum, remaining < 0 && { color: c.bad }]}>{remaining}</Text>
+                  <Text style={styles.bigLbl}>kcal restantes</Text>
+                </Ring>
+                <View style={styles.legend}>
+                  <Legend icon="flag-outline" color={c.text} label="Total" value={r0(goalKcal)} />
+                  <Legend icon="restaurant-outline" color={c.accent} label="Alimentos" value={r0(foodKcal)} />
+                  <Legend icon="flame" color={c.flame} label="Ejercicio" value={r0(burnedKcal)} />
+                </View>
               </View>
             </View>
             <Text style={styles.foot}>Restantes = Total − Alimentos + Ejercicio. El ejercicio se estima a partir de tus series.</Text>
-          </View>
+          </Pressable>
         </View>
 
         {/* Página 2 — Macros */}
         <View style={[styles.page, { width: pageW }]}>
-          <View style={styles.card}>
+          <Pressable style={styles.card} onPress={onPress}>
             <Text style={styles.title}>Macros restantes</Text>
-            <View style={styles.macroRow}>
-              <MacroItem label="Proteínas" goal={protein.goal} consumed={protein.consumed} color={c.accent} track={c.track} />
-              <MacroItem label="Carbos" goal={carbs.goal} consumed={carbs.consumed} color={c.info} track={c.track} />
-              <MacroItem label="Grasas" goal={fat.goal} consumed={fat.consumed} color={c.warn} track={c.track} />
+            <View style={styles.body}>
+              <View style={styles.macroRow}>
+                <MacroItem label="Proteínas" goal={protein.goal} consumed={protein.consumed} color={c.accent} track={c.track} />
+                <MacroItem label="Carbos" goal={carbs.goal} consumed={carbs.consumed} color={c.info} track={c.track} />
+                <MacroItem label="Grasas" goal={fat.goal} consumed={fat.consumed} color={c.warn} track={c.track} />
+              </View>
             </View>
             <Text style={styles.foot}>Gramos que te quedan para llegar a tu objetivo del día.</Text>
-          </View>
+          </Pressable>
         </View>
       </ScrollView>
 
@@ -158,7 +163,8 @@ function MacroItem({ label, goal, consumed, color, track }: { label: string; goa
 const makeStyles = (c: Theme) =>
   StyleSheet.create({
     page: { paddingRight: 0 },
-    card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 16, padding: 16, gap: 12 },
+    card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 16, padding: 16, gap: 12, minHeight: 240 },
+    body: { flex: 1, justifyContent: 'center' },
     title: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700' },
     kcalRow: { flexDirection: 'row', alignItems: 'center', gap: 18 },
     bigNum: { color: c.text, fontSize: 34, fontWeight: '800' },
