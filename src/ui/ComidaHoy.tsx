@@ -1,21 +1,18 @@
 import { useCallback, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { daysBetween } from '@/bodyweight/goal';
 import { computeTrend, trendSlopePerWeek } from '@/bodyweight/trend';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { getGoal, getProfile, listWeights } from '@/db/bodyweight-repo';
-import { cacheProduct, deleteFoodEntry, getCachedProduct, listFoodEntries, type FoodEntry } from '@/db/food-repo';
+import { deleteFoodEntry, listFoodEntries, type FoodEntry } from '@/db/food-repo';
 import { getCustomMacros } from '@/nutrition/custom-targets';
 import { liveKcalPlan } from '@/nutrition/kcal';
 import { macroTargets, sumMacros, type Macros } from '@/nutrition/macros';
-import { fetchProduct } from '@/nutrition/openfoodfacts';
-import { AddFoodSheet, type FoodPrefill } from '@/ui/AddFoodSheet';
 import { DayDetailSheet } from '@/ui/DayDetailSheet';
 import { MacroGoalsSheet } from '@/ui/MacroGoalsSheet';
-import { ScannerSheet } from '@/ui/ScannerSheet';
 
 const DEFAULT_GOALS: Macros = { kcal: 2000, protein: 150, carbs: 200, fat: 65 };
 
@@ -32,34 +29,9 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
   const [foods, setFoods] = useState<FoodEntry[]>([]);
   const [targets, setTargets] = useState<Macros | null>(null);
   const [custom, setCustom] = useState<Macros | null>(null);
-  const [sheet, setSheet] = useState(false);
-  const [scanner, setScanner] = useState(false);
   const [goalsSheet, setGoalsSheet] = useState(false);
   const [detail, setDetail] = useState(false);
-  const [prefill, setPrefill] = useState<FoodPrefill | null>(null);
   const date = today();
-
-  async function onScanned(barcode: string) {
-    setScanner(false);
-    let product = await getCachedProduct(barcode);
-    // Si no está en caché, o está pero sin el detalle (azúcares/fibra/saturadas),
-    // vuelve a consultar Open Food Facts para enriquecerlo y actualiza la caché.
-    const noDetail = !!product && product.per100.sugars == null && product.per100.fiber == null && product.per100.satFat == null;
-    if (!product || noDetail) {
-      const off = await fetchProduct(barcode);
-      if (off) {
-        await cacheProduct(barcode, off.name, off.per100);
-        product = off;
-      }
-    }
-    if (product) {
-      setPrefill({ name: product.name, per100: product.per100, barcode });
-    } else {
-      Alert.alert('No encontrado', 'Ese código no está en Open Food Facts (o no hay internet). Añádelo a mano.');
-      setPrefill({ name: '', per100: { kcal: 0, protein: 0, carbs: 0, fat: 0 }, barcode });
-    }
-    setSheet(true);
-  }
 
   const load = useCallback(async () => {
     setFoods(await listFoodEntries(date));
@@ -101,19 +73,7 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
 
   return (
     <View style={styles.wrap}>
-      <View style={styles.head}>
-        <Text style={styles.title}>Hoy comido</Text>
-        <View style={styles.actions}>
-          <Pressable style={styles.scan} onPress={() => setScanner(true)}>
-            <Ionicons name="barcode-outline" size={18} color={c.accent} />
-            <Text style={styles.scanTxt}>Escanear</Text>
-          </Pressable>
-          <Pressable style={styles.add} onPress={() => { setPrefill(null); setSheet(true); }}>
-            <Ionicons name="add" size={20} color={c.onAccent} />
-            <Text style={styles.addTxt}>Alimento</Text>
-          </Pressable>
-        </View>
-      </View>
+      <Text style={styles.title}>Hoy comido</Text>
 
       <Pressable style={styles.card} onPress={() => setDetail(true)}>
         <View style={styles.cardHead}>
@@ -148,8 +108,6 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
         ))
       )}
 
-      <AddFoodSheet visible={sheet} date={date} prefill={prefill} onClose={() => { setSheet(false); setPrefill(null); load(); }} />
-      <ScannerSheet visible={scanner} onClose={() => setScanner(false)} onScanned={onScanned} />
       <MacroGoalsSheet
         visible={goalsSheet}
         initial={goals ?? DEFAULT_GOALS}
@@ -183,13 +141,7 @@ function MacroBar({ label, consumed, target, color, unit }: { label: string; con
 const makeStyles = (c: Theme) =>
   StyleSheet.create({
     wrap: { gap: 8 },
-    head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     title: { color: c.text, fontSize: 16, fontWeight: '800' },
-    actions: { flexDirection: 'row', gap: 8 },
-    scan: { flexDirection: 'row', alignItems: 'center', gap: 4, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 10, paddingVertical: 7, paddingHorizontal: 10 },
-    scanTxt: { color: c.accent, fontWeight: '700', fontSize: 13 },
-    add: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.accentStrong, borderRadius: 10, paddingVertical: 7, paddingHorizontal: 12 },
-    addTxt: { color: c.onAccent, fontWeight: '700', fontSize: 13 },
     card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 10 },
     cardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     cardHeadTxt: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700' },

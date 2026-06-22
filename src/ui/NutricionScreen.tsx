@@ -1,18 +1,23 @@
 import { useCallback, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { addDays, daysBetween } from '@/bodyweight/goal';
 import { computeTrend, trendSlopePerWeek } from '@/bodyweight/trend';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { getGoal, getProfile, listWeights } from '@/db/bodyweight-repo';
-import { intakeByDay } from '@/db/food-repo';
+import { cacheProduct, getCachedProduct, intakeByDay } from '@/db/food-repo';
 import { getCustomMacros } from '@/nutrition/custom-targets';
 import { estimateRealTdee } from '@/nutrition/tdee-estimate';
 import { liveKcalPlan, proteinTarget, type LiveKcalPlan } from '@/nutrition/kcal';
+import { fetchProduct } from '@/nutrition/openfoodfacts';
 import { dietBreakAdvice } from '@/training/intelligence';
+import { AddFoodFlow, type InitialProduct } from '@/ui/AddFoodFlow';
 import { ComidaHoy } from '@/ui/ComidaHoy';
 import { Loading } from '@/ui/Loading';
+import { ScannerSheet } from '@/ui/ScannerSheet';
 import { useRefresh } from '@/ui/useRefresh';
 
 const STAGE_LABEL: Record<string, string> = {
@@ -115,6 +120,32 @@ export function NutricionScreen() {
   );
 
   const { control, nonce } = useRefresh(load);
+  const insets = useSafeAreaInsets();
+  const [fabOpen, setFabOpen] = useState(false);
+  const [scanner, setScanner] = useState(false);
+  const [addFlow, setAddFlow] = useState(false);
+  const [initialProduct, setInitialProduct] = useState<InitialProduct | null>(null);
+  const [foodReload, setFoodReload] = useState(0);
+
+  async function onScanned(barcode: string) {
+    setScanner(false);
+    let product = await getCachedProduct(barcode);
+    const noDetail = !!product && product.per100.sugars == null && product.per100.fiber == null && product.per100.satFat == null;
+    if (!product || noDetail) {
+      const off = await fetchProduct(barcode);
+      if (off) {
+        await cacheProduct(barcode, off.name, off.per100);
+        product = off;
+      }
+    }
+    if (product) {
+      setInitialProduct({ name: product.name, per100: product.per100, barcode });
+    } else {
+      Alert.alert('No encontrado', 'Ese código no está en Open Food Facts (o no hay internet). Añádelo a mano.');
+      setInitialProduct({ name: '', per100: { kcal: 0, protein: 0, carbs: 0, fat: 0 }, barcode });
+    }
+    setAddFlow(true);
+  }
 
   if (!s) return <Loading />;
 
@@ -138,11 +169,12 @@ export function NutricionScreen() {
   };
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} refreshControl={control}>
+    <View style={styles.root}>
+      <ScrollView style={styles.screen} contentContainerStyle={styles.content} refreshControl={control}>
       <Text style={styles.h1}>Nutrición</Text>
       <Text style={styles.intro}>Tus calorías guía, calculadas con tu tendencia de peso (no con el dato de un día).</Text>
 
-      <ComidaHoy reloadNonce={nonce} />
+      <ComidaHoy reloadNonce={nonce + foodReload} />
 
       {s.missing === 'perfil' && (
         <View style={styles.card}>
@@ -215,14 +247,66 @@ export function NutricionScreen() {
           <Text style={styles.foot}>Son estimaciones para orientarte. Ajústalas según cómo responde tu peso a lo largo de las semanas.</Text>
         </>
       )}
-    </ScrollView>
+      </ScrollView>
+
+      {/* Menú del botón + */}
+      {fabOpen && (
+        <Pressable style={styles.menuBackdrop} onPress={() => setFabOpen(false)}>
+          <View style={[styles.menu, { bottom: insets.bottom + 86, right: 18 }]}>
+            <Pressable style={styles.menuItem} onPress={() => { setFabOpen(false); setScanner(true); }}>
+              <Ionicons name="barcode-outline" size={20} color={c.accent} />
+              <Text style={styles.menuTxt}>Escanear</Text>
+            </Pressable>
+            <View style={styles.menuSep} />
+            <Pressable style={styles.menuItem} onPress={() => { setFabOpen(false); setInitialProduct(null); setAddFlow(true); }}>
+              <Ionicons name="restaurant-outline" size={20} color={c.accent} />
+              <Text style={styles.menuTxt}>Alimento</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      )}
+
+      <Pressable style={[styles.fab, { bottom: insets.bottom + 18 }]} onPress={() => setFabOpen((v) => !v)}>
+        <Ionicons name={fabOpen ? 'close' : 'add'} size={30} color={c.onAccent} />
+      </Pressable>
+
+      <ScannerSheet visible={scanner} onClose={() => setScanner(false)} onScanned={onScanned} />
+      <AddFoodFlow
+        visible={addFlow}
+        date={today()}
+        initial={initialProduct}
+        onClose={() => { setAddFlow(false); setInitialProduct(null); }}
+        onAdded={() => { setAddFlow(false); setInitialProduct(null); setFoodReload((n) => n + 1); }}
+      />
+    </View>
   );
 }
 
 const makeStyles = (c: Theme) =>
   StyleSheet.create({
+    root: { flex: 1, backgroundColor: c.surface },
     screen: { flex: 1, backgroundColor: c.surface },
-    content: { padding: 14, gap: 10 },
+    content: { padding: 14, paddingBottom: 90, gap: 10 },
+    fab: {
+      position: 'absolute',
+      right: 18,
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      backgroundColor: c.accentStrong,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: c.accentStrong,
+      shadowOpacity: 0.5,
+      shadowRadius: 14,
+      shadowOffset: { width: 0, height: 8 },
+      elevation: 8,
+    },
+    menuBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: '#0006' },
+    menu: { position: 'absolute', backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, overflow: 'hidden', minWidth: 180 },
+    menuItem: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 14, paddingHorizontal: 16 },
+    menuTxt: { color: c.text, fontSize: 15, fontWeight: '700' },
+    menuSep: { height: 1, backgroundColor: c.cardBorder },
     h1: { color: c.text, fontSize: 20, fontWeight: '800' },
     intro: { color: c.textMuted, fontSize: 13, marginBottom: 4 },
     card: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 4 },
