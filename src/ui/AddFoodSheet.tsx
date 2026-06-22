@@ -5,16 +5,22 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { addFoodEntry, listKnownFoods, type KnownFood } from '@/db/food-repo';
 import { searchBasicFoods } from '@/nutrition/basic-foods';
-import { portionMacros, type Macros } from '@/nutrition/macros';
+import { portionMacros, type Per100 } from '@/nutrition/macros';
 import { searchProducts } from '@/nutrition/openfoodfacts';
 
 function num(s: string): number {
   return parseFloat(s.replace(',', '.')) || 0;
 }
+function numOrNull(s: string): number | null {
+  return s.trim() === '' ? null : num(s);
+}
+function str(v: number | null | undefined): string {
+  return v == null ? '' : String(v);
+}
 
 export interface FoodPrefill {
   name: string;
-  per100: Macros;
+  per100: Per100;
   barcode?: string;
 }
 
@@ -36,9 +42,12 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
   const [prot, setProt] = useState('');
   const [carb, setCarb] = useState('');
   const [fat, setFat] = useState('');
+  const [sug, setSug] = useState('');
+  const [fib, setFib] = useState('');
+  const [sat, setSat] = useState('');
   const [barcode, setBarcode] = useState<string | null>(null);
   const [known, setKnown] = useState<KnownFood[]>([]);
-  const [offResults, setOffResults] = useState<{ name: string; per100: Macros }[]>([]);
+  const [offResults, setOffResults] = useState<{ name: string; per100: Per100 }[]>([]);
   const [searching, setSearching] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false); // mostrar historial al enfocar la barra vacía
 
@@ -49,6 +58,9 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
     setProt('');
     setCarb('');
     setFat('');
+    setSug('');
+    setFib('');
+    setSat('');
     setBarcode(null);
     setHistoryOpen(false);
   }
@@ -63,6 +75,9 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
       setProt(String(prefill.per100.protein));
       setCarb(String(prefill.per100.carbs));
       setFat(String(prefill.per100.fat));
+      setSug(str(prefill.per100.sugars));
+      setFib(str(prefill.per100.fiber));
+      setSat(str(prefill.per100.satFat));
       setBarcode(prefill.barcode ?? null);
     } else {
       reset();
@@ -97,12 +112,20 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
   }, [name, visible]);
 
   const g = num(grams);
-  const per100 = { kcal: num(kcal), protein: num(prot), carbs: num(carb), fat: num(fat) };
+  const per100: Per100 = {
+    kcal: num(kcal),
+    protein: num(prot),
+    carbs: num(carb),
+    fat: num(fat),
+    sugars: numOrNull(sug),
+    fiber: numOrNull(fib),
+    satFat: numOrNull(sat),
+  };
   const preview = portionMacros(per100, g);
   const canSave = name.trim().length > 0 && g > 0 && num(kcal) > 0;
 
   const q = name.trim().toLowerCase();
-  type Sugg = { name: string; per100: Macros; grams: number | null; src: 'hist' | 'mine' | 'basic' | 'off' };
+  type Sugg = { name: string; per100: Per100; grams: number | null; src: 'hist' | 'mine' | 'basic' | 'off' };
   let suggestions: Sugg[];
   if (q.length === 0) {
     // Historial: alimentos ya usados (recientes primero), al pulsar la barra de búsqueda.
@@ -121,12 +144,15 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
     ].slice(0, 8);
   }
 
-  function pick(s: { name: string; per100: Macros; grams?: number | null }) {
+  function pick(s: { name: string; per100: Per100; grams?: number | null }) {
     setName(s.name);
     setKcal(String(s.per100.kcal));
     setProt(String(s.per100.protein));
     setCarb(String(s.per100.carbs));
     setFat(String(s.per100.fat));
+    setSug(str(s.per100.sugars));
+    setFib(str(s.per100.fiber));
+    setSat(str(s.per100.satFat));
     if (s.grams != null && s.grams > 0) setGrams(String(s.grams));
     setHistoryOpen(false);
   }
@@ -141,6 +167,9 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
       protein: preview.protein,
       carbs: preview.carbs,
       fat: preview.fat,
+      sugars: preview.sugars,
+      fiber: preview.fiber,
+      satFat: preview.satFat,
       barcode,
     });
     reset();
@@ -188,6 +217,13 @@ export function AddFoodSheet({ visible, date, prefill, onClose }: Props) {
               <Field label="Proteína" value={prot} onChange={setProt} />
               <Field label="Carbos" value={carb} onChange={setCarb} />
               <Field label="Grasa" value={fat} onChange={setFat} />
+            </View>
+
+            <Text style={styles.section}>Detalle (opcional)</Text>
+            <View style={styles.grid}>
+              <Field label="Azúcares" value={sug} onChange={setSug} />
+              <Field label="Fibra" value={fib} onChange={setFib} />
+              <Field label="Saturadas" value={sat} onChange={setSat} />
             </View>
 
             {/* Macros ajustados a la ración (en vivo según los gramos). */}

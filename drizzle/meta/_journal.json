@@ -64,6 +64,13 @@
       "when": 1781605081863,
       "tag": "0008_even_greymalkin",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1782137061141,
+      "tag": "0009_glossy_surge",
+      "breakpoints": true
     }
   ]
 }

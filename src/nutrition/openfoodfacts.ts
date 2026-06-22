@@ -1,13 +1,18 @@
-import type { Macros } from './macros';
+import type { Per100 } from './macros';
 
 export interface OffProduct {
   name: string;
-  per100: Macros;
+  per100: Per100;
 }
 
 function n1(v: unknown): number {
   const x = typeof v === 'number' ? v : parseFloat(String(v));
   return Number.isFinite(x) ? Math.round(x * 10) / 10 : 0;
+}
+
+function nNull(v: unknown): number | null {
+  const x = typeof v === 'number' ? v : parseFloat(String(v));
+  return Number.isFinite(x) ? Math.round(x * 10) / 10 : null;
 }
 
 /** Construye un OffProduct desde un objeto product de OFF (null si falta nombre o kcal). */
@@ -24,6 +29,9 @@ function fromProduct(p: any): OffProduct | null {
       protein: n1(nut.proteins_100g),
       carbs: n1(nut.carbohydrates_100g),
       fat: n1(nut.fat_100g),
+      sugars: nNull(nut.sugars_100g),
+      fiber: nNull(nut.fiber_100g),
+      satFat: nNull(nut['saturated-fat_100g']),
     },
   };
 }

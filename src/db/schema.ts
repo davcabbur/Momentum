@@ -89,6 +89,9 @@ export const foodEntry = sqliteTable('food_entry', {
   protein: real('protein').notNull(),
   carbs: real('carbs').notNull(),
   fat: real('fat').notNull(),
+  sugars: real('sugars'), // azúcares (nullable)
+  fiber: real('fiber'), // fibra (nullable)
+  satFat: real('sat_fat'), // grasas saturadas (nullable)
   barcode: text('barcode'), // código de barras si vino del escáner (nullable)
 });
 
@@ -106,6 +109,9 @@ export const foodProduct = sqliteTable('food_product', {
   protein100: real('protein100').notNull(),
   carbs100: real('carbs100').notNull(),
   fat100: real('fat100').notNull(),
+  sugars100: real('sugars100'), // azúcares por 100 g (nullable)
+  fiber100: real('fiber100'), // fibra por 100 g (nullable)
+  satFat100: real('sat_fat100'), // saturadas por 100 g (nullable)
 });
 
 // Nota de producto: no existe ningún campo de IMC, ni se calculará. Ver CLAUDE.md.

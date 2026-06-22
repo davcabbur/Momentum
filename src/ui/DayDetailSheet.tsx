@@ -2,12 +2,13 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { type FoodEntry } from '@/db/food-repo';
-import { type Macros } from '@/nutrition/macros';
+import { type FoodTotals, type Macros } from '@/nutrition/macros';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 
 const r0 = (n: number) => Math.round(n);
 
-/** Detalle nutricional del día: consumido vs objetivo, reparto calórico y alimentos. */
+/** Detalle nutricional del día: consumido vs objetivo, desglose (azúcares/fibra/saturadas),
+ *  reparto calórico y alimentos. */
 export function DayDetailSheet({
   visible,
   consumed,
@@ -16,7 +17,7 @@ export function DayDetailSheet({
   onClose,
 }: {
   visible: boolean;
-  consumed: Macros;
+  consumed: FoodTotals;
   goals: Macros | null;
   foods: FoodEntry[];
   onClose: () => void;
@@ -31,11 +32,16 @@ export function DayDetailSheet({
   const macroK = pK + cK + fK || 1;
   const pct = (x: number) => Math.round((x / macroK) * 100);
 
+  const carbSub = [consumed.sugars > 0 ? `Azúcares ${r0(consumed.sugars)} g` : '', consumed.fiber > 0 ? `Fibra ${r0(consumed.fiber)} g` : '']
+    .filter(Boolean)
+    .join(' · ');
+  const fatSub = consumed.satFat > 0 ? `De las cuales saturadas ${r0(consumed.satFat)} g` : '';
+
   const rows = [
-    { key: 'kcal', label: 'Calorías', val: consumed.kcal, goal: goals?.kcal ?? null, unit: 'kcal', color: c.good },
-    { key: 'p', label: 'Proteína', val: consumed.protein, goal: goals?.protein ?? null, unit: 'g', color: c.accent },
-    { key: 'c', label: 'Carbohidratos', val: consumed.carbs, goal: goals?.carbs ?? null, unit: 'g', color: c.info },
-    { key: 'f', label: 'Grasa', val: consumed.fat, goal: goals?.fat ?? null, unit: 'g', color: c.warn },
+    { key: 'kcal', label: 'Calorías', val: consumed.kcal, goal: goals?.kcal ?? null, unit: 'kcal', color: c.good, sub: '' },
+    { key: 'p', label: 'Proteína', val: consumed.protein, goal: goals?.protein ?? null, unit: 'g', color: c.accent, sub: '' },
+    { key: 'c', label: 'Carbohidratos', val: consumed.carbs, goal: goals?.carbs ?? null, unit: 'g', color: c.info, sub: carbSub },
+    { key: 'f', label: 'Grasa', val: consumed.fat, goal: goals?.fat ?? null, unit: 'g', color: c.warn, sub: fatSub },
   ];
 
   return (
@@ -65,6 +71,7 @@ export function DayDetailSheet({
                       {remaining >= 0 ? `Te quedan ${r0(remaining)} ${r.unit}` : `Te has pasado ${r0(-remaining)} ${r.unit}`}
                     </Text>
                   )}
+                  {r.sub ? <Text style={styles.sub}>{r.sub}</Text> : null}
                 </View>
               );
             })}
@@ -111,6 +118,7 @@ const makeStyles = (c: Theme) =>
     track: { height: 8, backgroundColor: c.track, borderRadius: 99, overflow: 'hidden', marginTop: 6 },
     fill: { height: '100%', borderRadius: 99 },
     rem: { fontSize: 12, marginTop: 4 },
+    sub: { color: c.textMuted, fontSize: 12, marginTop: 3, fontStyle: 'italic' },
     section: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 6, marginBottom: 8 },
     split: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, padding: 12 },
     splitItem: { fontSize: 13, fontWeight: '800' },

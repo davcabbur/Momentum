@@ -1,10 +1,12 @@
 import { asc, desc, eq, gte } from 'drizzle-orm';
 
-import type { Macros } from '@/nutrition/macros';
+import type { Per100 } from '@/nutrition/macros';
 import { db } from './client';
 import { foodEntry, foodProduct } from './schema';
 
 export type FoodEntry = typeof foodEntry.$inferSelect;
+
+const sc = (v: number | null | undefined, f: number): number | null => (v == null ? null : Math.round(v * f * 10) / 10);
 
 export async function addFoodEntry(e: {
   date: string;
@@ -14,9 +16,18 @@ export async function addFoodEntry(e: {
   protein: number;
   carbs: number;
   fat: number;
+  sugars?: number | null;
+  fiber?: number | null;
+  satFat?: number | null;
   barcode?: string | null;
 }): Promise<void> {
-  await db.insert(foodEntry).values({ ...e, barcode: e.barcode ?? null });
+  await db.insert(foodEntry).values({
+    ...e,
+    sugars: e.sugars ?? null,
+    fiber: e.fiber ?? null,
+    satFat: e.satFat ?? null,
+    barcode: e.barcode ?? null,
+  });
 }
 
 export async function listFoodEntries(date: string): Promise<FoodEntry[]> {
@@ -37,7 +48,7 @@ export async function intakeByDay(fromDate: string): Promise<{ date: string; kca
 
 export interface KnownFood {
   name: string;
-  per100: Macros;
+  per100: Per100;
   grams: number | null; // ración usada la última vez (para pre-rellenarla)
 }
 
@@ -62,6 +73,9 @@ export async function listKnownFoods(): Promise<KnownFood[]> {
         protein: Math.round(e.protein * f * 10) / 10,
         carbs: Math.round(e.carbs * f * 10) / 10,
         fat: Math.round(e.fat * f * 10) / 10,
+        sugars: sc(e.sugars, f),
+        fiber: sc(e.fiber, f),
+        satFat: sc(e.satFat, f),
       },
       grams: e.grams,
     });
@@ -70,23 +84,39 @@ export async function listKnownFoods(): Promise<KnownFood[]> {
     const key = p.name.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push({ name: p.name, per100: { kcal: p.kcal100, protein: p.protein100, carbs: p.carbs100, fat: p.fat100 }, grams: null });
+    out.push({
+      name: p.name,
+      per100: { kcal: p.kcal100, protein: p.protein100, carbs: p.carbs100, fat: p.fat100, sugars: p.sugars100, fiber: p.fiber100, satFat: p.satFat100 },
+      grams: null,
+    });
   }
   return out;
 }
 
 /** Caché de productos escaneados: lee uno por código de barras. */
-export async function getCachedProduct(barcode: string): Promise<{ name: string; per100: Macros } | null> {
+export async function getCachedProduct(barcode: string): Promise<{ name: string; per100: Per100 } | null> {
   const rows = await db.select().from(foodProduct).where(eq(foodProduct.barcode, barcode));
   const p = rows[0];
   if (!p) return null;
-  return { name: p.name, per100: { kcal: p.kcal100, protein: p.protein100, carbs: p.carbs100, fat: p.fat100 } };
+  return {
+    name: p.name,
+    per100: { kcal: p.kcal100, protein: p.protein100, carbs: p.carbs100, fat: p.fat100, sugars: p.sugars100, fiber: p.fiber100, satFat: p.satFat100 },
+  };
 }
 
 /** Guarda (o actualiza) un producto en la caché local. */
-export async function cacheProduct(barcode: string, name: string, per100: Macros): Promise<void> {
+export async function cacheProduct(barcode: string, name: string, per100: Per100): Promise<void> {
   const existing = await db.select().from(foodProduct).where(eq(foodProduct.barcode, barcode));
-  const vals = { name, kcal100: per100.kcal, protein100: per100.protein, carbs100: per100.carbs, fat100: per100.fat };
+  const vals = {
+    name,
+    kcal100: per100.kcal,
+    protein100: per100.protein,
+    carbs100: per100.carbs,
+    fat100: per100.fat,
+    sugars100: per100.sugars ?? null,
+    fiber100: per100.fiber ?? null,
+    satFat100: per100.satFat ?? null,
+  };
   if (existing[0]) await db.update(foodProduct).set(vals).where(eq(foodProduct.barcode, barcode));
   else await db.insert(foodProduct).values({ barcode, ...vals });
 }
