@@ -34,16 +34,18 @@ export function DayDetailSheet({
   const macroK = pK + cK + fK || 1;
   const pct = (x: number) => Math.round((x / macroK) * 100);
 
-  const carbSub = [consumed.sugars > 0 ? `Azúcares ${r0(consumed.sugars)} g` : '', consumed.fiber > 0 ? `Fibra ${r0(consumed.fiber)} g` : '']
-    .filter(Boolean)
-    .join(' · ');
-  const fatSub = consumed.satFat > 0 ? `De las cuales saturadas ${r0(consumed.satFat)} g` : '';
+  type Sub = { label: string; grams: number };
+  const carbSubs: Sub[] = [
+    ...(consumed.sugars > 0 ? [{ label: 'Azúcares', grams: consumed.sugars }] : []),
+    ...(consumed.fiber > 0 ? [{ label: 'Fibra', grams: consumed.fiber }] : []),
+  ];
+  const fatSubs: Sub[] = consumed.satFat > 0 ? [{ label: 'Saturadas', grams: consumed.satFat }] : [];
 
   const rows = [
-    { key: 'kcal', label: 'Calorías', val: consumed.kcal, goal: goals?.kcal ?? null, unit: 'kcal', color: c.good, sub: '' },
-    { key: 'p', label: 'Proteína', val: consumed.protein, goal: goals?.protein ?? null, unit: 'g', color: c.accent, sub: '' },
-    { key: 'c', label: 'Carbohidratos', val: consumed.carbs, goal: goals?.carbs ?? null, unit: 'g', color: c.info, sub: carbSub },
-    { key: 'f', label: 'Grasa', val: consumed.fat, goal: goals?.fat ?? null, unit: 'g', color: c.warn, sub: fatSub },
+    { key: 'kcal', label: 'Calorías', val: consumed.kcal, goal: goals?.kcal ?? null, unit: 'kcal', color: c.good, subs: [] as Sub[] },
+    { key: 'p', label: 'Proteína', val: consumed.protein, goal: goals?.protein ?? null, unit: 'g', color: c.accent, subs: [] as Sub[] },
+    { key: 'c', label: 'Carbohidratos', val: consumed.carbs, goal: goals?.carbs ?? null, unit: 'g', color: c.info, subs: carbSubs },
+    { key: 'f', label: 'Grasa', val: consumed.fat, goal: goals?.fat ?? null, unit: 'g', color: c.warn, subs: fatSubs },
   ];
 
   return (
@@ -80,7 +82,16 @@ export function DayDetailSheet({
                       {remaining >= 0 ? `Te quedan ${r0(remaining)} ${r.unit}` : `Te has pasado ${r0(-remaining)} ${r.unit}`}
                     </Text>
                   )}
-                  {r.sub ? <Text style={styles.sub}>{r.sub}</Text> : null}
+                  {r.subs.length > 0 && (
+                    <View style={[styles.subBox, { borderLeftColor: r.color }]}>
+                      {r.subs.map((sub) => (
+                        <View key={sub.label} style={styles.subRow}>
+                          <Text style={styles.subLbl}>{sub.label}</Text>
+                          <Text style={styles.subVal}>{r0(sub.grams)} g</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
                 </View>
               );
             })}
@@ -129,7 +140,10 @@ const makeStyles = (c: Theme) =>
     track: { height: 8, backgroundColor: c.track, borderRadius: 99, overflow: 'hidden', marginTop: 6 },
     fill: { height: '100%', borderRadius: 99 },
     rem: { fontSize: 12, marginTop: 4 },
-    sub: { color: c.textMuted, fontSize: 12, marginTop: 3, fontStyle: 'italic' },
+    subBox: { marginTop: 8, marginLeft: 2, paddingLeft: 12, borderLeftWidth: 2, gap: 4 },
+    subRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    subLbl: { color: c.textMuted, fontSize: 13 },
+    subVal: { color: c.text, fontSize: 13, fontWeight: '700' },
     section: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 6, marginBottom: 8 },
     split: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, padding: 12 },
     splitItem: { fontSize: 13, fontWeight: '800' },
