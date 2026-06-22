@@ -13,6 +13,7 @@ import { liveKcalPlan } from '@/nutrition/kcal';
 import { macroTargets, sumMacros, type Macros } from '@/nutrition/macros';
 import { fetchProduct } from '@/nutrition/openfoodfacts';
 import { AddFoodSheet, type FoodPrefill } from '@/ui/AddFoodSheet';
+import { DayDetailSheet } from '@/ui/DayDetailSheet';
 import { MacroGoalsSheet } from '@/ui/MacroGoalsSheet';
 import { ScannerSheet } from '@/ui/ScannerSheet';
 
@@ -34,6 +35,7 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
   const [sheet, setSheet] = useState(false);
   const [scanner, setScanner] = useState(false);
   const [goalsSheet, setGoalsSheet] = useState(false);
+  const [detail, setDetail] = useState(false);
   const [prefill, setPrefill] = useState<FoodPrefill | null>(null);
   const date = today();
 
@@ -110,7 +112,7 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
         </View>
       </View>
 
-      <View style={styles.card}>
+      <Pressable style={styles.card} onPress={() => setDetail(true)}>
         <View style={styles.cardHead}>
           <Text style={styles.cardHeadTxt}>Objetivos del día{custom ? ' · a tu gusto' : ''}</Text>
           <Pressable hitSlop={8} onPress={() => setGoalsSheet(true)}>
@@ -122,7 +124,8 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
         <MacroBar label="Carbos" consumed={r0(consumed.carbs)} target={goals?.carbs ?? null} color={c.info} unit="g" />
         <MacroBar label="Grasa" consumed={r0(consumed.fat)} target={goals?.fat ?? null} color={c.warn} unit="g" />
         {!goals && <Text style={styles.noTarget}>Completa tu perfil y peso, o pulsa "Editar" para fijar tus objetivos a mano.</Text>}
-      </View>
+        <Text style={styles.detailHint}>Toca para ver el detalle ›</Text>
+      </Pressable>
 
       {foods.length === 0 ? (
         <Text style={styles.empty}>Aún no has registrado nada hoy.</Text>
@@ -150,6 +153,7 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
         isCustom={custom != null}
         onClose={() => { setGoalsSheet(false); load(); }}
       />
+      <DayDetailSheet visible={detail} consumed={consumed} goals={goals} foods={foods} onClose={() => setDetail(false)} />
     </View>
   );
 }
@@ -187,6 +191,7 @@ const makeStyles = (c: Theme) =>
     cardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     cardHeadTxt: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700' },
     editTxt: { color: c.accent, fontSize: 13, fontWeight: '700' },
+    detailHint: { color: c.accent, fontSize: 12, fontWeight: '700', textAlign: 'center', marginTop: 2 },
     bar: {},
     barTop: { flexDirection: 'row', justifyContent: 'space-between' },
     barLbl: { color: c.textMuted, fontSize: 12 },
