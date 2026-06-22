@@ -143,7 +143,7 @@ const makeStyles = (c: Theme) =>
     subBox: { marginTop: 8, marginLeft: 2, paddingLeft: 12, borderLeftWidth: 2, gap: 4 },
     subRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     subLbl: { color: c.textMuted, fontSize: 13 },
-    subVal: { color: c.text, fontSize: 13, fontWeight: '700' },
+    subVal: { color: c.accent, fontSize: 13, fontWeight: '700' },
     section: { color: c.textMuted, fontSize: 11, textTransform: 'uppercase', fontWeight: '700', marginTop: 6, marginBottom: 8 },
     split: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: c.surface, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, padding: 12 },
     splitItem: { fontSize: 13, fontWeight: '800' },
