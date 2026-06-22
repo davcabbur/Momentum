@@ -42,7 +42,10 @@ export function ComidaHoy({ reloadNonce }: { reloadNonce?: number }) {
   async function onScanned(barcode: string) {
     setScanner(false);
     let product = await getCachedProduct(barcode);
-    if (!product) {
+    // Si no está en caché, o está pero sin el detalle (azúcares/fibra/saturadas),
+    // vuelve a consultar Open Food Facts para enriquecerlo y actualiza la caché.
+    const noDetail = !!product && product.per100.sugars == null && product.per100.fiber == null && product.per100.satFat == null;
+    if (!product || noDetail) {
       const off = await fetchProduct(barcode);
       if (off) {
         await cacheProduct(barcode, off.name, off.per100);
