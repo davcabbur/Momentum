@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { listDayExercises, type DayExercise } from '@/db/routine-repo';
@@ -57,15 +57,34 @@ export function SessionScreen({ dayId, dayName, onBack, locked = false }: Props)
   const total = exercises.length;
   const done = exercises.filter((e) => (counts[e.exercise.id] ?? 0) > 0).length;
   const pct = total > 0 ? (done / total) * 100 : 0;
+  const hasSets = done > 0;
+
+  // Salir para elegir otro entreno. Si ya hay series registradas, confirma (se conservan).
+  function exitToChange() {
+    if (hasSets) {
+      Alert.alert('Cambiar de entreno', 'Lo que has registrado se conserva. ¿Salir de este entreno?', [
+        { text: 'Seguir', style: 'cancel' },
+        { text: 'Salir', onPress: onBack },
+      ]);
+    } else {
+      onBack();
+    }
+  }
 
   return (
     <ScrollView ref={scrollRef} style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      {!locked && (
+      {locked ? (
+        <View style={styles.topRow}>
+          <Pressable onPress={exitToChange} hitSlop={8}>
+            <Text style={styles.back}>‹ Cambiar entreno</Text>
+          </Pressable>
+          <Text style={styles.live}>● En curso</Text>
+        </View>
+      ) : (
         <Pressable onPress={onBack} hitSlop={8}>
           <Text style={styles.back}>‹ Volver</Text>
         </Pressable>
       )}
-      {locked && <Text style={styles.live}>● Entreno en curso</Text>}
       <Text style={styles.h1}>{dayName}</Text>
 
       {total > 0 && (
@@ -154,6 +173,7 @@ const makeStyles = (c: Theme) =>
     screen: { flex: 1, backgroundColor: c.surface },
     content: { padding: 14, paddingBottom: 28, gap: 10 },
     back: { color: c.accent, fontWeight: '700' },
+    topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     live: { color: c.good, fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.3 },
     h1: { color: c.text, fontSize: 22, fontWeight: '800' },
     progress: { gap: 6 },
