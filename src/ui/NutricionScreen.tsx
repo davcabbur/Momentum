@@ -8,14 +8,18 @@ import { addDays, daysBetween } from '@/bodyweight/goal';
 import { computeTrend, trendSlopePerWeek } from '@/bodyweight/trend';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { getGoal, getProfile, listWeights } from '@/db/bodyweight-repo';
-import { cacheProduct, getCachedProduct, intakeByDay } from '@/db/food-repo';
+import { cacheProduct, getCachedProduct, intakeByDay, listFoodEntries } from '@/db/food-repo';
+import { workingSetsOn } from '@/db/workout-repo';
 import { getCustomMacros } from '@/nutrition/custom-targets';
 import { estimateRealTdee } from '@/nutrition/tdee-estimate';
 import { liveKcalPlan, proteinTarget, type LiveKcalPlan } from '@/nutrition/kcal';
+import { macroTargets, sumMacros, type FoodTotals, type Macros } from '@/nutrition/macros';
 import { fetchProduct } from '@/nutrition/openfoodfacts';
+import { estimateWorkoutKcal } from '@/training/energy';
 import { dietBreakAdvice } from '@/training/intelligence';
 import { AddFoodFlow, type InitialProduct } from '@/ui/AddFoodFlow';
 import { ComidaHoy } from '@/ui/ComidaHoy';
+import { KcalDashboard } from '@/ui/KcalDashboard';
 import { Loading } from '@/ui/Loading';
 import { ScannerSheet } from '@/ui/ScannerSheet';
 import { useRefresh } from '@/ui/useRefresh';
@@ -49,6 +53,9 @@ interface State {
   realTdee: number | null; // gasto real estimado por ingesta vs cambio de peso
   missing: string | null; // qué falta para poder calcular
   customKcal: number | null; // objetivo de kcal fijado a mano por el usuario
+  goals: Macros | null; // objetivos del día (kcal + macros) para el dashboard
+  consumed: FoodTotals; // lo comido hoy
+  burned: number; // kcal estimadas quemadas en el entreno de hoy
 }
 
 export function NutricionScreen() {
@@ -110,7 +117,35 @@ export function NutricionScreen() {
     }
 
     const cm = await getCustomMacros();
-    setS({ plan, protein, stage: prof?.stage ?? null, hasGoal: goal != null && goal.targetDate != null, trendKg, dietBreak, realTdee, missing, customKcal: cm?.kcal ?? null });
+    const hasGoal = goal != null && goal.targetDate != null;
+
+    // Objetivos del día (kcal + macros): mismos que en "Objetivos del día", personalizados mandan.
+    let autoGoals: Macros | null = null;
+    if (plan && trendKg != null && prof) {
+      const kcalTarget = hasGoal ? plan.adjustedKcal ?? plan.targetKcal : plan.tdee;
+      autoGoals = macroTargets(kcalTarget, trendKg, prof.stage ?? 'normocalorica');
+    }
+    const goals = cm ?? autoGoals;
+
+    // Lo comido hoy y las kcal estimadas del entreno de hoy.
+    const consumed = sumMacros(await listFoodEntries(today()));
+    const workingSets = await workingSetsOn(today());
+    const burned = estimateWorkoutKcal({ workingSets, bodyweightKg: trendKg ?? 0 });
+
+    setS({
+      plan,
+      protein,
+      stage: prof?.stage ?? null,
+      hasGoal,
+      trendKg,
+      dietBreak,
+      realTdee,
+      missing,
+      customKcal: cm?.kcal ?? null,
+      goals,
+      consumed,
+      burned,
+    });
   }, []);
 
   useFocusEffect(
@@ -173,6 +208,17 @@ export function NutricionScreen() {
       <ScrollView style={styles.screen} contentContainerStyle={styles.content} refreshControl={control}>
       <Text style={styles.h1}>Nutrición</Text>
       <Text style={styles.intro}>Tus calorías guía, calculadas con tu tendencia de peso (no con el dato de un día).</Text>
+
+      {s.goals && (
+        <KcalDashboard
+          goalKcal={s.goals.kcal}
+          foodKcal={s.consumed.kcal}
+          burnedKcal={s.burned}
+          protein={{ goal: s.goals.protein, consumed: s.consumed.protein }}
+          carbs={{ goal: s.goals.carbs, consumed: s.consumed.carbs }}
+          fat={{ goal: s.goals.fat, consumed: s.consumed.fat }}
+        />
+      )}
 
       <ComidaHoy reloadNonce={nonce + foodReload} />
 
@@ -254,12 +300,12 @@ export function NutricionScreen() {
         <Pressable style={styles.menuBackdrop} onPress={() => setFabOpen(false)}>
           <View style={[styles.menu, { bottom: insets.bottom + 86, right: 18 }]}>
             <Pressable style={styles.menuItem} onPress={() => { setFabOpen(false); setScanner(true); }}>
-              <Ionicons name="barcode-outline" size={20} color={c.accent} />
+              <Ionicons name="barcode-outline" size={26} color={c.accent} />
               <Text style={styles.menuTxt}>Escanear</Text>
             </Pressable>
             <View style={styles.menuSep} />
             <Pressable style={styles.menuItem} onPress={() => { setFabOpen(false); setInitialProduct(null); setAddFlow(true); }}>
-              <Ionicons name="restaurant-outline" size={20} color={c.accent} />
+              <Ionicons name="restaurant-outline" size={26} color={c.accent} />
               <Text style={styles.menuTxt}>Alimento</Text>
             </Pressable>
           </View>
@@ -303,9 +349,9 @@ const makeStyles = (c: Theme) =>
       elevation: 8,
     },
     menuBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: '#0006' },
-    menu: { position: 'absolute', backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, overflow: 'hidden', minWidth: 180 },
-    menuItem: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 14, paddingHorizontal: 16 },
-    menuTxt: { color: c.text, fontSize: 15, fontWeight: '700' },
+    menu: { position: 'absolute', backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 16, overflow: 'hidden', minWidth: 230 },
+    menuItem: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 20, paddingHorizontal: 22 },
+    menuTxt: { color: c.text, fontSize: 18, fontWeight: '700' },
     menuSep: { height: 1, backgroundColor: c.cardBorder },
     h1: { color: c.text, fontSize: 20, fontWeight: '800' },
     intro: { color: c.textMuted, fontSize: 13, marginBottom: 4 },

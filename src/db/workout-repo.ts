@@ -142,6 +142,16 @@ export async function listSessions(limit = 60): Promise<SessionSummary[]> {
   return [...byId.values()].slice(0, limit);
 }
 
+/** Nº de series de trabajo (sin calentamiento) registradas en una fecha. */
+export async function workingSetsOn(date: string): Promise<number> {
+  const rows = await db
+    .select({ setType: setLog.setType })
+    .from(setLog)
+    .innerJoin(workoutSession, eq(setLog.sessionId, workoutSession.id))
+    .where(eq(workoutSession.date, date));
+  return rows.filter((r) => r.setType !== 'warmup').length;
+}
+
 /** Fecha (YYYY-MM-DD) de la sesión más reciente, o null si no hay ninguna. */
 export async function lastSessionDate(): Promise<string | null> {
   const rows = await db
