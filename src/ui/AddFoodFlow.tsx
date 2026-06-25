@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { addFoodEntry, listKnownFoods, type KnownFood } from '@/db/food-repo';
@@ -143,20 +143,25 @@ export function AddFoodFlow({ visible, date, initial, onClose, onAdded }: Props)
 
   async function add() {
     if (!canSave) return;
-    await addFoodEntry({
-      date,
-      name: name.trim(),
-      grams: g,
-      kcal: portion.kcal,
-      protein: portion.protein,
-      carbs: portion.carbs,
-      fat: portion.fat,
-      sugars: portion.sugars,
-      fiber: portion.fiber,
-      satFat: portion.satFat,
-      barcode,
-    });
-    onAdded();
+    try {
+      await addFoodEntry({
+        date,
+        name: name.trim(),
+        grams: g,
+        kcal: portion.kcal,
+        protein: portion.protein,
+        carbs: portion.carbs,
+        fat: portion.fat,
+        sugars: portion.sugars,
+        fiber: portion.fiber,
+        satFat: portion.satFat,
+        barcode,
+      });
+      onAdded();
+    } catch (e) {
+      // No fallar en silencio: si el guardado peta, el usuario debe enterarse.
+      Alert.alert('No se pudo guardar', e instanceof Error ? e.message : String(e));
+    }
   }
 
   return (
