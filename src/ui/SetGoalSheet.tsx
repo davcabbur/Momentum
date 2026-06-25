@@ -3,7 +3,7 @@ import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-nativ
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { formatDate, parseDmy } from '@/bodyweight/format';
-import { addDays } from '@/bodyweight/goal';
+import { addDays, estimateTargetDate } from '@/bodyweight/goal';
 import { clearGoal, setGoal } from '@/db/bodyweight-repo';
 import { DateField } from '@/ui/DateField';
 import { useThemedStyles, type Theme } from '@/ui/theme';
@@ -35,6 +35,19 @@ export function SetGoalSheet({ visible, initialTargetKg, initialTargetDate, star
     }
   }, [visible, initialTargetKg, initialTargetDate]);
 
+  // Fecha que el cálculo automático propondría para el peso objetivo actual.
+  const targetKg = parseFloat(value.replace(',', '.'));
+  const autoIso =
+    !Number.isNaN(targetKg) && targetKg > 0
+      ? estimateTargetDate({ initialKg: startKg, targetKg, startDate })
+      : null;
+  // Si la fecha actual ya coincide con la automática, no hace falta ofrecer "volver a la automática".
+  const isAuto = autoIso != null && (parseDmy(dateStr) ?? '') === autoIso;
+
+  function useAutoDate() {
+    if (autoIso) setDateStr(formatDate(autoIso));
+  }
+
   async function save() {
     const kg = parseFloat(value.replace(',', '.'));
     const targetIso = parseDmy(dateStr) ?? addDays(startDate, 84);
@@ -59,8 +72,20 @@ export function SetGoalSheet({ visible, initialTargetKg, initialTargetDate, star
           </Text>
           <Text style={styles.label}>Peso objetivo (kg)</Text>
           <TextInput value={value} onChangeText={setValue} keyboardType="decimal-pad" selectTextOnFocus style={styles.input} />
-          <Text style={styles.label}>Fecha objetivo</Text>
+          <View style={styles.dateHead}>
+            <Text style={styles.label}>Fecha objetivo</Text>
+            {autoIso && !isAuto && (
+              <Pressable hitSlop={8} onPress={useAutoDate}>
+                <Text style={styles.autoTxt}>↺ Cálculo automático</Text>
+              </Pressable>
+            )}
+          </View>
           <DateField value={dateStr} onChange={setDateStr} />
+          {autoIso && (
+            <Text style={styles.autoHint}>
+              {isAuto ? 'Fecha calculada a tu ritmo saludable.' : `A ritmo saludable saldría el ${formatDate(autoIso)}.`}
+            </Text>
+          )}
           <Pressable style={styles.save} onPress={save}>
             <Text style={styles.saveTxt}>Guardar objetivo</Text>
           </Pressable>
@@ -88,6 +113,9 @@ const makeStyles = (c: Theme) =>
     title: { color: c.text, fontSize: 16, fontWeight: '700' },
     hint: { color: c.textMuted, fontSize: 12, marginBottom: 4 },
     label: { color: c.text, fontSize: 13, fontWeight: '600', marginTop: 6 },
+    dateHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 6 },
+    autoTxt: { color: c.accent, fontSize: 13, fontWeight: '700' },
+    autoHint: { color: c.textMuted, fontSize: 12 },
     input: {
       color: c.text,
       fontSize: 22,
