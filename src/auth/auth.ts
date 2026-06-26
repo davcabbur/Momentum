@@ -19,6 +19,30 @@ export async function signOut(): Promise<void> {
   await supabase.auth.signOut();
 }
 
+/**
+ * Borra la cuenta del usuario y todos sus datos en la nube.
+ * - Intenta eliminar el propio usuario de Auth vía la Edge Function `delete-account`
+ *   (necesita la service_role en el servidor; ver supabase/functions/delete-account).
+ * - Pase lo que pase, borra su copia en `user_snapshot` (las políticas RLS permiten
+ *   que cada usuario borre su propia fila), para que no queden datos suyos en la nube.
+ * El borrado de los datos LOCALES y el cierre de sesión se hacen aparte, en la UI.
+ */
+export async function deleteAccount(): Promise<{ error: Error | null }> {
+  const { data } = await supabase.auth.getUser();
+  const userId = data.user?.id;
+  let fnError: Error | null = null;
+  try {
+    const { error } = await supabase.functions.invoke('delete-account');
+    if (error) fnError = error as Error;
+  } catch (e) {
+    fnError = e as Error;
+  }
+  if (userId) {
+    await supabase.from('user_snapshot').delete().eq('user_id', userId);
+  }
+  return { error: fnError };
+}
+
 export async function resetPassword(email: string): Promise<{ error: Error | null }> {
   const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
   return { error: (error as Error | null) ?? null };

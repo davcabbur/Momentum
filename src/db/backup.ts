@@ -33,6 +33,15 @@ export async function exportData(): Promise<string> {
   return JSON.stringify(backup);
 }
 
+/** Borra TODOS los datos locales del usuario (todas las tablas). Irreversible. */
+export async function clearAllData(): Promise<void> {
+  await sqlite.withTransactionAsync(async () => {
+    for (const t of TABLES) {
+      await sqlite.runAsync(`DELETE FROM ${t}`);
+    }
+  });
+}
+
 /**
  * Restaura una copia: reemplaza el contenido de cada tabla por el del archivo.
  * Es destructivo (borra lo actual). Devuelve cuántas filas se importaron.

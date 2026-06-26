@@ -1,14 +1,14 @@
 import { useCallback, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { useSession } from '@/auth/AuthProvider';
-import { signOut } from '@/auth/auth';
+import { deleteAccount, signOut } from '@/auth/auth';
 import { addDays } from '@/bodyweight/goal';
 import { computeTrend } from '@/bodyweight/trend';
 import { getGoal, getProfile, listWeights, setLevel, setProfile } from '@/db/bodyweight-repo';
-import { exportData, importData } from '@/db/backup';
+import { clearAllData, exportData, importData } from '@/db/backup';
 import { pushSnapshot } from '@/db/cloud-sync';
 import { seedExercises } from '@/db/exercise-repo';
 import { weightGoal } from '@/db/schema';
@@ -46,6 +46,9 @@ const ACTIVITIES = [
   { key: 'very_high', label: 'Muy alto' },
 ];
 const LEVELS = ['principiante', 'intermedio', 'avanzado'];
+
+// Política de privacidad (página estática servida con GitHub Pages desde /docs).
+const PRIVACY_URL = 'https://davcabbur.github.io/Momentum/privacy.html';
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -120,6 +123,29 @@ export function AjustesScreen() {
       /* sin conexión: cerramos igualmente */
     }
     await signOut();
+  }
+
+  function confirmDeleteAccount() {
+    Alert.alert(
+      'Borrar cuenta',
+      'Se borrarán para siempre tu cuenta y todos tus datos, tanto en este móvil como en la nube (peso, entrenos, comidas y ajustes). Esto no se puede deshacer.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Borrar cuenta',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAccount(); // borra los datos en la nube y el usuario de Auth
+              await clearAllData(); // borra la base de datos local
+              await signOut(); // vuelve a la pantalla de inicio de sesión
+            } catch (e) {
+              Alert.alert('No se pudo borrar', String((e as Error)?.message ?? e));
+            }
+          },
+        },
+      ],
+    );
   }
 
   async function saveProfile() {
@@ -302,6 +328,9 @@ export function AjustesScreen() {
             <Pressable style={styles.secondary} onPress={cerrarSesion}>
               <Text style={styles.secondaryTxt}>Cerrar sesión</Text>
             </Pressable>
+            <Pressable style={styles.danger} onPress={confirmDeleteAccount}>
+              <Text style={styles.dangerTxt}>Borrar cuenta</Text>
+            </Pressable>
           </View>
         </>
       )}
@@ -360,6 +389,13 @@ export function AjustesScreen() {
         <Ionicons name="chevron-forward" size={18} color={c.textMuted} />
       </Pressable>
 
+      {/* Legal */}
+      <Text style={styles.section}>Legal</Text>
+      <Pressable style={styles.linkRow} onPress={() => Linking.openURL(PRIVACY_URL)}>
+        <Text style={styles.linkTxt}>🔒 Política de privacidad</Text>
+        <Ionicons name="open-outline" size={18} color={c.textMuted} />
+      </Pressable>
+
       <SetGoalSheet
         visible={goalSheet}
         initialTargetKg={goal?.targetKg ?? Math.round(trendKg - 4)}
@@ -401,6 +437,8 @@ const makeStyles = (c: Theme) =>
   saveTxt: { color: '#fff', fontWeight: '800' },
   secondary: { borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
   secondaryTxt: { color: c.accent, fontWeight: '700' },
+  danger: { borderColor: c.bad, borderWidth: 1, borderRadius: 12, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
+  dangerTxt: { color: c.bad, fontWeight: '700' },
   note: { color: c.textMuted, fontSize: 12 },
   switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   switchLbl: { color: c.text, fontSize: 15, fontWeight: '600' },
