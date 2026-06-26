@@ -23,7 +23,7 @@ Primer y único usuario por ahora es el autor; posible salida a mercado más ade
   - Cliente en `src/lib/supabase.ts`. La **anon key es pública y segura** (la protege RLS); **la `service_role` NUNCA va en la app**.
   - Sincronización por *snapshot*: la BD local se sube/baja entera como JSON a la tabla `user_snapshot` (una fila por usuario, RLS propia). Ver `src/db/cloud-sync.ts` y `src/db/use-reconcile.ts` (reconcilia solo en `SIGNED_IN`).
   - **Edge Function `delete-account`** (`supabase/functions/delete-account/`): borra al usuario de Auth + su `user_snapshot` con la `service_role` del servidor. Verify JWT activado. Desplegada desde el dashboard; re-desplegar con `supabase functions deploy delete-account` (requiere `supabase link`). Código Deno: excluido del `tsc` de la app vía `tsconfig.json`.
-- **Login obligatorio.** Google OAuth aún en *modo prueba* (solo correos de test) hasta publicar la pantalla de consentimiento.
+- **Login obligatorio.** Google OAuth en **producción**: cualquier cuenta de Google puede entrar (ya no hay límite de usuarios de prueba). Scopes básicos (email+perfil), sin verificación de Google; puede salir un aviso de "app no verificada", es normal.
 - **Política de privacidad**: `docs/privacy.html`, servida por **GitHub Pages** (rama `main`, carpeta `/docs`) en `https://davcabbur.github.io/Momentum/privacy.html`. El repo es **público** (requisito de Pages gratis). La app enlaza esa URL (`PRIVACY_URL` en `AjustesScreen`); cambios se publican solos al hacer push a `main`.
 - **Salida a Play Store** en preparación: ver memoria `play-store-launch` para el estado y los pendientes externos (desplegar función, OAuth, closed testing, Data Safety).
 
