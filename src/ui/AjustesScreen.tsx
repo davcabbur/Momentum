@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { useFocusEffect, useRouter } from 'expo-router';
+import * as Updates from 'expo-updates';
 import { Alert, Linking, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 
 import { useSession } from '@/auth/AuthProvider';
@@ -49,6 +51,29 @@ const LEVELS = ['principiante', 'intermedio', 'avanzado'];
 
 // Política de privacidad (página estática servida con GitHub Pages desde /docs).
 const PRIVACY_URL = 'https://davcabbur.github.io/Momentum/privacy.html';
+
+/**
+ * Identifica la build/actualización en curso. La versión cambia al recompilar;
+ * la actualización (id + fecha) cambia con cada `eas update` y cada build, así que
+ * basta mirar aquí para saber qué cambio tienes instalado.
+ */
+function buildInfo(): { version: string; update: string; channel: string | null } {
+  const v = Constants.expoConfig?.version ?? '—';
+  const code = Constants.expoConfig?.android?.versionCode;
+  const version = `Momentum ${v}${code != null ? ` · build ${code}` : ''}`;
+
+  const when = Updates.createdAt
+    ? `${Updates.createdAt.toLocaleDateString('es-ES')} ${Updates.createdAt.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`
+    : null;
+  let update: string;
+  if (Updates.isEmbeddedLaunch) {
+    update = `Incrustada en la build${when ? ` · ${when}` : ''}`;
+  } else {
+    const id = Updates.updateId ? Updates.updateId.slice(0, 8) : '—';
+    update = `OTA ${id}${when ? ` · ${when}` : ''}`;
+  }
+  return { version, update, channel: Updates.channel ?? null };
+}
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -396,6 +421,14 @@ export function AjustesScreen() {
         <Ionicons name="open-outline" size={18} color={c.textMuted} />
       </Pressable>
 
+      {/* Acerca de */}
+      <Text style={styles.section}>Acerca de</Text>
+      <View style={styles.card}>
+        <Text style={styles.aboutMain}>{buildInfo().version}</Text>
+        <Text style={styles.aboutSub}>{buildInfo().update}</Text>
+        {buildInfo().channel && <Text style={styles.aboutSub}>Canal: {buildInfo().channel}</Text>}
+      </View>
+
       <SetGoalSheet
         visible={goalSheet}
         initialTargetKg={goal?.targetKg ?? Math.round(trendKg - 4)}
@@ -448,4 +481,6 @@ const makeStyles = (c: Theme) =>
   hourVal: { color: c.text, fontSize: 18, fontWeight: '800', minWidth: 64, textAlign: 'center' },
   linkRow: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   linkTxt: { color: c.text, fontSize: 15, fontWeight: '600' },
+  aboutMain: { color: c.text, fontSize: 14, fontWeight: '700' },
+  aboutSub: { color: c.textMuted, fontSize: 12 },
 });
