@@ -56,7 +56,12 @@
           "cameraPermission": "Momentum usa la cámara para escanear el código de barras de los alimentos."
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "react-native-health-connect",
+      [
+        "expo-build-properties",
+        { "android": { "minSdkVersion": 26 } }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
