@@ -11,12 +11,13 @@ import { useTheme, useThemedStyles, type Theme } from './theme';
 import { useRefresh } from './useRefresh';
 import { WeightDetail } from './WeightDetail';
 import { WeightHistory } from './WeightHistory';
+import { ActivityTrend } from './ActivityTrend';
 
 function fmt(n: number): string {
   return String(Math.round(n * 10) / 10).replace('.', ',');
 }
 
-type Tab = 'fuerza' | 'peso';
+type Tab = 'fuerza' | 'peso' | 'actividad';
 
 export function ProgresoScreen() {
   const router = useRouter();
@@ -70,6 +71,10 @@ export function ProgresoScreen() {
         <Pressable style={[styles.tab, tab === 'peso' && styles.tabOn]} onPress={() => setTab('peso')}>
           <Ionicons name="trending-up-outline" size={16} color={tab === 'peso' ? c.text : c.textMuted} />
           <Text style={[styles.tabTxt, tab === 'peso' && styles.tabTxtOn]}>Peso corporal</Text>
+        </Pressable>
+        <Pressable style={[styles.tab, tab === 'actividad' && styles.tabOn]} onPress={() => setTab('actividad')}>
+          <Ionicons name="walk-outline" size={16} color={tab === 'actividad' ? c.text : c.textMuted} />
+          <Text style={[styles.tabTxt, tab === 'actividad' && styles.tabTxtOn]}>Actividad</Text>
         </Pressable>
       </View>
 
@@ -141,11 +146,13 @@ export function ProgresoScreen() {
             );
           })}
         </>
-      ) : (
+      ) : tab === 'peso' ? (
         <>
           <WeightDetail reloadNonce={nonce} />
           <WeightHistory reloadNonce={nonce} />
         </>
+      ) : (
+        <ActivityTrend reloadNonce={nonce} />
       )}
     </ScrollView>
   );
