@@ -51,6 +51,14 @@ function kgTxt(w: number): string {
   return String(w).replace('.', ',');
 }
 
+/** Serie de trabajo más pesada de una sesión (para progresar desde la última vez). */
+function topWorkSet(sets: SetLog[] | undefined): { weightKg: number; reps: number; rir: number | null } | null {
+  const work = (sets ?? []).filter((s) => s.setType !== 'warmup');
+  if (work.length === 0) return null;
+  const top = work.reduce((a, b) => (b.weightKg > a.weightKg ? b : a));
+  return { weightKg: top.weightKg, reps: top.reps, rir: top.rir };
+}
+
 interface Props {
   visible: boolean;
   sessionId: number | null;
@@ -78,6 +86,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
   const [target, setTarget] = useState('');
   const [schemeSets, setSchemeSets] = useState(3);
   const [schemeRep, setSchemeRep] = useState({ repMin: 8, repMax: 12 });
+  const [schemeRir, setSchemeRir] = useState(2);
   const [hint, setHint] = useState<ProgressionHint | null>(null);
   const [editing, setEditing] = useState<Editing | null>(null);
   const [rec, setRec] = useState<SetRecommendation | null>(null);
@@ -116,6 +125,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
     const rir = sc.rirMin === sc.rirMax ? `${sc.rirMin}` : `${sc.rirMin}–${sc.rirMax}`;
     setSchemeSets(setsN);
     setSchemeRep({ repMin: lo, repMax: hi });
+    setSchemeRir(sc.rirMin);
     setTarget(`${setsN}×${lo}–${hi} · RIR ${rir}`);
     setRestGoal(recommendedRestSeconds(hi));
     const h = lp ? progressionHint(lp.sets, { sets: setsN, repMin: lo, repMax: hi }) : null;
@@ -134,16 +144,14 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
     // Serie 1 ya abierta para anotar al entrar, con la recomendación (carga progresiva).
     if (fetched.length === 0) {
       const base = bwLoaded ? bw ?? 20 : 20;
-      const lastWork = (lp?.sets ?? []).filter((s) => s.setType !== 'warmup');
-      const lastTop = lastWork.length ? Math.max(...lastWork.map((s) => s.weightKg)) : null;
-      const topW = h?.ready && h.suggestedWeightKg != null ? h.suggestedWeightKg : lastTop;
       const lastSame = lp?.sets.find((s) => s.setNumber === 1) ?? null;
       const r = recommendSet({
         setNumber: 1,
         isCompound,
         scheme: { sets: setsN, repMin: lo, repMax: hi },
-        topSetWeightKg: topW,
-        lastSameWeightKg: lastSame?.weightKg ?? null,
+        targetRir: sc.rirMin,
+        todayTopWeightKg: null,
+        lastWorkTop: topWorkSet(lp?.sets),
         bodyweightLoaded: bwLoaded,
       });
       setRec(r);
@@ -227,31 +235,25 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
   function openNew() {
     const n = sets.length + 1;
     const lastSame = last?.sets.find((s) => s.setNumber === n) ?? null;
-    const todayPrev = sets[sets.length - 1];
     const base = bwLoaded ? bodyweight ?? 20 : 20;
-    // Top set de referencia: el más pesado de hoy si ya lo hiciste; si no, la progresión / la última vez.
+    // El peso de trabajo de HOY manda (lo más pesado ya hecho): el back-off sale de ahí
+    // y nunca se sube a media sesión. Si aún no hay nada hoy, progresa desde la última vez.
     const todayWork = sets.filter((s) => s.setType !== 'warmup');
     const todayTop = todayWork.length ? Math.max(...todayWork.map((s) => s.weightKg)) : null;
-    const lastWork = (last?.sets ?? []).filter((s) => s.setType !== 'warmup');
-    const lastTop = lastWork.length ? Math.max(...lastWork.map((s) => s.weightKg)) : null;
-    const topW = todayTop ?? (hint?.ready && hint.suggestedWeightKg != null ? hint.suggestedWeightKg : lastTop);
     const r = recommendSet({
       setNumber: n,
       isCompound,
       scheme: { sets: schemeSets, repMin: schemeRep.repMin, repMax: schemeRep.repMax },
-      topSetWeightKg: topW,
-      lastSameWeightKg: lastSame?.weightKg ?? null,
+      targetRir: schemeRir,
+      todayTopWeightKg: todayTop,
+      lastWorkTop: topWorkSet(last?.sets),
       bodyweightLoaded: bwLoaded,
     });
-    // Continúa con lo de la serie anterior de ESTA sesión (tiene en cuenta lo ya hecho hoy).
-    const continueW = todayPrev?.weightKg ?? null;
-    const continueReps = todayPrev?.reps ?? null;
-    const recShown = continueW != null ? { ...r, weightKg: continueW } : r;
-    setRec(recShown);
+    setRec(r);
     setEditing({
       setNumber: n,
-      weightKg: continueW ?? r.weightKg ?? base,
-      reps: continueReps ?? lastSame?.reps ?? r.repMin,
+      weightKg: r.weightKg ?? base,
+      reps: lastSame?.reps ?? r.repMin,
       rir: 2,
       setType: r.setType,
       exists: false,
