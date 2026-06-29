@@ -8,6 +8,7 @@ import { Loading } from '@/ui/Loading';
 import { NextWorkoutCard } from '@/ui/NextWorkoutCard';
 import { Onboarding } from '@/ui/Onboarding';
 import { StrengthSummaryCard } from '@/ui/StrengthSummaryCard';
+import { ActivityCard } from '@/ui/ActivityCard';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { useRefresh } from '@/ui/useRefresh';
 import { WeightSummaryCard } from '@/ui/WeightSummaryCard';
@@ -46,6 +47,7 @@ export function WeightScreen() {
       <NextWorkoutCard reloadNonce={nonce} />
       <StrengthSummaryCard reloadNonce={nonce} />
       <WeightSummaryCard reloadNonce={nonce} />
+      <ActivityCard reloadNonce={nonce} />
     </ScrollView>
   );
 }
