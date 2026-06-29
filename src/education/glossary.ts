@@ -166,4 +166,9 @@ export const GLOSSARY: GlossaryTerm[] = [
     title: 'Supinación',
     body: 'Girar la palma hacia arriba; activa el bíceps. En los curls ayuda pensar en "empujar con los meñiques". Agarre neutro (martillo) trabaja más el braquial.',
   },
+  {
+    key: 'neat',
+    title: 'NEAT (actividad diaria)',
+    body: 'Todo lo que te mueves fuera del entreno: andar, escaleras, recados. Es la palanca más controlable del gasto diario y la que más suma para perder grasa. Zona 2 y HIIT valen los dos: elige el que mantengas. No hace falta machacarse a cardio. Tu actividad ya está incluida en tu mantenimiento, por eso los pasos no se suman aparte a tus kcal.',
+  },
 ];
