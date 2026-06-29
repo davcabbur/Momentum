@@ -52,5 +52,5 @@ export async function readDailySteps(fromIso: string, toIso: string): Promise<Da
     const day = r.startTime.slice(0, 10);
     byDay.set(day, (byDay.get(day) ?? 0) + (r.count ?? 0));
   }
-  return [...byDay.entries()].map(([date, steps]) => ({ date, steps })).sort((a, b) => a.date.localeCompare(b.date));
+  return [...byDay.entries()].map(([date, steps]) => ({ date, steps: Math.round(steps) })).sort((a, b) => a.date.localeCompare(b.date));
 }
