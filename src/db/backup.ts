@@ -14,6 +14,7 @@ const TABLES = [
   'food_entry',
   'app_setting',
   'food_product',
+  'activity_day',
 ];
 
 export interface Backup {

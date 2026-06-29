@@ -114,4 +114,12 @@ export const foodProduct = sqliteTable('food_product', {
   satFat100: real('sat_fat100'), // saturadas por 100 g (nullable)
 });
 
+/** Pasos por día (NEAT). Origen: Health Connect o manual. */
+export const activityDay = sqliteTable('activity_day', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  date: text('date').notNull(), // YYYY-MM-DD (único a nivel de app)
+  steps: integer('steps').notNull(),
+  source: text('source').notNull(), // 'health_connect' | 'manual'
+});
+
 // Nota de producto: no existe ningún campo de IMC, ni se calculará. Ver CLAUDE.md.
