@@ -149,6 +149,7 @@ export const EXERCISE_META: Record<string, ExMeta> = {
   'Jalón supino': { region: 'dorsal-bajo', equipment: 'cable', compound: true },
   'Dominadas asistidas': { region: 'vertical', equipment: 'machine', compound: true },
   'Remo Hammer': { region: 'horizontal', equipment: 'machine', compound: true },
+  'Remo Dorian': { region: 'dorsal-bajo', equipment: 'barbell', compound: true },
   'Encogimiento en máquina': { region: 'trapecio', equipment: 'machine', compound: false },
   'Curl con barra': { region: 'corta', equipment: 'barbell', compound: false },
   'Curl araña': { region: 'corta', equipment: 'dumbbell', compound: false },

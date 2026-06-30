@@ -142,6 +142,7 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Jalón supino': { howTo: ['Agarre supino a la anchura de hombros → más dorsal bajo y bíceps.', 'Baja la barra al pecho llevando los codos abajo, no con los brazos.', 'Controla la subida; saca pecho al final.'] },
   'Dominadas asistidas': { howTo: ['Máquina con contrapeso (más peso seleccionado = más ayuda).', 'Pecho hacia la barra, codos abajo y adentro; control.', 'Reduce la asistencia conforme progresas.'] },
   'Remo Hammer': { howTo: ['Máquina de discos con pecho apoyado; tira de los codos atrás.', 'Aprieta las escápulas; no encojas los hombros.', 'Varía el agarre (neutro/pronado) entre series.'] },
+  'Remo Dorian': { howTo: ['Barra con agarre supino (palmas arriba), torso a ~45°, lumbar neutra.', 'Lleva la barra al abdomen bajo con los codos pegados; algo de impulso controlado vale.', 'Negativa lenta; enfatiza el dorsal bajo.'] },
   'Encogimiento en máquina': { howTo: ['Sube los hombros recto, sin rotar.', 'Aprieta el trapecio arriba; baja con control.', 'Reps medias-altas; progresa de peso.'] },
   'Curl con barra': { howTo: ['De pie, supina; sube sin balancear (algo de impulso al inicio vale).', 'Baja con control (negativa).', 'Barra Z si molestan las muñecas.'] },
   'Curl araña': { howTo: ['Pecho apoyado en banco inclinado, brazos colgando al frente → cabeza corta.', 'Sube apretando arriba; codos quietos.', 'Tensión constante; bajada lenta.'] },

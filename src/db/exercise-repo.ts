@@ -129,6 +129,7 @@ const STARTER: { name: string; muscleGroup: string; pattern: string }[] = [
   { name: 'Jalón supino', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Dominadas asistidas', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Remo Hammer', muscleGroup: 'espalda', pattern: 'tiron' },
+  { name: 'Remo Dorian', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Encogimiento en máquina', muscleGroup: 'espalda', pattern: 'tiron' },
   { name: 'Curl con barra', muscleGroup: 'biceps', pattern: 'tiron' },
   { name: 'Curl araña', muscleGroup: 'biceps', pattern: 'tiron' },
