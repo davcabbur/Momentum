@@ -171,4 +171,9 @@ export const GLOSSARY: GlossaryTerm[] = [
     title: 'NEAT (actividad diaria)',
     body: 'Todo lo que te mueves fuera del entreno: andar, escaleras, recados. Es la palanca más controlable del gasto diario y la que más suma para perder grasa. Zona 2 y HIIT valen los dos: elige el que mantengas. No hace falta machacarse a cardio. Tu actividad ya está incluida en tu mantenimiento, por eso los pasos no se suman aparte a tus kcal.',
   },
+  {
+    key: 'recto-femoral',
+    title: 'Recto femoral (cuádriceps)',
+    body: 'De las 4 cabezas del cuádriceps, la del centro. Cruza la cadera y la rodilla, así que en las sentadillas (flexionas la cadera) se acorta por un lado mientras se estira por otro y recibe poco estímulo. Por eso, para un cuádriceps completo, combina un patrón sentadilla con un ejercicio de cadera fija (extensión de cuádriceps o sissy squat), reclinándote algo hacia atrás para estirarlo bien.',
+  },
 ];
