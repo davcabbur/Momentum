@@ -91,7 +91,15 @@ export function EntrenoScreen() {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} refreshControl={control}>
-      <Text style={styles.h1}>Entreno</Text>
+      <View style={styles.topBar}>
+        <Text style={styles.h1}>Entreno</Text>
+        {routineId != null && days.length > 0 && (
+          <Pressable style={styles.editTop} onPress={() => setView('builder')} hitSlop={8}>
+            <Ionicons name="create-outline" size={16} color={c.accent} />
+            <Text style={styles.editTopTxt}>Editar rutina</Text>
+          </Pressable>
+        )}
+      </View>
 
       {welcome && (
         <View style={styles.welcome}>
@@ -133,11 +141,6 @@ export function EntrenoScreen() {
             </Pressable>
           ))}
 
-          <Pressable style={styles.edit} onPress={() => setView('builder')}>
-            <Ionicons name="create-outline" size={16} color={c.textMuted} />
-            <Text style={styles.editTxt}>Editar rutina</Text>
-          </Pressable>
-
           <View style={styles.info}>
             <Ionicons name="information-circle-outline" size={18} color={c.info} />
             <Text style={styles.infoTxt}>
@@ -155,7 +158,10 @@ const makeStyles = (c: Theme) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: c.surface },
     content: { padding: 14, gap: 12 },
+    topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     h1: { color: c.text, fontSize: 22, fontWeight: '800' },
+    editTop: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    editTopTxt: { color: c.accent, fontSize: 13, fontWeight: '700' },
     welcome: { backgroundColor: c.infoSurface, borderRadius: 14, padding: 14 },
     welcomeTxt: { color: c.infoText, fontSize: 13, lineHeight: 19 },
     muted: { color: c.textMuted },
@@ -171,8 +177,6 @@ const makeStyles = (c: Theme) =>
     dayCard: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     dayName: { color: c.text, fontSize: 16, fontWeight: '700' },
     dayGo: { color: c.accent, fontWeight: '700' },
-    edit: { padding: 12, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6, marginTop: 4 },
-    editTxt: { color: c.textMuted },
     info: { flexDirection: 'row', gap: 8, backgroundColor: c.infoSurface, borderRadius: 12, padding: 12 },
     infoTxt: { color: c.infoText, fontSize: 12, lineHeight: 18, flex: 1 },
   });
