@@ -167,15 +167,23 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
         </>
       ) : (
         <>
-          <Text style={styles.hint}>Toca un ejercicio para ajustarlo (series/reps, mover o quitar).</Text>
+          <Text style={styles.hint}>Usa las flechas ↑/↓ para ordenar; toca un ejercicio para ajustarlo (series/reps) o quitarlo.</Text>
           {days.map((d) => (
             <View key={d.id} style={styles.dayBox}>
               <Text style={styles.dayName}>{d.name}</Text>
-              {(exByDay[d.id] ?? []).map((x) => (
+              {(exByDay[d.id] ?? []).map((x, i, arr) => (
                 <Pressable key={x.rdeId} style={styles.exRow} onPress={() => setMenuEx(x)}>
                   <View style={styles.exMain}>
                     <Text style={styles.exName}>{x.exercise.name}</Text>
                     <Text style={styles.exScheme}>{schemeText(x)}</Text>
+                  </View>
+                  <View style={styles.exArrows}>
+                    <Pressable hitSlop={6} disabled={i === 0} onPress={async () => { await moveDayExercise(x.rdeId, -1); load(); }}>
+                      <Ionicons name="chevron-up" size={22} color={i === 0 ? c.cardBorder : c.accent} />
+                    </Pressable>
+                    <Pressable hitSlop={6} disabled={i === arr.length - 1} onPress={async () => { await moveDayExercise(x.rdeId, 1); load(); }}>
+                      <Ionicons name="chevron-down" size={22} color={i === arr.length - 1 ? c.cardBorder : c.accent} />
+                    </Pressable>
                   </View>
                   <Ionicons name="ellipsis-horizontal" size={18} color={c.textMuted} />
                 </Pressable>
@@ -255,14 +263,6 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
               <Pressable style={styles.menuBtn} onPress={() => { setEditEx(menuEx); setMenuEx(null); }}>
                 <Text style={styles.menuBtnTxt}>Editar series/reps</Text>
               </Pressable>
-              <View style={styles.moveRow}>
-                <Pressable style={[styles.menuBtn, styles.moveBtn]} onPress={async () => { const id = menuEx.rdeId; setMenuEx(null); await moveDayExercise(id, -1); load(); }}>
-                  <Text style={styles.menuBtnTxt}>↑ Subir</Text>
-                </Pressable>
-                <Pressable style={[styles.menuBtn, styles.moveBtn]} onPress={async () => { const id = menuEx.rdeId; setMenuEx(null); await moveDayExercise(id, 1); load(); }}>
-                  <Text style={styles.menuBtnTxt}>↓ Bajar</Text>
-                </Pressable>
-              </View>
               <Pressable style={styles.menuBtn} onPress={async () => { const id = menuEx.rdeId; setMenuEx(null); await removeExerciseFromDay(id); load(); }}>
                 <Text style={[styles.menuBtnTxt, { color: c.bad }]}>Quitar ejercicio</Text>
               </Pressable>
@@ -309,6 +309,7 @@ const makeStyles = (c: Theme) =>
     exMain: { flex: 1 },
     exName: { color: c.text },
     exScheme: { color: c.accent, fontSize: 12, marginTop: 1 },
+    exArrows: { flexDirection: 'row', alignItems: 'center', gap: 10, marginRight: 10 },
     addEx: { paddingVertical: 8, alignItems: 'center', borderWidth: 1, borderColor: c.cardBorder, borderStyle: 'dashed', borderRadius: 10, marginTop: 4 },
     addExTxt: { color: c.accent, fontSize: 13, fontWeight: '600' },
     change: { padding: 12, alignItems: 'center', marginTop: 4 },
@@ -330,8 +331,6 @@ const makeStyles = (c: Theme) =>
     menuTitle: { color: c.text, fontSize: 16, fontWeight: '800', padding: 8 },
     menuBtn: { padding: 14, borderRadius: 10, backgroundColor: c.surface },
     menuBtnTxt: { color: c.text, fontSize: 15, fontWeight: '600' },
-    moveRow: { flexDirection: 'row', gap: 6 },
-    moveBtn: { flex: 1, alignItems: 'center' },
     menuCancel: { padding: 14, alignItems: 'center' },
     menuCancelTxt: { color: c.textMuted },
   });
