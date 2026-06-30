@@ -164,6 +164,15 @@ export const EXERCISE_META: Record<string, ExMeta> = {
   'Crunch en máquina': { region: 'recto', equipment: 'machine', compound: false },
   'Elevación de piernas colgado': { region: 'inferior', equipment: 'bodyweight', compound: false },
   'Plancha lateral': { region: 'oblicuos', equipment: 'bodyweight', compound: false },
+  // Ampliación 2
+  'Aperturas inclinadas': { region: 'superior', equipment: 'dumbbell', compound: false },
+  'Extensión tríceps polea agarre inverso': { region: 'lateral-media', equipment: 'cable', compound: false },
+  'Dominadas supinas': { region: 'vertical', equipment: 'bodyweight', compound: true },
+  'Curl femoral de pie': { region: 'isquios', equipment: 'machine', compound: false },
+  'Buenos días': { region: 'isquios', equipment: 'barbell', compound: true },
+  'Peso muerto con mancuernas': { region: 'isquios', equipment: 'dumbbell', compound: true },
+  'Crunch en polea': { region: 'recto', equipment: 'cable', compound: false },
+  'Paseo del granjero': { region: 'agarre', equipment: 'dumbbell', compound: false },
 };
 
 export function exerciseMeta(name: string): ExMeta | null {

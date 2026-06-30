@@ -157,6 +157,15 @@ export const EXERCISE_INFO: Record<string, ExerciseInfo> = {
   'Crunch en máquina': { howTo: ['Flexiona el tronco acercando costillas a caderas (no tires del cuello).', 'Aprieta el abdomen abajo; controla la vuelta.', 'Progresa con peso (sobrecarga, como cualquier músculo).'] },
   'Elevación de piernas colgado': { howTo: ['Colgado; sube curvando la pelvis (no solo flexión de cadera).', 'Sin balanceo; baja con control.', 'Rodillas flexionadas si no llegas con piernas rectas.'] },
   'Plancha lateral': { howTo: ['De lado, cuerpo recto, apoyado en antebrazo y pie.', 'Aprieta el oblicuo; no dejes caer la cadera.', 'Aguanta el tiempo objetivo por cada lado.'] },
+  // Ampliación 2
+  'Aperturas inclinadas': { howTo: ['Banco a ~30°; codos semiflexionados y fijos.', 'Abre hasta estirar el pecho superior (brazos algo por detrás).', 'Junta apretando, sin chocar las mancuernas.'] },
+  'Extensión tríceps polea agarre inverso': { howTo: ['Polea alta, agarre supino (palmas arriba); codos pegados al torso.', 'Extiende abajo y aprieta; muñecas firmes.', 'Menos peso, más aislamiento (cabezas lateral y media).'] },
+  'Dominadas supinas': { howTo: ['Agarre supino (palmas hacia ti) a la anchura de hombros.', 'Tira con la espalda y el bíceps; pecho a la barra, control.', 'Más bíceps que las pronas; progresa con lastre o reps.'] },
+  'Curl femoral de pie': { howTo: ['Una pierna; lleva el talón al glúteo flexionando la rodilla.', 'Sin balanceo; cadera fija.', 'Rango completo; aprieta arriba, negativa lenta.'] },
+  'Buenos días': { howTo: ['Barra sobre la espalda alta; bisagra de cadera con lumbar neutra.', 'Baja el torso estirando los isquios, rodillas casi rectas.', 'Peso ligero y técnica impecable; sube empujando las caderas.'] },
+  'Peso muerto con mancuernas': { howTo: ['Mancuernas a los lados; bisagra de cadera, espalda recta.', 'Baja pegándolas a las piernas; sube empujando el suelo.', 'Buen inicio para aprender el patrón antes de la barra.'] },
+  'Crunch en polea': { howTo: ['Arrodillado con la cuerda en la nuca; redondea la columna llevando los codos a las rodillas.', 'Flexiona el tronco (no tires de la cadera); aprieta el abdomen.', 'Controla la vuelta; progresa con peso.'] },
+  'Paseo del granjero': { howTo: ['Peso pesado a los lados; camina erguido, hombros atrás y core firme.', 'Agárrate fuerte (agarre/antebrazo); pasos cortos y estables.', 'Mide por distancia o tiempo; añade peso para progresar.'] },
 };
 
 export function exerciseInfo(name: string): ExerciseInfo | null {

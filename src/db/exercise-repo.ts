@@ -144,6 +144,15 @@ const STARTER: { name: string; muscleGroup: string; pattern: string }[] = [
   { name: 'Crunch en máquina', muscleGroup: 'core', pattern: 'otro' },
   { name: 'Elevación de piernas colgado', muscleGroup: 'core', pattern: 'otro' },
   { name: 'Plancha lateral', muscleGroup: 'core', pattern: 'otro' },
+  // Ampliación 2 (huecos comunes tras cruzar con free-exercise-db)
+  { name: 'Aperturas inclinadas', muscleGroup: 'pecho', pattern: 'empuje' },
+  { name: 'Extensión tríceps polea agarre inverso', muscleGroup: 'triceps', pattern: 'empuje' },
+  { name: 'Dominadas supinas', muscleGroup: 'espalda', pattern: 'tiron' },
+  { name: 'Curl femoral de pie', muscleGroup: 'pierna', pattern: 'pierna' },
+  { name: 'Buenos días', muscleGroup: 'pierna', pattern: 'pierna' },
+  { name: 'Peso muerto con mancuernas', muscleGroup: 'pierna', pattern: 'pierna' },
+  { name: 'Crunch en polea', muscleGroup: 'core', pattern: 'otro' },
+  { name: 'Paseo del granjero', muscleGroup: 'antebrazo', pattern: 'otro' },
 ];
 
 /** Asegura el catálogo: inserta los ejercicios del catálogo que falten (por nombre). */
