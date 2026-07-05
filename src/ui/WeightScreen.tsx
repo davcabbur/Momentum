@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { listWeights } from '@/db/bodyweight-repo';
@@ -48,6 +48,10 @@ export function WeightScreen() {
       <StrengthSummaryCard reloadNonce={nonce} />
       <WeightSummaryCard reloadNonce={nonce} />
       <ActivityCard reloadNonce={nonce} />
+      <Pressable style={styles.rankLink} onPress={() => router.push('/ranking' as Href)}>
+        <Text style={styles.rankTxt}>🏆 Ranking competitivo</Text>
+        <Ionicons name="chevron-forward" size={18} color={c.textMuted} />
+      </Pressable>
     </ScrollView>
   );
 }
@@ -59,4 +63,6 @@ const makeStyles = (c: Theme) =>
     topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     h1: { color: c.text, fontSize: 22, fontWeight: '800' },
     gear: { padding: 4 },
+    rankLink: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 16 },
+    rankTxt: { color: c.text, fontSize: 15, fontWeight: '700' },
   });
