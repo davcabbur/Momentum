@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
-import { getRemoteMeta, localHasData, pullSnapshot, pushSnapshot } from './cloud-sync';
+import { formatDateTime } from '@/lib/datetime';
+import { getLastSync, getRemoteMeta, localHasData, pullSnapshot, pushSnapshot } from './cloud-sync';
 import { reconcileDecision } from './cloud-sync-logic';
 
 /**
@@ -23,14 +24,16 @@ export function useReconcileOnLogin(): boolean {
       setReconciling(true);
       (async () => {
         try {
-          const [meta, hasLocal] = await Promise.all([getRemoteMeta(userId), localHasData()]);
+          const [meta, hasLocal, lastSync] = await Promise.all([getRemoteMeta(userId), localHasData(), getLastSync()]);
           const action = reconcileDecision({ localHasData: hasLocal, remoteExists: meta.exists });
           if (action === 'pull') await pullSnapshot(userId);
           else if (action === 'push') await pushSnapshot(userId);
           else if (action === 'ask') {
+            const cloudTxt = formatDateTime(meta.updatedAt);
+            const localTxt = lastSync ? formatDateTime(lastSync) : 'nunca en este móvil';
             Alert.alert(
               'Sincronizar',
-              'Tienes datos en este móvil y en tu cuenta. ¿Cuáles quieres conservar?',
+              `Tienes datos en este móvil y en tu cuenta. ¿Cuáles quieres conservar?\n\n☁️ Nube (última copia): ${cloudTxt}\n📱 Este móvil (última sinc.): ${localTxt}`,
               [
                 { text: 'Usar los de la nube', onPress: () => { pullSnapshot(userId); } },
                 { text: 'Subir los de este móvil', onPress: () => { pushSnapshot(userId); } },

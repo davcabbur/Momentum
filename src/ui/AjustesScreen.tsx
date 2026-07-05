@@ -11,7 +11,8 @@ import { addDays } from '@/bodyweight/goal';
 import { computeTrend } from '@/bodyweight/trend';
 import { getGoal, getProfile, listWeights, setLevel, setProfile } from '@/db/bodyweight-repo';
 import { clearAllData, exportData, importData } from '@/db/backup';
-import { pushSnapshot } from '@/db/cloud-sync';
+import { getLastSync, pushSnapshot } from '@/db/cloud-sync';
+import { formatDateTime } from '@/lib/datetime';
 import { seedExercises } from '@/db/exercise-repo';
 import { weightGoal } from '@/db/schema';
 import { reapplyLevelToRoutine } from '@/db/routine-repo';
@@ -100,6 +101,7 @@ export function AjustesScreen() {
   const [reminderHour, setReminderHour] = useState(9);
   const { user } = useSession();
   const [syncing, setSyncing] = useState(false);
+  const [lastSync, setLastSync] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const p = await getProfile();
@@ -118,6 +120,7 @@ export function AjustesScreen() {
     setReminderOn((await getSetting('reminder_on')) === '1');
     const h = await getSetting('reminder_hour');
     setReminderHour(h ? Number(h) : 9);
+    setLastSync(await getLastSync());
   }, []);
 
   useFocusEffect(
@@ -133,6 +136,7 @@ export function AjustesScreen() {
     setSyncing(true);
     try {
       await pushSnapshot(user.id);
+      setLastSync(await getLastSync());
       Alert.alert('Hecho', 'Tus datos se han guardado en tu cuenta.');
     } catch {
       Alert.alert('Sincronización', 'No se pudo sincronizar (¿sin conexión?).');
@@ -347,6 +351,7 @@ export function AjustesScreen() {
           <Text style={styles.section}>Cuenta</Text>
           <View style={styles.card}>
             <Text style={styles.note}>Sesión iniciada como {user.email}. Tus datos se guardan en tu cuenta y se restauran al iniciar sesión.</Text>
+            <Text style={styles.note}>Última sincronización: {lastSync ? formatDateTime(lastSync) : 'nunca en este móvil'}</Text>
             <Pressable style={[styles.save, syncing && { opacity: 0.5 }]} disabled={syncing} onPress={syncNow}>
               <Text style={styles.saveTxt}>{syncing ? 'Sincronizando…' : 'Sincronizar ahora'}</Text>
             </Pressable>

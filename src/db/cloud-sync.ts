@@ -2,8 +2,15 @@ import { supabase } from '@/lib/supabase';
 import { db } from './client';
 import { bodyweightEntry, foodEntry, userProfile, workoutSession } from './schema';
 import { exportData, importData } from './backup';
+import { getSetting, setSetting } from './settings-repo';
 
 const TABLE = 'user_snapshot';
+const LAST_SYNC_KEY = 'last_sync_at';
+
+/** Marca ISO de la última sincronización (subida o bajada) hecha en este móvil. */
+export async function getLastSync(): Promise<string | null> {
+  return getSetting(LAST_SYNC_KEY);
+}
 
 /**
  * ¿Hay algo que merezca la pena en local? Cuenta cualquier dato del usuario
@@ -32,6 +39,7 @@ export async function pushSnapshot(userId: string): Promise<void> {
     .from(TABLE)
     .upsert({ user_id: userId, data: JSON.parse(json), updated_at: new Date().toISOString() });
   if (error) throw error;
+  await setSetting(LAST_SYNC_KEY, new Date().toISOString());
 }
 
 /** Baja la copia de la cuenta y la restaura en local. Devuelve false si la cuenta no tenía datos. */
@@ -40,5 +48,6 @@ export async function pullSnapshot(userId: string): Promise<boolean> {
   if (error) throw error;
   if (!data?.data) return false;
   await importData(JSON.stringify(data.data));
+  await setSetting(LAST_SYNC_KEY, new Date().toISOString());
   return true;
 }
