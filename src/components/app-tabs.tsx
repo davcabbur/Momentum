@@ -52,6 +52,7 @@ export default function AppTabs() {
       <Tabs.Screen name="ajustes" options={{ href: null }} />
       <Tabs.Screen name="glosario" options={{ href: null }} />
       <Tabs.Screen name="historial" options={{ href: null }} />
+      <Tabs.Screen name="ranking" options={{ href: null }} />
       </Tabs>
     </>
   );

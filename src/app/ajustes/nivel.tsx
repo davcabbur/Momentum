@@ -1,13 +1,13 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTheme } from '@/ui/theme';
-import { AjustesScreen } from '@/ui/AjustesScreen';
+import { NivelScreen } from '@/ui/ajustes/NivelScreen';
 
-export default function AjustesRoute() {
+export default function NivelRoute() {
   const { c } = useTheme();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.surface }} edges={['top']}>
-      <AjustesScreen />
+      <NivelScreen />
     </SafeAreaView>
   );
 }
