@@ -12,6 +12,7 @@ import { useRefresh } from './useRefresh';
 import { WeightDetail } from './WeightDetail';
 import { WeightHistory } from './WeightHistory';
 import { ActivityTrend } from './ActivityTrend';
+import { Termino, useTermSheet } from '@/ui/Termino';
 
 function fmt(n: number): string {
   return String(Math.round(n * 10) / 10).replace('.', ',');
@@ -28,6 +29,7 @@ export function ProgresoScreen() {
   const [loaded, setLoaded] = useState(false);
   const [tab, setTab] = useState<Tab>(tabParam === 'peso' ? 'peso' : 'fuerza');
   const [open, setOpen] = useState<Set<number>>(new Set());
+  const { openTerm, sheet } = useTermSheet();
 
   // Abre la pestaña que pida la navegación (p. ej. desde Inicio → "Ver gráfica e historial").
   useFocusEffect(
@@ -123,15 +125,15 @@ export function ProgresoScreen() {
                     <View style={styles.statsRow}>
                       <View style={styles.stat}>
                         <Text style={styles.statVal}>{fmt(ex.bestE1rm)} kg</Text>
-                        <Text style={styles.statLbl}>PR (1RM est.)</Text>
+                        <Termino id="pr" style={styles.statLbl}>PR (1RM est.)</Termino>
                       </View>
                       <View style={styles.stat}>
                         <Text style={styles.statVal}>{fmt(latest.e1rm)} kg</Text>
-                        <Text style={styles.statLbl}>1RM actual</Text>
+                        <Termino id="1rm" style={styles.statLbl}>1RM actual</Termino>
                       </View>
                       <View style={styles.stat}>
-                        <Text style={styles.statVal}>{fmt(latest.volume)}</Text>
-                        <Text style={styles.statLbl}>Volumen últ.</Text>
+                        <Text style={styles.statVal}>{fmt(latest.volume)} kg</Text>
+                        <Termino id="volumen-entreno" style={styles.statLbl}>Volumen últ.</Termino>
                       </View>
                     </View>
                     {ex.points.length >= 2 ? (
@@ -139,7 +141,11 @@ export function ProgresoScreen() {
                     ) : (
                       <Text style={styles.note}>Necesitas otra sesión para ver la tendencia.</Text>
                     )}
-                    {advice && <Text style={styles.deload}>🔋 {advice.text}</Text>}
+                    {advice && (
+                      <Text style={styles.deload}>
+                        🔋 {advice.text} <Termino id="deload" style={styles.deload} onOpen={openTerm}>¿Qué es una descarga?</Termino>
+                      </Text>
+                    )}
                   </View>
                 )}
               </View>
@@ -154,6 +160,7 @@ export function ProgresoScreen() {
       ) : (
         <ActivityTrend reloadNonce={nonce} />
       )}
+      {sheet}
     </ScrollView>
   );
 }

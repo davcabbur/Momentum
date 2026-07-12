@@ -14,6 +14,7 @@ import {
   type MyLifts,
 } from '@/db/ranking-repo';
 import { tierForDots } from '@/ranking/score';
+import { Termino, useTermSheet } from '@/ui/Termino';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { useRefresh } from '@/ui/useRefresh';
 
@@ -30,6 +31,7 @@ export function RankingScreen() {
   const [loading, setLoading] = useState(true);
   const [alias, setAlias] = useState('');
   const [busy, setBusy] = useState(false);
+  const { openTerm, sheet } = useTermSheet();
 
   const load = useCallback(async () => {
     setLifts(await computeMyLifts());
@@ -78,7 +80,10 @@ export function RankingScreen() {
         </Pressable>
       </View>
       <Text style={styles.h1}>🏆 Ranking</Text>
-      <Text style={styles.intro}>Compite por fuerza relativa (Big 3 con DOTS: ajusta por tu peso y sexo, no premia pesar más).</Text>
+      <Text style={styles.intro}>
+        Compite por fuerza relativa (<Termino id="big3" style={styles.intro} onOpen={openTerm}>Big 3</Termino> con{' '}
+        <Termino id="dots" style={styles.intro} onOpen={openTerm}>DOTS</Termino>: ajusta por tu peso y sexo, no premia pesar más).
+      </Text>
 
       {loading ? (
         <ActivityIndicator color={c.accent} style={{ marginTop: 20 }} />
@@ -89,7 +94,7 @@ export function RankingScreen() {
             <Text style={styles.myDots}>{dotsTxt(mine.dots)} <Text style={styles.myDotsUnit}>DOTS</Text></Text>
             <Text style={styles.myPos}>{myPos > 0 ? `Puesto #${myPos}` : 'Sin clasificar aún'}</Text>
             <Text style={styles.myLifts}>
-              SentaB {r0(mine.squat)} · Banca {r0(mine.bench)} · PesoM {r0(mine.dead)} kg
+              Sentadilla {r0(mine.squat)} · Banca {r0(mine.bench)} · Peso muerto {r0(mine.dead)} kg
             </Text>
             <Pressable hitSlop={8} onPress={confirmLeave}>
               <Text style={styles.leave}>Salir del ranking</Text>
@@ -139,6 +144,7 @@ export function RankingScreen() {
           )}
         </View>
       )}
+      {sheet}
     </ScrollView>
   );
 }

@@ -1,7 +1,9 @@
+import { StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 
 import type { TrendPoint } from '@/bodyweight/trend';
-import { useTheme } from '@/ui/theme';
+import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
+import { Termino } from '@/ui/Termino';
 
 interface Props {
   points: TrendPoint[];
@@ -16,6 +18,7 @@ interface Props {
  */
 export function WeightChart({ points, goalKg, width = 300, height = 130 }: Props) {
   const { c } = useTheme();
+  const styles = useThemedStyles(makeStyles);
   if (points.length === 0) return null;
 
   const values = points.flatMap((p) => [p.weightKg, p.trendKg]);
@@ -30,14 +33,27 @@ export function WeightChart({ points, goalKg, width = 300, height = 130 }: Props
   const trendPath = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(i)},${y(p.trendKg)}`).join(' ');
 
   return (
-    <Svg width={width} height={height}>
-      {goalKg != null && (
-        <Line x1={0} y1={y(goalKg)} x2={width} y2={y(goalKg)} stroke={c.good} strokeDasharray="4 4" strokeWidth={1} />
-      )}
-      {points.map((p, i) => (
-        <Circle key={i} cx={x(i)} cy={y(p.weightKg)} r={2.6} fill={c.textMuted} />
-      ))}
-      <Path d={trendPath} stroke={c.accent} strokeWidth={3} fill="none" strokeLinecap="round" strokeLinejoin="round" />
-    </Svg>
+    <View>
+      <Svg width={width} height={height}>
+        {goalKg != null && (
+          <Line x1={0} y1={y(goalKg)} x2={width} y2={y(goalKg)} stroke={c.good} strokeDasharray="4 4" strokeWidth={1} />
+        )}
+        {points.map((p, i) => (
+          <Circle key={i} cx={x(i)} cy={y(p.weightKg)} r={2.6} fill={c.textMuted} />
+        ))}
+        <Path d={trendPath} stroke={c.accent} strokeWidth={3} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      </Svg>
+      <View style={styles.legend}>
+        <Text style={[styles.legendItem, { color: c.textMuted }]}>● Pesajes</Text>
+        <Termino id="tendencia" style={[styles.legendItem, { color: c.accent }]}>─ Tendencia</Termino>
+        {goalKg != null && <Text style={[styles.legendItem, { color: c.good }]}>┄ Objetivo</Text>}
+      </View>
+    </View>
   );
 }
+
+const makeStyles = (c: Theme) =>
+  StyleSheet.create({
+    legend: { flexDirection: 'row', gap: 14, marginTop: 8, flexWrap: 'wrap' },
+    legendItem: { fontSize: 12, fontWeight: '600' },
+  });

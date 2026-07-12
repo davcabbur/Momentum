@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Alert, AppState, Modal, Pressable, ScrollView, StyleSheet, Text, Vibration, View } from 'react-native';
+import { AppState, Modal, Pressable, ScrollView, StyleSheet, Text, Vibration, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Body from 'react-native-body-highlighter';
 
@@ -19,20 +19,10 @@ import { cancelScheduledNotification, scheduleRestDoneNotification } from '@/lib
 import { recommendSet, type SetRecommendation } from '@/training/recommend-set';
 import { recommendedRestSeconds } from '@/training/rest';
 import { exerciseSetWarning } from '@/training/volume';
+import { Termino, useTermSheet } from '@/ui/Termino';
 
 function mmss(secs: number): string {
   return `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
-}
-
-function showTerm(key: string) {
-  const t = GLOSSARY.find((g) => g.key === key);
-  if (t) Alert.alert(t.title, t.body);
-}
-
-function showTipos() {
-  const top = GLOSSARY.find((g) => g.key === 'topset')?.body ?? '';
-  const back = GLOSSARY.find((g) => g.key === 'backoff')?.body ?? '';
-  Alert.alert('Tipos de serie', `Top set: ${top}\n\nBack-off: ${back}\n\nCalent.: serie suave de aproximación; no cuenta para el volumen.`);
 }
 
 const RIRS = [0, 1, 2, 3, 4];
@@ -98,6 +88,17 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
   const [deload, setDeload] = useState<{ sessions: number; weight: number | null } | null>(null);
   const restRunning = useRef(false);
   const restNotifId = useRef<string | null>(null);
+  const { openTerm, sheet } = useTermSheet();
+
+  function openTipos() {
+    const top = GLOSSARY.find((g) => g.key === 'topset')?.body ?? '';
+    const back = GLOSSARY.find((g) => g.key === 'backoff')?.body ?? '';
+    openTerm({
+      key: 'tipos-serie',
+      title: 'Tipos de serie',
+      body: `Top set: ${top}\n\nBack-off: ${back}\n\nCalent.: serie suave de aproximación; no cuenta para el volumen.`,
+    });
+  }
 
   const info = exerciseInfo(exerciseName);
   const mv = muscleView(muscleGroup ?? '');
@@ -159,7 +160,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
         setNumber: 1,
         weightKg: r.weightKg ?? base,
         reps: lastSame?.reps ?? r.repMin,
-        rir: 2,
+        rir: sc.rirMin,
         setType: r.setType,
         exists: false,
       });
@@ -254,7 +255,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
       setNumber: n,
       weightKg: r.weightKg ?? base,
       reps: lastSame?.reps ?? r.repMin,
-      rir: 2,
+      rir: schemeRir,
       setType: r.setType,
       exists: false,
     });
@@ -354,7 +355,8 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
                   {deload.weight != null
                     ? `baja a ~${String(deload.weight).replace('.', ',')} kg y`
                     : 'baja algo el peso o quita una serie y'}{' '}
-                  sube el RIR a 3. Volverás más fuerte.
+                  sube el RIR a 3. Volverás más fuerte.{' '}
+                  <Termino id="deload" style={styles.deloadTxt} onOpen={openTerm}>¿Qué es una descarga?</Termino>
                 </Text>
                 {deload.weight != null && (
                   <Pressable style={styles.deloadBtn} onPress={() => setEditing((e) => (e ? { ...e, weightKg: deload.weight!, rir: 3 } : e))}>
@@ -427,7 +429,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
                     <Text style={styles.stepTxt}>+</Text>
                   </Pressable>
                 </View>
-                <Pressable style={styles.lblRow} onPress={() => showTerm('rir')}>
+                <Pressable style={styles.lblRow} onPress={() => openTerm('rir')}>
                   <Text style={styles.lbl}>RIR</Text>
                   <Ionicons name="information-circle-outline" size={14} color={c.accent} />
                 </Pressable>
@@ -441,7 +443,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
                     </Pressable>
                   ))}
                 </View>
-                <Pressable style={styles.lblRow} onPress={showTipos}>
+                <Pressable style={styles.lblRow} onPress={openTipos}>
                   <Text style={styles.lbl}>Tipo de serie</Text>
                   <Ionicons name="information-circle-outline" size={14} color={c.accent} />
                 </Pressable>
@@ -466,6 +468,7 @@ export function SetLogSheet({ visible, sessionId, dayId, date, exerciseId, exerc
               </View>
             )}
           </ScrollView>
+          {sheet}
         </Pressable>
       </Pressable>
     </Modal>

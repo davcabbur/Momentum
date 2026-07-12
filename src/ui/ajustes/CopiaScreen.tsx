@@ -48,7 +48,7 @@ export function CopiaScreen() {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <SettingHeader title="Copia de seguridad" />
       <View style={styles.card}>
-        <Text style={styles.note}>Tus datos se guardan solo en este móvil. Exporta una copia para no perderlos y restáurala cuando quieras (o en otro dispositivo).</Text>
+        <Text style={styles.note}>Tus datos viven en este móvil y se copian a tu cuenta al sincronizar. Exporta además una copia local si quieres tener el control.</Text>
         <Pressable style={styles.save} onPress={exportBackup}>
           <Text style={styles.saveTxt}>Exportar copia</Text>
         </Pressable>

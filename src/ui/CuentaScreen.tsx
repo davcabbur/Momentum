@@ -3,6 +3,7 @@ import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { resetPassword, signInEmail, signInWithGoogle, signUpEmail } from '@/auth/auth';
+import { translateAuthError } from '@/lib/auth-errors';
 import { GoogleG } from '@/ui/GoogleG';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 
@@ -26,14 +27,14 @@ export function CuentaScreen() {
     try {
       if (mode === 'signup') {
         const { error, needsConfirm } = await signUpEmail(email, pass);
-        if (error) return Alert.alert('No se pudo registrar', error.message);
+        if (error) return Alert.alert('No se pudo registrar', translateAuthError(error.message));
         if (needsConfirm) {
           Alert.alert('Casi listo', 'Te hemos enviado un correo para confirmar tu cuenta. Confírmalo y vuelve a iniciar sesión.');
           setMode('login');
         }
       } else {
         const { error } = await signInEmail(email, pass);
-        if (error) Alert.alert('No se pudo entrar', error.message);
+        if (error) Alert.alert('No se pudo entrar', translateAuthError(error.message));
       }
       // Si va bien, la sesión cambia y la "puerta" muestra la app automáticamente.
     } finally {
@@ -45,7 +46,7 @@ export function CuentaScreen() {
     setBusy(true);
     try {
       const { error } = await signInWithGoogle();
-      if (error) Alert.alert('Google', error.message);
+      if (error) Alert.alert('No se pudo entrar con Google', translateAuthError(error.message));
     } finally {
       setBusy(false);
     }
@@ -54,7 +55,7 @@ export function CuentaScreen() {
   async function forgot() {
     if (!email.trim()) return Alert.alert('Correo', 'Escribe tu correo arriba y vuelve a pulsar.');
     const { error } = await resetPassword(email);
-    Alert.alert(error ? 'Error' : 'Listo', error ? error.message : 'Te hemos enviado un correo para restablecer la contraseña.');
+    Alert.alert(error ? 'Error' : 'Listo', error ? translateAuthError(error.message) : 'Te hemos enviado un correo para restablecer la contraseña.');
   }
 
   const signup = mode === 'signup';

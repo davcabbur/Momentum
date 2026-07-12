@@ -176,4 +176,24 @@ export const GLOSSARY: GlossaryTerm[] = [
     title: 'Recto femoral (cuádriceps)',
     body: 'De las 4 cabezas del cuádriceps, la del centro. Cruza la cadera y la rodilla, así que en las sentadillas (flexionas la cadera) se acorta por un lado mientras se estira por otro y recibe poco estímulo. Por eso, para un cuádriceps completo, combina un patrón sentadilla con un ejercicio de cadera fija (extensión de cuádriceps o sissy squat), reclinándote algo hacia atrás para estirarlo bien.',
   },
+  {
+    key: 'pr',
+    title: 'PR (récord personal)',
+    body: 'Tu mejor marca en un ejercicio. Aquí lo medimos con el 1RM estimado: tu PR es el mejor 1RM que has conseguido en tus sesiones.',
+  },
+  {
+    key: 'big3',
+    title: 'Big 3',
+    body: 'Sentadilla, press banca y peso muerto. Son los tres básicos con barra que más músculo implican, por eso se usan como vara de medir la fuerza general.',
+  },
+  {
+    key: 'dots',
+    title: 'DOTS (fuerza relativa)',
+    body: 'Puntuación que ajusta tu total del Big 3 por tu peso corporal y sexo, para comparar de tú a tú con cualquiera. Orientación: ~200 es un buen comienzo, ~300 un intermedio sólido, 400+ ya es avanzado y 500+ élite.',
+  },
+  {
+    key: 'series-basura',
+    title: 'Series basura',
+    body: 'Series de más que añaden fatiga pero ya casi no estimulan: a partir de cierto punto, otra serie no te hace crecer más, solo te cansa. Mejor guardar esa energía para otro ejercicio u otro día.',
+  },
 ];

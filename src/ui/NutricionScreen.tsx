@@ -250,12 +250,12 @@ export function NutricionScreen() {
 
       {s.missing === 'perfil' && (
         <View style={styles.card}>
-          <Text style={styles.note}>Completa tu perfil (sexo, edad y altura) en el alta para calcular tus kcal.</Text>
+          <Text style={styles.note}>Completa tu perfil (sexo, edad y altura) en Ajustes → Perfil para calcular tus kcal.</Text>
         </View>
       )}
       {s.missing === 'peso' && (
         <View style={styles.card}>
-          <Text style={styles.note}>Registra tu peso en la pestaña Hoy para calcular tus kcal.</Text>
+          <Text style={styles.note}>Registra tu peso en la pestaña Inicio para calcular tus kcal.</Text>
         </View>
       )}
 
@@ -297,7 +297,7 @@ export function NutricionScreen() {
             </View>
           ) : (
             <View style={styles.card}>
-              <Text style={styles.note}>Fija un objetivo de peso en Hoy y te calculo las kcal/día para llegar a él a buen ritmo.</Text>
+              <Text style={styles.note}>Fija un objetivo de peso en Inicio y te calculo las kcal/día para llegar a él a buen ritmo.</Text>
             </View>
           )}
 
