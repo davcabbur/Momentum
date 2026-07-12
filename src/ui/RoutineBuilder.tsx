@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 import { getProfile, setLevel } from '@/db/bodyweight-repo';
-import { seedExercises } from '@/db/exercise-repo';
+import { listExercises, seedExercises } from '@/db/exercise-repo';
 import {
   addExerciseToDay,
   createRoutineFromTemplate,
@@ -14,16 +14,23 @@ import {
   listDays,
   moveDayExercise,
   removeExerciseFromDay,
+  replaceDayExercise,
+  saveGeneratedRoutine,
   type DayExercise,
   type RoutineDay,
 } from '@/db/routine-repo';
+import { getSetting, setSetting } from '@/db/settings-repo';
+import { auditRoutine } from '@/training/audit';
 import { defaultScheme } from '@/training/default-scheme';
+import { generateRoutine, type GeneratedRoutine, type SessionTime, type Stage } from '@/training/generator';
 import { schemeForLevel, type Level } from '@/training/levels';
+import type { EquipmentScope } from '@/training/recommend';
 import { DAYS_PER_WEEK_OPTIONS, routineTemplatesFor, type RoutineTemplate } from '@/training/routine-templates';
 import { muscleVolumeStatus, weeklyMuscleVolume } from '@/training/volume';
-import { shoulderOverlapAdvice } from '@/training/intelligence';
 import { ExercisePicker } from '@/ui/ExercisePicker';
 import { SchemeEditSheet } from '@/ui/SchemeEditSheet';
+import { SubstituteSheet } from '@/ui/SubstituteSheet';
+import { Termino } from '@/ui/Termino';
 
 const LEVELS = ['principiante', 'intermedio', 'avanzado'];
 
@@ -36,11 +43,17 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
   const [level, setLvl] = useState('intermedio');
   const [daysPerWeek, setDaysPerWeek] = useState<number | null>(null);
   const [forceChoose, setForceChoose] = useState(false);
-  const [step, setStep] = useState(0); // asistente de creación: 0 nivel · 1 días · 2 plantilla
+  const [step, setStep] = useState(0); // asistente de creación: 0 nivel · 1 días · 2 camino (a medida/plantilla) · 3 formulario a medida
   const [showSummary, setShowSummary] = useState(false);
   const [pickerDay, setPickerDay] = useState<number | null>(null);
   const [editEx, setEditEx] = useState<DayExercise | null>(null);
   const [menuEx, setMenuEx] = useState<DayExercise | null>(null);
+  const [subEx, setSubEx] = useState<DayExercise | null>(null);
+  const [scope, setScope] = useState<EquipmentScope>('gym');
+  const [sessionTime, setSessionTime] = useState<SessionTime>('normal');
+  const [priorities, setPriorities] = useState<string[]>([]);
+  const [stage, setStage] = useState<Stage>('normocalorica');
+  const [preview, setPreview] = useState<GeneratedRoutine | null>(null);
 
   const lvlScheme = schemeForLevel(level as Level);
 
@@ -54,6 +67,17 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
     setExByDay(map);
     const prof = await getProfile();
     if (prof?.level) setLvl(prof.level);
+    if (prof?.stage === 'volumen' || prof?.stage === 'definicion' || prof?.stage === 'normocalorica') setStage(prof.stage);
+    const prefs = await getSetting('generatorPrefs');
+    if (prefs) {
+      try {
+        const p = JSON.parse(prefs);
+        if (p.scope) setScope(p.scope);
+        if (p.sessionTime) setSessionTime(p.sessionTime);
+        if (Array.isArray(p.priorities)) setPriorities(p.priorities);
+        if (p.stage) setStage(p.stage);
+      } catch {}
+    }
   }, []);
 
   useEffect(() => {
@@ -75,6 +99,17 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
     load();
   }
 
+  async function generate() {
+    if (daysPerWeek == null) return;
+    await setSetting('generatorPrefs', JSON.stringify({ scope, sessionTime, priorities, stage }));
+    const catalog = await listExercises();
+    const gen = generateRoutine(
+      { daysPerWeek, level: level as Level, scope, priorities, sessionTime, stage },
+      catalog.map((e) => ({ name: e.name, muscleGroup: e.muscleGroup, pattern: e.pattern })),
+    );
+    setPreview(gen);
+  }
+
   function schemeText(x: DayExercise): string {
     const sets = x.targetSets ?? lvlScheme.sets;
     const lo = x.repMin ?? lvlScheme.repMin;
@@ -91,8 +126,16 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
     .sort((a, b) => b.sets - a.sets);
   const fmtSets = (n: number) => (n % 1 === 0 ? `${n}` : n.toFixed(1).replace('.', ','));
   const STATUS_COLOR: Record<string, string> = { ok: c.textMuted, info: c.accent, warn: c.warn };
-  const shoulderAdvice = shoulderOverlapAdvice(
-    days.map((d) => ({ name: d.name, exercises: (exByDay[d.id] ?? []).map((x) => ({ muscleGroup: x.exercise.muscleGroup, pattern: x.exercise.pattern })) })),
+  const auditAdvices = auditRoutine(
+    days.map((d) => ({
+      name: d.name,
+      exercises: (exByDay[d.id] ?? []).map((x) => ({
+        name: x.exercise.name,
+        muscleGroup: x.exercise.muscleGroup,
+        targetSets: x.targetSets ?? lvlScheme.sets,
+        pattern: x.exercise.pattern,
+      })),
+    })),
   );
 
   return (
@@ -104,9 +147,9 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
 
       {choosing ? (
         <>
-          <Text style={styles.stepLbl}>Paso {step + 1} de 3</Text>
+          {!preview && <Text style={styles.stepLbl}>Crea tu rutina paso a paso</Text>}
 
-          {step === 0 && (
+          {step === 0 && !preview && (
             <>
               <Text style={styles.lbl}>Tu nivel</Text>
               <Text style={styles.hint}>Ajusta las series y el RIR recomendados.</Text>
@@ -128,7 +171,7 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
             </>
           )}
 
-          {step === 1 && (
+          {step === 1 && !preview && (
             <>
               <Text style={styles.lbl}>¿Cuántos días entrenas a la semana?</Text>
               <View style={styles.chips}>
@@ -149,10 +192,18 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
             </>
           )}
 
-          {step === 2 && daysPerWeek != null && (
+          {step === 2 && daysPerWeek != null && !preview && (
             <>
               <Text style={styles.lbl}>Elige tu rutina</Text>
               <Text style={styles.hint}>Te rellenamos los mejores ejercicios; luego puedes ajustarlos.</Text>
+              <Pressable style={styles.wizardCta} onPress={() => setStep(3)}>
+                <Ionicons name="sparkles" size={20} color={c.onAccent} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.wizardCtaTitle}>Créamela a medida</Text>
+                  <Text style={styles.wizardCtaSub}>Te pregunto material, tiempo y prioridades, y te monto la rutina explicada.</Text>
+                </View>
+              </Pressable>
+              <Text style={styles.orLbl}>O elige una plantilla</Text>
               {routineTemplatesFor(daysPerWeek).map((t) => (
                 <Pressable key={t.key} style={styles.tpl} onPress={() => pickTemplate(t)}>
                   <Text style={styles.tplName}>{t.name}</Text>
@@ -161,6 +212,114 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
               ))}
               <Pressable style={styles.backBtn} onPress={() => setStep(1)}>
                 <Text style={styles.backBtnTxt}>Atrás</Text>
+              </Pressable>
+            </>
+          )}
+
+          {step === 3 && daysPerWeek != null && !preview && (
+            <>
+              <Text style={styles.lbl}>¿Con qué material entrenas?</Text>
+              <View style={styles.chips}>
+                {([['gym', 'Gimnasio completo'], ['dumbbell', 'Mancuernas en casa'], ['bodyweight', 'Solo peso corporal']] as const).map(([k, txt]) => (
+                  <Pressable key={k} style={[styles.chip, scope === k && styles.chipOn]} onPress={() => setScope(k)}>
+                    <Text style={[styles.chipTxt, scope === k && styles.chipTxtOn]}>{txt}</Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <Text style={styles.lbl}>¿Cuánto te dura la sesión?</Text>
+              <View style={styles.chips}>
+                {([['corta', '~45 min'], ['normal', '60–75 min'], ['larga', '90+ min']] as const).map(([k, txt]) => (
+                  <Pressable key={k} style={[styles.chip, sessionTime === k && styles.chipOn]} onPress={() => setSessionTime(k)}>
+                    <Text style={[styles.chipTxt, sessionTime === k && styles.chipTxtOn]}>{txt}</Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <Text style={styles.lbl}>¿Algún músculo prioritario? (máx. 2, opcional)</Text>
+              <Text style={styles.hint}>Le daré más series y lo pondré al principio de su día.</Text>
+              <View style={styles.chips}>
+                {['pecho', 'espalda', 'hombro', 'biceps', 'triceps', 'pierna', 'gluteo', 'gemelo', 'core'].map((m) => {
+                  const on = priorities.includes(m);
+                  return (
+                    <Pressable
+                      key={m}
+                      style={[styles.chip, on && styles.chipOn]}
+                      onPress={() => setPriorities(on ? priorities.filter((x) => x !== m) : priorities.length < 2 ? [...priorities, m] : priorities)}>
+                      <Text style={[styles.chipTxt, on && styles.chipTxtOn]}>{m[0].toUpperCase() + m.slice(1)}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <Text style={styles.lbl}>¿En qué etapa estás?</Text>
+              <View style={styles.chips}>
+                {([['volumen', 'Volumen'], ['definicion', 'Definición'], ['normocalorica', 'Recomposición']] as const).map(([k, txt]) => (
+                  <Pressable key={k} style={[styles.chip, stage === k && styles.chipOn]} onPress={() => setStage(k)}>
+                    <Text style={[styles.chipTxt, stage === k && styles.chipTxtOn]}>{txt}</Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              <View style={styles.navRow}>
+                <Pressable style={styles.backBtn} onPress={() => setStep(2)}>
+                  <Text style={styles.backBtnTxt}>Atrás</Text>
+                </Pressable>
+                <Pressable style={[styles.next, styles.navNext]} onPress={generate}>
+                  <Text style={styles.nextTxt}>Generar rutina</Text>
+                </Pressable>
+              </View>
+            </>
+          )}
+
+          {preview && (
+            <>
+              <Text style={styles.lbl}>Tu rutina propuesta</Text>
+              {preview.days.map((d) => (
+                <View key={d.name} style={styles.dayBox}>
+                  <Text style={styles.dayName}>{d.name}</Text>
+                  {d.exercises.map((e) => (
+                    <View key={e.name} style={styles.exRow}>
+                      <View style={styles.exMain}>
+                        <Text style={styles.exName}>{e.name}</Text>
+                        <Text style={styles.exScheme}>{e.sets}×{e.repMin}–{e.repMax}</Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              ))}
+
+              <View style={styles.volBox}>
+                <Text style={styles.volTitle}>Por qué así</Text>
+                {preview.reasons.map((r, i) => (
+                  <Text key={i} style={styles.reasonTxt}>· {r}</Text>
+                ))}
+                {preview.warnings.map((w, i) => (
+                  <Text key={`w${i}`} style={[styles.reasonTxt, { color: c.warn }]}>⚠ {w.text}</Text>
+                ))}
+                <View style={styles.termRow}>
+                  <Text style={styles.reasonTxt}>Términos útiles:</Text>
+                  <Termino id="volumen-entreno" style={styles.reasonTxt}>volumen</Termino>
+                  <Termino id="series-basura" style={styles.reasonTxt}>series basura</Termino>
+                  <Termino id="deficit" style={styles.reasonTxt}>déficit</Termino>
+                  <Termino id="doble" style={styles.reasonTxt}>doble progresión</Termino>
+                </View>
+              </View>
+
+              <Pressable
+                style={styles.next}
+                onPress={async () => {
+                  await saveGeneratedRoutine(preview);
+                  setPreview(null);
+                  setForceChoose(false);
+                  setDaysPerWeek(null);
+                  setStep(0);
+                  load();
+                }}>
+                <Text style={styles.nextTxt}>Usar esta rutina (luego puedes ajustarla)</Text>
+              </Pressable>
+              <Pressable style={styles.backBtn} onPress={() => setPreview(null)}>
+                <Text style={styles.backBtnTxt}>Cambiar respuestas</Text>
               </Pressable>
             </>
           )}
@@ -201,11 +360,16 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
           </Pressable>
           {showSummary && (
             <>
-              {shoulderAdvice && (
-                <View style={styles.shoulderBox}>
-                  <Text style={styles.shoulderTxt}>🤚 {shoulderAdvice.text}</Text>
+              {auditAdvices.filter((a) => a.kind === 'shoulder').map((a, i) => (
+                <View key={`sh${i}`} style={styles.shoulderBox}>
+                  <Text style={styles.shoulderTxt}>🤚 {a.text}</Text>
                 </View>
-              )}
+              ))}
+              {auditAdvices.filter((a) => a.kind === 'musculo-olvidado').map((a, i) => (
+                <View key={`mo${i}`} style={styles.shoulderBox}>
+                  <Text style={styles.shoulderTxt}>💡 {a.text}</Text>
+                </View>
+              ))}
               {muscleRows.length > 0 && (
                 <View style={styles.volBox}>
                   <Text style={styles.volTitle}>Volumen semanal por músculo</Text>
@@ -263,6 +427,9 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
               <Pressable style={styles.menuBtn} onPress={() => { setEditEx(menuEx); setMenuEx(null); }}>
                 <Text style={styles.menuBtnTxt}>Editar series/reps</Text>
               </Pressable>
+              <Pressable style={styles.menuBtn} onPress={() => { setSubEx(menuEx); setMenuEx(null); }}>
+                <Text style={styles.menuBtnTxt}>Cambiar por otro equivalente</Text>
+              </Pressable>
               <Pressable style={styles.menuBtn} onPress={async () => { const id = menuEx.rdeId; setMenuEx(null); await removeExerciseFromDay(id); load(); }}>
                 <Text style={[styles.menuBtnTxt, { color: c.bad }]}>Quitar ejercicio</Text>
               </Pressable>
@@ -272,6 +439,20 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
             </Pressable>
           </Pressable>
         </Modal>
+      )}
+
+      {subEx && (
+        <SubstituteSheet
+          visible={subEx != null}
+          exerciseName={subEx.exercise.name}
+          onPick={async (ex) => {
+            const sc = defaultScheme(ex.name, level as Level);
+            await replaceDayExercise(subEx.rdeId, ex.id, { targetSets: sc.sets, repMin: sc.repMin, repMax: sc.repMax });
+            setSubEx(null);
+            load();
+          }}
+          onClose={() => setSubEx(null)}
+        />
       )}
     </ScrollView>
   );
@@ -298,6 +479,12 @@ const makeStyles = (c: Theme) =>
     navRow: { flexDirection: 'row', gap: 10, alignItems: 'center', marginTop: 8 },
     backBtn: { borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, paddingVertical: 13, paddingHorizontal: 18, alignItems: 'center', marginTop: 8 },
     backBtnTxt: { color: c.text, fontWeight: '700' },
+    wizardCta: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: c.accentStrong, borderRadius: 14, padding: 14 },
+    wizardCtaTitle: { color: c.onAccent, fontSize: 16, fontWeight: '800' },
+    wizardCtaSub: { color: c.onAccent, fontSize: 12, opacity: 0.9, marginTop: 2 },
+    orLbl: { color: c.textMuted, fontSize: 12, fontWeight: '700', textTransform: 'uppercase', marginTop: 6 },
+    reasonTxt: { color: c.textMuted, fontSize: 13, lineHeight: 19 },
+    termRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 8, alignItems: 'center' },
     tpl: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14 },
     tplName: { color: c.text, fontSize: 16, fontWeight: '700' },
     tplDays: { color: c.textMuted, fontSize: 12, marginTop: 3 },

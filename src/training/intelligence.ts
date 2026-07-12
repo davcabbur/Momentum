@@ -36,7 +36,7 @@ export function detectStall(e1rmBySession: number[], window = 3): StallStatus {
 
 export interface Advice {
   /** Tipo de aviso, por si la UI quiere icono/color. */
-  kind: 'deload' | 'welcome-back' | 'shoulder' | 'diet-break';
+  kind: 'deload' | 'welcome-back' | 'shoulder' | 'diet-break' | 'volumen-alto' | 'volumen-bajo' | 'musculo-olvidado';
   text: string;
 }
 

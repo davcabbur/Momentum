@@ -3,6 +3,7 @@ import { asc, eq } from 'drizzle-orm';
 import { type Level } from '@/training/levels';
 import { defaultScheme } from '@/training/default-scheme';
 import { exercisesForType, type RoutineTemplate } from '@/training/routine-templates';
+import type { GeneratedRoutine } from '@/training/generator';
 import { db } from './client';
 import { listExercises } from './exercise-repo';
 import { exercise, routine, routineDay, routineDayExercise } from './schema';
@@ -172,4 +173,40 @@ export async function createRoutineFromTemplate(template: RoutineTemplate, level
     }
   }
   return id;
+}
+
+/** Guarda una rutina generada: crea rutina + días + ejercicios (por nombre). Reemplaza la anterior. */
+export async function saveGeneratedRoutine(gen: GeneratedRoutine): Promise<number> {
+  await clearRoutine();
+  const id = await createRoutine(gen.name);
+  const all = await listExercises();
+  const byName = new Map(all.map((e) => [e.name, e.id]));
+  for (let i = 0; i < gen.days.length; i++) {
+    const d = gen.days[i];
+    const dayRes = await db.insert(routineDay).values({ routineId: id, name: d.name, orderIdx: i }).returning({ id: routineDay.id });
+    const dayId = dayRes[0].id;
+    let order = 0;
+    for (const e of d.exercises) {
+      const exId = byName.get(e.name);
+      if (exId == null) continue; // nombre fuera del catálogo local: se omite sin romper
+      await db.insert(routineDayExercise).values({
+        routineDayId: dayId,
+        exerciseId: exId,
+        orderIdx: order++,
+        targetSets: e.sets,
+        repMin: e.repMin,
+        repMax: e.repMax,
+      });
+    }
+  }
+  return id;
+}
+
+/** Sustituye el ejercicio de una fila de rutina, con su nuevo esquema. */
+export async function replaceDayExercise(
+  rdeId: number,
+  exerciseId: number,
+  scheme: { targetSets: number; repMin: number; repMax: number },
+): Promise<void> {
+  await db.update(routineDayExercise).set({ exerciseId, ...scheme }).where(eq(routineDayExercise.id, rdeId));
 }

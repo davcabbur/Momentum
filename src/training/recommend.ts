@@ -3,7 +3,7 @@ import { exerciseMeta, type Equipment } from './exercise-meta';
 /** Material disponible: gimnasio completo, mancuernas en casa, o solo peso corporal. */
 export type EquipmentScope = 'gym' | 'dumbbell' | 'bodyweight';
 
-function allowed(scope: EquipmentScope, eq: Equipment): boolean {
+export function equipmentAllowed(scope: EquipmentScope, eq: Equipment): boolean {
   if (scope === 'gym') return true;
   if (scope === 'dumbbell') return eq === 'dumbbell' || eq === 'bodyweight';
   return eq === 'bodyweight';
@@ -36,7 +36,7 @@ export function recommendForMuscle(
   const cands = all
     .map((e) => ({ name: e.name, meta: exerciseMeta(e.name) }))
     .filter((x): x is { name: string; meta: NonNullable<ReturnType<typeof exerciseMeta>> } => {
-      return x.meta != null && all.some((e) => e.name === x.name && e.muscleGroup === muscle) && allowed(scope, x.meta.equipment);
+      return x.meta != null && all.some((e) => e.name === x.name && e.muscleGroup === muscle) && equipmentAllowed(scope, x.meta.equipment);
     });
 
   // Compuestos primero (orden estable dentro de cada grupo).

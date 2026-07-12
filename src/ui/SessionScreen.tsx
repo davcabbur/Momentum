@@ -3,9 +3,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
-import { listDayExercises, type DayExercise } from '@/db/routine-repo';
+import { getProfile } from '@/db/bodyweight-repo';
+import { listExercises, type Exercise } from '@/db/exercise-repo';
+import { listDayExercises, replaceDayExercise, type DayExercise } from '@/db/routine-repo';
+import { getSetting, setSetting } from '@/db/settings-repo';
 import { findSession, getSessionNote, listSets, setSessionNote } from '@/db/workout-repo';
+import { defaultScheme } from '@/training/default-scheme';
+import type { Level } from '@/training/levels';
 import { SetLogSheet } from '@/ui/SetLogSheet';
+import { SubstituteSheet } from '@/ui/SubstituteSheet';
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -31,6 +37,8 @@ export function SessionScreen({ dayId, dayName, onBack, locked = false }: Props)
   const [counts, setCounts] = useState<Record<number, number>>({});
   const [openItem, setOpenItem] = useState<DayExercise | null>(null);
   const [note, setNote] = useState('');
+  const [subs, setSubs] = useState<Record<number, Exercise>>({}); // rdeId → ejercicio de hoy
+  const [subFor, setSubFor] = useState<DayExercise | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   const load = useCallback(async () => {
@@ -38,9 +46,30 @@ export function SessionScreen({ dayId, dayName, onBack, locked = false }: Props)
     setSessionId(sid);
     const exs = await listDayExercises(dayId);
     setExercises(Array.isArray(exs) ? exs : []);
+
+    const raw = await getSetting('sessionSubs');
+    let map: Record<number, Exercise> = {};
+    if (raw) {
+      try {
+        const p = JSON.parse(raw);
+        if (p.date === today() && p.dayId === dayId && p.map) {
+          const all = await listExercises();
+          const byId = new Map(all.map((x) => [x.id, x]));
+          for (const [rdeId, exId] of Object.entries(p.map as Record<string, number>)) {
+            const found = byId.get(exId);
+            if (found) map[Number(rdeId)] = found;
+          }
+        }
+      } catch {}
+    }
+    setSubs(map);
+
     const c: Record<number, number> = {};
     if (sid != null) {
-      for (const e of exs) c[e.exercise.id] = (await listSets(sid, e.exercise.id)).length;
+      for (const e of exs) {
+        const exId = (map[e.rdeId] ?? e.exercise).id;
+        c[exId] = (await listSets(sid, exId)).length;
+      }
       setNote((await getSessionNote(sid)) ?? '');
     }
     setCounts(c);
@@ -50,12 +79,17 @@ export function SessionScreen({ dayId, dayName, onBack, locked = false }: Props)
     load();
   }, [load]);
 
+  function effective(e: DayExercise): DayExercise {
+    const sub = subs[e.rdeId];
+    return sub ? { ...e, exercise: sub } : e;
+  }
+
   async function saveNote() {
     if (sessionId != null) await setSessionNote(sessionId, note);
   }
 
   const total = exercises.length;
-  const done = exercises.filter((e) => (counts[e.exercise.id] ?? 0) > 0).length;
+  const done = exercises.filter((e) => (counts[effective(e).exercise.id] ?? 0) > 0).length;
   const pct = total > 0 ? (done / total) * 100 : 0;
   const hasSets = done > 0;
 
@@ -101,20 +135,25 @@ export function SessionScreen({ dayId, dayName, onBack, locked = false }: Props)
       {total === 0 && <Text style={styles.muted}>Este día no tiene ejercicios. Edítalo en la rutina.</Text>}
 
       {exercises.map((e) => {
-        const count = counts[e.exercise.id] ?? 0;
+        const eff = effective(e);
+        const count = counts[eff.exercise.id] ?? 0;
         const isDone = count > 0;
-        const sch = schemeText(e);
+        const sch = schemeText(eff);
         return (
-          <Pressable key={e.rdeId} style={[styles.card, isDone && styles.cardDone]} onPress={() => setOpenItem(e)}>
+          <Pressable key={e.rdeId} style={[styles.card, isDone && styles.cardDone]} onPress={() => setOpenItem(eff)}>
             <Ionicons
               name={isDone ? 'checkmark-circle' : 'ellipse-outline'}
               size={26}
               color={isDone ? theme.good : theme.textMuted}
             />
             <View style={styles.exMain}>
-              <Text style={styles.exName}>{e.exercise.name}</Text>
+              <Text style={styles.exName}>{eff.exercise.name}</Text>
               <Text style={styles.exMeta}>{isDone ? `${count} series hechas` : sch ? `Objetivo ${sch}` : 'Toca para registrar'}</Text>
+              {subs[e.rdeId] && <Text style={styles.exMeta}>Hoy en lugar de {e.exercise.name}</Text>}
             </View>
+            <Pressable hitSlop={8} onPress={() => setSubFor(e)}>
+              <Ionicons name="swap-horizontal" size={20} color={theme.textMuted} />
+            </Pressable>
             <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />
           </Pressable>
         );
@@ -164,6 +203,47 @@ export function SessionScreen({ dayId, dayName, onBack, locked = false }: Props)
           load();
         }}
       />
+
+      {subFor && (
+        <SubstituteSheet
+          visible={subFor != null}
+          exerciseName={subFor.exercise.name}
+          onPick={(ex) => {
+            const item = subFor;
+            setSubFor(null);
+            Alert.alert(`Cambiar por ${ex.name}`, '¿Solo por hoy o siempre (cambia tu rutina)?', [
+              { text: 'Cancelar', style: 'cancel' },
+              {
+                text: 'Solo hoy',
+                onPress: async () => {
+                  const next = { ...subs, [item.rdeId]: ex };
+                  setSubs(next);
+                  const map: Record<number, number> = {};
+                  for (const [k, v] of Object.entries(next)) map[Number(k)] = v.id;
+                  await setSetting('sessionSubs', JSON.stringify({ date: today(), dayId, map }));
+                },
+              },
+              {
+                text: 'Siempre',
+                onPress: async () => {
+                  const prof = await getProfile();
+                  const sc = defaultScheme(ex.name, (prof?.level ?? 'intermedio') as Level);
+                  await replaceDayExercise(item.rdeId, ex.id, { targetSets: sc.sets, repMin: sc.repMin, repMax: sc.repMax });
+                  // Limpiar cualquier sustitución "solo hoy" previa para que no tape el cambio permanente.
+                  const next = { ...subs };
+                  delete next[item.rdeId];
+                  setSubs(next);
+                  const map: Record<number, number> = {};
+                  for (const [k, v] of Object.entries(next)) map[Number(k)] = v.id;
+                  await setSetting('sessionSubs', JSON.stringify({ date: today(), dayId, map }));
+                  load();
+                },
+              },
+            ]);
+          }}
+          onClose={() => setSubFor(null)}
+        />
+      )}
     </ScrollView>
   );
 }
