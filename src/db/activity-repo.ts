@@ -8,7 +8,7 @@ import { getSetting, setSetting } from './settings-repo';
 const STEPS_GOAL_KEY = 'steps_goal';
 const DEFAULT_GOAL = 8000;
 
-export async function upsertActivityDay(date: string, steps: number, source: 'health_connect' | 'manual'): Promise<void> {
+export async function upsertActivityDay(date: string, steps: number, source: 'manual'): Promise<void> {
   const existing = await db.select({ id: activityDay.id }).from(activityDay).where(eq(activityDay.date, date));
   if (existing[0]) {
     await db.update(activityDay).set({ steps, source }).where(eq(activityDay.id, existing[0].id));

@@ -54,7 +54,7 @@ export function ActivityTrend({ reloadNonce }: { reloadNonce?: number }) {
           </View>
         </>
       ) : (
-        <Text style={styles.note}>Aún no hay pasos registrados. Conecta Health Connect o añádelos a mano en Inicio.</Text>
+        <Text style={styles.note}>Aún no hay pasos registrados. Añádelos a mano desde la tarjeta de actividad en Inicio.</Text>
       )}
     </View>
   );

@@ -1,15 +1,14 @@
 import { useCallback, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { addDays } from '@/bodyweight/goal';
-import { getStepsGoal, listActivityDays, upsertActivityDay } from '@/db/activity-repo';
-import { GLOSSARY } from '@/education/glossary';
+import { getStepsGoal, listActivityDays } from '@/db/activity-repo';
 import { computeStreak, goalProgress } from '@/activity/steps';
-import { ensureStepsPermission, hasStepsPermission, isHealthAvailable, readDailySteps } from '@/lib/health-connect';
 import { ProgressRing } from '@/ui/ProgressRing';
 import { StepsSheet } from '@/ui/StepsSheet';
+import { useTermSheet } from '@/ui/Termino';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 
 function today(): string {
@@ -22,22 +21,13 @@ export function ActivityCard({ reloadNonce }: { reloadNonce?: number }) {
   const [goal, setGoal] = useState(8000);
   const [todaySteps, setTodaySteps] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [available, setAvailable] = useState(false);
-  const [connected, setConnected] = useState(false);
   const [sheet, setSheet] = useState(false);
+  const { openTerm, sheet: termSheet } = useTermSheet();
 
   const load = useCallback(async () => {
     const todayStr = today();
     const g = await getStepsGoal();
     setGoal(g);
-    const avail = await isHealthAvailable();
-    setAvailable(avail);
-    const granted = avail && (await hasStepsPermission());
-    setConnected(granted);
-    if (granted) {
-      const data = await readDailySteps(addDays(todayStr, -29), todayStr);
-      for (const d of data) await upsertActivityDay(d.date, d.steps, 'health_connect');
-    }
     const days = await listActivityDays(addDays(todayStr, -29));
     setTodaySteps(days.find((d) => d.date === todayStr)?.steps ?? 0);
     setStreak(computeStreak(days, g, todayStr));
@@ -49,15 +39,8 @@ export function ActivityCard({ reloadNonce }: { reloadNonce?: number }) {
     }, [load, reloadNonce]),
   );
 
-  async function connect() {
-    const ok = await ensureStepsPermission();
-    if (!ok) Alert.alert('Health Connect', 'No se pudo conectar. Puedes meter tus pasos a mano.');
-    load();
-  }
-
   function explain() {
-    const t = GLOSSARY.find((x) => x.key === 'neat');
-    if (t) Alert.alert(t.title, t.body);
+    openTerm('neat');
   }
 
   const pct = goalProgress(todaySteps, goal);
@@ -79,17 +62,12 @@ export function ActivityCard({ reloadNonce }: { reloadNonce?: number }) {
         </ProgressRing>
         <View style={styles.info}>
           <Text style={styles.goalTxt}>Meta {goal} pasos</Text>
-          <Text style={styles.sourceTxt}>{connected ? 'Sincronizado con Health Connect' : available ? 'Sin conectar' : 'Entrada manual'}</Text>
+          <Text style={styles.sourceTxt}>Entrada manual</Text>
         </View>
       </View>
 
-      {available && !connected && (
-        <Pressable style={styles.primary} onPress={connect}>
-          <Text style={styles.primaryTxt}>Conectar Health Connect</Text>
-        </Pressable>
-      )}
       <Pressable style={styles.secondary} onPress={() => setSheet(true)}>
-        <Text style={styles.secondaryTxt}>{connected ? 'Editar meta' : 'Añadir pasos / meta'}</Text>
+        <Text style={styles.secondaryTxt}>Añadir pasos / meta</Text>
       </Pressable>
 
       <StepsSheet
@@ -102,6 +80,7 @@ export function ActivityCard({ reloadNonce }: { reloadNonce?: number }) {
           load();
         }}
       />
+      {termSheet}
     </View>
   );
 }
@@ -118,8 +97,6 @@ const makeStyles = (c: Theme) =>
     info: { flex: 1, gap: 4 },
     goalTxt: { color: c.text, fontSize: 14, fontWeight: '700' },
     sourceTxt: { color: c.textMuted, fontSize: 12 },
-    primary: { backgroundColor: c.accentStrong, borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
-    primaryTxt: { color: c.onAccent, fontWeight: '800' },
     secondary: { borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, paddingVertical: 11, alignItems: 'center' },
     secondaryTxt: { color: c.accent, fontWeight: '700' },
   });
