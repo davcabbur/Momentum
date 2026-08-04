@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { Alert, Pressable, ScrollView, Switch, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, Switch, Text, View } from 'react-native';
 
 import { getSetting, setSetting } from '@/db/settings-repo';
 import { cancelReminders, ensureNotificationPermission, scheduleDailyReminder } from '@/lib/notifications';
@@ -24,7 +24,15 @@ export function RecordatoriosScreen() {
     if (on) {
       const ok = await ensureNotificationPermission();
       if (!ok) {
-        Alert.alert('Permiso necesario', 'Activa las notificaciones del sistema para recibir recordatorios.');
+        // En la versión web no existen notificaciones programables (ver notifications.web.ts).
+        if (Platform.OS === 'web') {
+          Alert.alert(
+            'Solo en la app',
+            'Los recordatorios necesitan la app instalada de Android o iOS. En la versión web el navegador no puede avisarte más tarde.',
+          );
+        } else {
+          Alert.alert('Permiso necesario', 'Activa las notificaciones del sistema para recibir recordatorios.');
+        }
         return;
       }
       await scheduleDailyReminder(reminderHour);

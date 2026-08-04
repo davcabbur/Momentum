@@ -42,6 +42,9 @@ example
 /ios
 /android
 
+# Cloudflare (dist/ ya está arriba, lo genera el export de Expo)
+.wrangler/
+
 # Proyecto Momentum
 .superpowers/
 .env

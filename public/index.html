@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<!--
+  Cáscara HTML de la versión web (PWA).
+
+  Expo usa este archivo como plantilla cuando `web.output` es "single" (ver
+  @expo/cli → webTemplate.ts): rellena los marcadores del idioma y del título con lo
+  que hay en app.json, y engancha el <script> del bundle antes de cerrar el <body>.
+  Ojo: `src/app/+html.tsx` NO se aplica en modo "single" — solo en "static" —, así que
+  todo lo de web va aquí.
+
+  Los marcadores se sustituyen con String.replace y sin flag global, o sea SOLO la
+  primera vez que aparecen: no volver a escribirlos en un comentario, porque se
+  gastarían aquí y el <html> y el <title> se quedarían con el texto crudo a la vista.
+
+  Aquí está lo que no se puede expresar en React Native: las etiquetas del manifest,
+  los meta de Safari para abrirse a pantalla completa desde la pantalla de inicio, y
+  los arreglos de layout propios del iPhone.
+-->
+<html lang="%LANG_ISO_CODE%">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!--
+      viewport-fit=cover es lo que hace que env(safe-area-inset-*) tenga valores
+      reales; sin él el notch y la barra de gestos del iPhone tapan la interfaz.
+    -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, minimum-scale=1, viewport-fit=cover"
+    />
+
+    <title>%WEB_TITLE%</title>
+    <meta name="description" content="Un entrenador que entiende y educa." />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0C0D12" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!--
+      Safari en iOS: pantalla completa, sin barra de direcciones, al abrir desde la
+      pantalla de inicio. `apple-mobile-web-app-capable` sigue siendo el que respeta
+      iOS aunque esté marcado como obsoleto en favor de `mobile-web-app-capable`.
+    -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Momentum" />
+    <link rel="apple-touch-icon" href="/icon-180.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+
+    <style id="momentum-reset">
+      /*
+        La altura real la marcan html y body. dvh se queda AQUÍ y solo aquí: puesto en
+        #root, Safari lo recalcula al aparecer y desaparecer la barra de herramientas y
+        la app entera da un salto en cada scroll.
+      */
+      html,
+      body {
+        height: 100%;
+        height: 100dvh;
+        margin: 0;
+        background-color: #0c0d12;
+      }
+
+      body {
+        /* Los <ScrollView> de React Native mandan; el body no scrollea. */
+        overflow: hidden;
+        overscroll-behavior: none;
+
+        /*
+          Márgenes seguros del iPhone (notch arriba, barra de gestos abajo). Los pone el
+          body para que ninguna pantalla tenga que acordarse.
+        */
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+        box-sizing: border-box;
+      }
+
+      /* #root hereda en porcentaje, nunca en dvh. */
+      #root {
+        display: flex;
+        flex: 1;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      /*
+        Safari hace zoom al enfocar cualquier campo con letra menor de 16px, y después
+        no deshace el zoom. 16px es el mínimo técnico, no una preferencia estética.
+      */
+      input,
+      select,
+      textarea,
+      button {
+        font-size: 16px;
+        font-family: inherit;
+      }
+
+      /*
+        Objetivo táctil mínimo de 44px (guía de Apple). Solo sube lo que se queda corto:
+        es un mínimo, no una altura fija, así que no deforma los controles ya grandes.
+      */
+      [role='button'],
+      button,
+      a[role='link'] {
+        min-height: 44px;
+        min-width: 44px;
+      }
+
+      /*
+        Ni selección de texto ni menú al mantener pulsado: en una app instalada eso se
+        siente como una web, no como una app.
+      */
+      * {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+      }
+      /* …salvo donde el usuario querría copiar o pegar de verdad. */
+      input,
+      textarea {
+        -webkit-user-select: auto;
+        user-select: auto;
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>Momentum necesita JavaScript para funcionar.</noscript>
+    <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function () {
+            /* Sin service worker la app funciona igual, solo no arranca sin red. */
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

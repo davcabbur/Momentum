@@ -1,6 +1,7 @@
 import { makeRedirectUri } from 'expo-auth-session';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
+import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
 
@@ -49,6 +50,7 @@ export async function resetPassword(email: string): Promise<{ error: Error | nul
 }
 
 export async function signInWithGoogle(): Promise<{ error: Error | null }> {
+  if (Platform.OS === 'web') return signInWithGoogleWeb();
   try {
     const redirectTo = makeRedirectUri({ scheme: 'momentum' });
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -65,6 +67,32 @@ export async function signInWithGoogle(): Promise<{ error: Error | null }> {
       return { error: (exErr as Error | null) ?? null };
     }
     return { error: new Error('Respuesta de Google inválida.') };
+  } catch (e) {
+    return { error: e as Error };
+  }
+}
+
+/**
+ * Login con Google en la PWA: redirección de la página completa, no ventana emergente.
+ *
+ * La versión web se sirve con Cross-Origin-Opener-Policy: same-origin (hace falta
+ * para que expo-sqlite tenga SharedArrayBuffer), y esa cabecera corta la referencia
+ * entre la ventana emergente y la que la abrió — así que el flujo de popup que usa
+ * WebBrowser en web se queda esperando para siempre. Redirigiendo la pestaña entera
+ * no hay ventana que vigilar: Google vuelve a la app con el `code` en la URL y lo
+ * canjea supabase-js al arrancar (detectSessionInUrl).
+ *
+ * La URL de vuelta es el propio origen, y hay que tenerla dada de alta en Supabase →
+ * Authentication → URL Configuration → Redirect URLs (ver DEPLOY.md).
+ */
+async function signInWithGoogleWeb(): Promise<{ error: Error | null }> {
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    });
+    // Si no hay error el navegador ya está navegando fuera; no hay nada más que hacer.
+    return { error: (error as Error | null) ?? null };
   } catch (e) {
     return { error: e as Error };
   }

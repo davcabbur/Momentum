@@ -1,0 +1,37 @@
+name: CI
+
+# Los cambios llegan a main vía pull request, así que basta con validarlos ahí:
+# añadir también `push` duplicaría cada run (el de main ya lo hace deploy.yml).
+on:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Tests
+        run: npm test
+
+      - name: TypeScript
+        run: |
+          npx tsc --noEmit
+          npx tsc --noEmit -p tsconfig.worker.json
+
+      # Compilar la web aquí evita descubrir en el deploy que algo no funciona fuera
+      # de nativo (un módulo sin versión web, el .wasm de expo-sqlite sin resolver…).
+      - name: Build web
+        run: npm run build:web
