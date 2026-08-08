@@ -8,6 +8,12 @@ export const sqlite = openDatabaseSync('momentum-v2.db', { enableChangeListener:
 export const db = drizzle(sqlite, { schema });
 
 /**
+ * En nativo, las migraciones van sobre la misma instancia. Existe aparte porque en web `db`
+ * usa el driver asíncrono (ver `client.web.ts`) y `useMigrations` exige el de expo.
+ */
+export const migrationsDb = db;
+
+/**
  * En nativo la BD ya está abierta al importar este módulo, así que no hay nada que
  * esperar. Existe para que la app arranque igual en las dos plataformas: en web
  * (`client.web.ts`) esto sí abre la base de datos, y hace falta.

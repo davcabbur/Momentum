@@ -5,7 +5,7 @@ import { ActivityIndicator, StyleSheet, Text, View, useColorScheme } from 'react
 
 import AppTabs from '@/components/app-tabs';
 import { AuthProvider, useSession } from '@/auth/AuthProvider';
-import { db, initDb } from '@/db/client';
+import { initDb, migrationsDb } from '@/db/client';
 import { useAutoSync } from '@/db/use-auto-sync';
 import { useReconcileOnLogin } from '@/db/use-reconcile';
 import { CuentaScreen } from '@/ui/CuentaScreen';
@@ -42,7 +42,7 @@ export default function RootLayout() {
 }
 
 function Migrations() {
-  const { success, error } = useMigrations(db, migrations);
+  const { success, error } = useMigrations(migrationsDb, migrations);
 
   if (error) return <DbError message={error.message} />;
   if (!success) return <DbLoading />;
