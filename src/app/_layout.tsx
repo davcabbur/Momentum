@@ -6,6 +6,7 @@ import { ActivityIndicator, StyleSheet, Text, View, useColorScheme } from 'react
 import AppTabs from '@/components/app-tabs';
 import { AuthProvider, useSession } from '@/auth/AuthProvider';
 import { db, initDb } from '@/db/client';
+import { useAutoSync } from '@/db/use-auto-sync';
 import { useReconcileOnLogin } from '@/db/use-reconcile';
 import { CuentaScreen } from '@/ui/CuentaScreen';
 import { Loading } from '@/ui/Loading';
@@ -79,6 +80,10 @@ function RootGate() {
   const colorScheme = useColorScheme();
   const { session, loading } = useSession();
   const reconciling = useReconcileOnLogin();
+
+  // Copia de seguridad al día sin que el usuario tenga que acordarse. Espera a que el
+  // reconcile acabe para no pisarse con él.
+  useAutoSync(reconciling);
 
   // La bienvenida se desmonta cuando termina su propia animación (onFinish).
   const [welcomeDone, setWelcomeDone] = useState(false);

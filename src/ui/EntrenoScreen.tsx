@@ -34,8 +34,22 @@ export function EntrenoScreen() {
   const [welcome, setWelcome] = useState<string | null>(null);
   const [suggestedId, setSuggestedId] = useState<number | null>(null);
   const [preview, setPreview] = useState<string[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    try {
+      await cargar();
+      setLoadError(null);
+    } catch (e) {
+      // Sin esto, cualquier fallo dejaba `loaded` en false y la pantalla cargando para
+      // siempre, sin decir nada. Una pantalla que se queda pensando no da ninguna pista.
+      setLoadError((e as Error)?.message ?? 'Error desconocido');
+    } finally {
+      setLoaded(true);
+    }
+  }, []);
+
+  const cargar = useCallback(async () => {
     await seedExercises();
     await deleteEmptySessions();
     const r = await getActiveRoutine();
@@ -60,7 +74,6 @@ export function EntrenoScreen() {
     const suggested = nextDay(ds.map((d) => ({ id: d.id, name: d.name })), await lastSessionDayId());
     setSuggestedId(suggested?.id ?? null);
     setPreview(suggested ? (await listDayExercises(suggested.id)).map((e) => e.exercise.name) : []);
-    setLoaded(true);
   }, []);
 
   useFocusEffect(
@@ -83,6 +96,7 @@ export function EntrenoScreen() {
   }
 
   if (!loaded) return <Loading />;
+  if (loadError) return <LoadFailed message={loadError} onRetry={load} />;
   if (active) return <SessionScreen dayId={active.dayId} dayName={active.dayName} locked onBack={finishSession} />;
   if (view === 'builder') return <RoutineBuilder onDone={() => { setView('home'); load(); }} />;
 
@@ -154,9 +168,33 @@ export function EntrenoScreen() {
   );
 }
 
+/**
+ * Cuando la pantalla no puede cargar, dice por qué y ofrece reintentar. El tono no alarma
+ * —los datos están donde estaban— porque nada en esta app debe generar ansiedad.
+ */
+function LoadFailed({ message, onRetry }: { message: string; onRetry: () => void }) {
+  const styles = useThemedStyles(makeStyles);
+  return (
+    <View style={styles.failWrap}>
+      <Text style={styles.failTitle}>No he podido cargar tu entreno</Text>
+      <Text style={styles.failBody}>Tus datos están a salvo, no se ha perdido nada. Inténtalo otra vez.</Text>
+      <Text style={styles.failDetail}>{message}</Text>
+      <Pressable style={styles.failBtn} onPress={onRetry}>
+        <Text style={styles.failBtnTxt}>Reintentar</Text>
+      </Pressable>
+    </View>
+  );
+}
+
 const makeStyles = (c: Theme) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: c.surface },
+    failWrap: { flex: 1, backgroundColor: c.surface, padding: 24, justifyContent: 'center', gap: 12 },
+    failTitle: { color: c.text, fontSize: 20, fontWeight: '800' },
+    failBody: { color: c.textMuted, fontSize: 14, lineHeight: 20 },
+    failDetail: { color: c.textMuted, fontSize: 12, fontFamily: 'monospace', backgroundColor: c.card, borderRadius: 10, padding: 12 },
+    failBtn: { backgroundColor: c.accentStrong, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
+    failBtnTxt: { color: c.onAccent, fontSize: 15, fontWeight: '800' },
     content: { padding: 14, gap: 12 },
     topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     h1: { color: c.text, fontSize: 22, fontWeight: '800' },
