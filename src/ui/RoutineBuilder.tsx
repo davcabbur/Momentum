@@ -86,6 +86,13 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
 
   const choosing = days.length === 0 || forceChoose;
 
+  /** Abre el asistente para elegir otro reparto de días u otra plantilla.
+   *  No destruye nada: la rutina actual sigue ahí hasta confirmar la nueva al final. */
+  function cambiarRutina() {
+    setForceChoose(true);
+    setStep(0);
+  }
+
   async function pickLevel(l: string) {
     setLvl(l);
     await setLevel(l);
@@ -143,7 +150,21 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
       <Pressable onPress={onDone} hitSlop={8}>
         <Text style={styles.back}>‹ Hecho</Text>
       </Pressable>
-      <Text style={styles.h1}>{choosing ? 'Crea tu rutina' : 'Tu rutina'}</Text>
+
+      {/*
+        Cambiar de rutina vive AQUÍ, en el encabezado, y no al final de la pantalla.
+        Antes era un enlace de texto gris detrás de toda la lista de ejercicios y del
+        resumen de volumen: había que saber que estaba para llegar a él.
+      */}
+      <View style={styles.topRow}>
+        <Text style={styles.h1}>{choosing ? 'Crea tu rutina' : 'Tu rutina'}</Text>
+        {!choosing && (
+          <Pressable style={styles.changeTop} onPress={cambiarRutina} hitSlop={8}>
+            <Ionicons name="swap-horizontal" size={16} color={c.accent} />
+            <Text style={styles.changeTopTxt}>Cambiar de rutina</Text>
+          </Pressable>
+        )}
+      </View>
 
       {choosing ? (
         <>
@@ -388,9 +409,6 @@ export function RoutineBuilder({ onDone }: { onDone: () => void }) {
             </>
           )}
 
-          <Pressable style={styles.change} onPress={() => { setForceChoose(true); setStep(0); }}>
-            <Text style={styles.changeTxt}>Cambiar rutina (días/plantilla)</Text>
-          </Pressable>
         </>
       )}
 
@@ -464,6 +482,21 @@ const makeStyles = (c: Theme) =>
     content: { padding: 14, gap: 10 },
     back: { color: c.accent, fontWeight: '700' },
     h1: { color: c.text, fontSize: 22, fontWeight: '800' },
+    topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10 },
+    changeTop: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: c.card,
+      borderColor: c.cardBorder,
+      borderWidth: 1,
+      borderRadius: 12,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      // 44px de alto mínimo: objetivo táctil cómodo, también en la web del iPhone.
+      minHeight: 44,
+    },
+    changeTopTxt: { color: c.accent, fontSize: 13, fontWeight: '700' },
     stepLbl: { color: c.accent, fontSize: 12, fontWeight: '700', textTransform: 'uppercase' },
     lbl: { color: c.text, fontSize: 15, fontWeight: '700', marginTop: 6 },
     hint: { color: c.textMuted, fontSize: 12 },
@@ -499,8 +532,6 @@ const makeStyles = (c: Theme) =>
     exArrows: { flexDirection: 'row', alignItems: 'center', gap: 10, marginRight: 10 },
     addEx: { paddingVertical: 8, alignItems: 'center', borderWidth: 1, borderColor: c.cardBorder, borderStyle: 'dashed', borderRadius: 10, marginTop: 4 },
     addExTxt: { color: c.accent, fontSize: 13, fontWeight: '600' },
-    change: { padding: 12, alignItems: 'center', marginTop: 4 },
-    changeTxt: { color: c.textMuted },
     summaryToggle: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 12, padding: 14, marginTop: 4 },
     summaryToggleTxt: { color: c.text, fontSize: 14, fontWeight: '700' },
     volBox: { backgroundColor: c.card, borderColor: c.cardBorder, borderWidth: 1, borderRadius: 14, padding: 14, gap: 8 },

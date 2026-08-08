@@ -109,8 +109,10 @@ export function EntrenoScreen() {
         <Text style={styles.h1}>Entreno</Text>
         {routineId != null && days.length > 0 && (
           <Pressable style={styles.editTop} onPress={() => setView('builder')} hitSlop={8}>
-            <Ionicons name="create-outline" size={16} color={c.accent} />
-            <Text style={styles.editTopTxt}>Editar rutina</Text>
+            <Ionicons name="options-outline" size={16} color={c.accent} />
+            {/* "Mi rutina" y no "Editar rutina": detrás se puede editar Y cambiar de rutina,
+                y con el verbo "editar" nadie entraba buscando lo segundo. */}
+            <Text style={styles.editTopTxt}>Mi rutina</Text>
           </Pressable>
         )}
       </View>
@@ -198,7 +200,7 @@ const makeStyles = (c: Theme) =>
     content: { padding: 14, gap: 12 },
     topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     h1: { color: c.text, fontSize: 22, fontWeight: '800' },
-    editTop: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    editTop: { flexDirection: 'row', alignItems: 'center', gap: 5, minHeight: 44, paddingHorizontal: 4 },
     editTopTxt: { color: c.accent, fontSize: 13, fontWeight: '700' },
     welcome: { backgroundColor: c.infoSurface, borderRadius: 14, padding: 14 },
     welcomeTxt: { color: c.infoText, fontSize: 13, lineHeight: 19 },
