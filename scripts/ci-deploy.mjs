@@ -5,9 +5,14 @@
  * No pregunta nada: todo sale de variables de entorno, así que sirve para desplegar
  * desde el móvil (Actions → Deploy → Run workflow, o cualquier push a main).
  *
- * Requeridas:
+ * Requerida:
  *   CLOUDFLARE_API_TOKEN   token con permiso Workers Scripts:Edit
- *   CLOUDFLARE_ACCOUNT_ID  id de la cuenta de Cloudflare
+ *
+ * Opcional:
+ *   CLOUDFLARE_ACCOUNT_ID  id de la cuenta. Si no se da, wrangler la deduce del propio
+ *                          token — que es lo normal cuando el token da acceso a una
+ *                          sola cuenta. Solo hace falta ponerlo si el token alcanza
+ *                          varias, porque entonces wrangler no puede elegir.
  *
  * No hay base de datos ni secretos del Worker: la cuenta y la sincronización son de
  * Supabase (la anon key es pública y va en el bundle) y los datos viven en el
@@ -46,9 +51,20 @@ info(ROOT);
 
 const { CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID } = process.env;
 
-if (!CLOUDFLARE_API_TOKEN) fail('Falta el secreto CLOUDFLARE_API_TOKEN (ver DEPLOY.md).');
-if (!CLOUDFLARE_ACCOUNT_ID) fail('Falta el secreto CLOUDFLARE_ACCOUNT_ID (ver DEPLOY.md).');
+if (!CLOUDFLARE_API_TOKEN) {
+  fail(
+    'Falta el secreto CLOUDFLARE_API_TOKEN (ver DEPLOY.md).\n' +
+      '  Se crea en Settings → Secrets and variables → Actions, pestaña "Secrets"\n' +
+      '  (la de "Variables" no vale), y el nombre distingue mayúsculas.',
+  );
+}
 if (!existsSync(WRANGLER_CONFIG)) fail(`No encuentro wrangler.jsonc en ${ROOT}`);
+
+if (CLOUDFLARE_ACCOUNT_ID) {
+  info(`Cuenta de Cloudflare …${CLOUDFLARE_ACCOUNT_ID.slice(-6)}`);
+} else {
+  info('Sin CLOUDFLARE_ACCOUNT_ID: wrangler deducirá la cuenta del token.');
+}
 
 // --- 1. Export web -----------------------------------------------------------
 
@@ -92,11 +108,26 @@ let url = null;
     // El fallo más probable la primera vez: la cuenta todavía no tiene subdominio
     // *.workers.dev, y eso se elige una sola vez y a mano.
     if (/workers\.dev subdomain/i.test(deployed.out)) {
+      const onboarding = CLOUDFLARE_ACCOUNT_ID
+        ? `https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/workers/onboarding`
+        : 'https://dash.cloudflare.com/?to=/:account/workers/onboarding';
       fail(
         'Tu cuenta de Cloudflare no tiene subdominio workers.dev todavía.\n' +
           '  Regístralo una vez (elige el nombre que quieras) en:\n' +
-          `  https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/workers/onboarding\n` +
+          `  ${onboarding}\n` +
           '  Después vuelve a lanzar este workflow: Actions → Deploy → Run workflow.',
+      );
+    }
+    // Con varias cuentas al alcance del token, wrangler no puede elegir por su cuenta.
+    // Se buscan sus frases literales: con un patrón más laxo (el nombre de la variable a
+    // secas) cualquier otro error que la mencione daría este consejo, que no vendría a
+    // cuento y mandaría a perder el tiempo.
+    if (/more than one account available|Available accounts are/i.test(deployed.out)) {
+      fail(
+        'Tu token de Cloudflare da acceso a más de una cuenta, así que hay que decir cuál.\n' +
+          '  Crea el secreto CLOUDFLARE_ACCOUNT_ID con el Account ID que aparece en\n' +
+          '  Cloudflare → Workers & Pages, columna derecha (o en la lista de arriba).\n' +
+          '  Settings → Secrets and variables → Actions, pestaña "Secrets".',
       );
     }
     fail('El deploy ha fallado. Revisa la salida de arriba.');
