@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert } from '@/lib/alert';
 import { useFocusEffect } from 'expo-router';
 
 import { getProfile, setLevel } from '@/db/bodyweight-repo';

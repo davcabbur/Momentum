@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert } from '@/lib/alert';
 
 import { supabase } from '@/lib/supabase';
 import { formatDateTime } from '@/lib/datetime';
