@@ -11,14 +11,19 @@ sale del mismo `src/`, así que lo que se arregla en una se arregla en las dos.
 
 ## Puesta en marcha (una sola vez)
 
-### 1. Los dos secretos del repositorio
+### 1. El secreto del repositorio
 
-En **Settings → Secrets and variables → Actions → New repository secret**:
+En **Settings → Secrets and variables → Actions → New repository secret** (pestaña
+**Secrets**; la de *Variables* no vale, y el nombre distingue mayúsculas):
 
 | Secreto | De dónde sale |
 | --- | --- |
 | `CLOUDFLARE_API_TOKEN` | Cloudflare → **My Profile → API Tokens → Create Token → Create Custom Token**. Permiso: **Account · Workers Scripts · Edit**. Nada más: no hay base de datos ni KV que tocar. |
-| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare → **Workers & Pages**, columna derecha, *Account ID*. |
+
+Con eso basta. **`CLOUDFLARE_ACCOUNT_ID` es opcional**: wrangler deduce la cuenta del
+propio token. Solo hay que crearlo si el token da acceso a más de una cuenta, porque
+entonces wrangler no puede elegir — y en ese caso el despliegue falla diciéndolo con esas
+palabras. El valor está en Cloudflare → **Workers & Pages**, columna derecha, *Account ID*.
 
 No hay `APP_PASSWORD` ni `SESSION_SECRET`: aquí no hay backend propio. La cuenta sigue
 siendo de Supabase y los datos viven en el dispositivo, así que no hay ningún estado en
@@ -172,5 +177,5 @@ ningún marcador sin rellenar y rompe el despliegue si lo hay.
 También sirve `npx expo start --web`, que pone esas mismas cabeceras a través de
 `metro.config.js`.
 
-Para replicar el despliegue completo sin desplegar, `node scripts/ci-deploy.mjs` con las
-dos variables de entorno puestas.
+Para replicar el despliegue completo sin desplegar, `node scripts/ci-deploy.mjs` con
+`CLOUDFLARE_API_TOKEN` en el entorno.
