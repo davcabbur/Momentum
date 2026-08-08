@@ -40,8 +40,14 @@ describe('translateAuthError', () => {
     });
 
     it('traduce fallo de red, incluido el "Load failed" de Safari', () => {
-      expect(translateAuthError('Network request failed')).toBe('Sin conexión. Comprueba tu internet e inténtalo de nuevo.');
-      expect(translateAuthError('Load failed')).toBe('Sin conexión. Comprueba tu internet e inténtalo de nuevo.');
+      // No dice "sin conexión" a secas: el mismo fallo sale cuando el servidor no
+      // contesta (un proyecto de Supabase en pausa), y mandar a mirar el wifi cuando el
+      // internet va bien hace perder el tiempo.
+      for (const crudo of ['Network request failed', 'Load failed', 'Failed to fetch']) {
+        const r = translateAuthError(crudo);
+        expect(r).toContain('No he podido contactar con el servidor');
+        expect(r).toContain('en pausa');
+      }
     });
 
     it('no distingue mayúsculas de minúsculas', () => {
