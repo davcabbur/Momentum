@@ -129,6 +129,130 @@
   <body>
     <noscript>Momentum necesita JavaScript para funcionar.</noscript>
     <div id="root"></div>
+
+    <!--
+      Red de seguridad contra la pantalla en blanco.
+
+      En el móvil no hay consola que abrir: si el bundle no carga o revienta al arrancar,
+      lo único que se ve es una pantalla vacía, sin ninguna pista de qué ha pasado. Esto
+      va ANTES del bundle a propósito, para poder cazar hasta un fallo al descargarlo.
+
+      Si pasados unos segundos la app no ha pintado nada, se muestra el motivo y un botón
+      que vacía la caché, quita el service worker y recarga — que es exactamente lo que
+      habría que hacer a mano quitando el icono de la pantalla de inicio y volviéndolo a
+      añadir. Los datos no se tocan: viven en la base de datos del dispositivo y en la nube.
+    -->
+    <script>
+      (function () {
+        var problemas = [];
+        var avisado = false;
+
+        function apuntar(texto) {
+          if (texto && problemas.indexOf(texto) === -1) problemas.push(texto);
+        }
+
+        window.addEventListener(
+          'error',
+          function (e) {
+            // Fallo al descargar un <script>/<link>: el evento viene del propio elemento.
+            if (e.target && e.target !== window && e.target.src) {
+              apuntar('No se pudo cargar ' + String(e.target.src).split('/').pop());
+            } else {
+              apuntar(e.message || 'Error al arrancar');
+            }
+          },
+          true,
+        );
+        window.addEventListener('unhandledrejection', function (e) {
+          apuntar((e.reason && (e.reason.message || e.reason)) || 'Fallo sin capturar');
+        });
+
+        function arrancada() {
+          var root = document.getElementById('root');
+          return !!root && root.childElementCount > 0;
+        }
+
+        async function limpiarYRecargar(boton) {
+          boton.disabled = true;
+          boton.textContent = 'Limpiando…';
+          try {
+            if (window.caches) {
+              var claves = await caches.keys();
+              await Promise.all(claves.map(function (k) { return caches.delete(k); }));
+            }
+            if (navigator.serviceWorker) {
+              var regs = await navigator.serviceWorker.getRegistrations();
+              await Promise.all(regs.map(function (r) { return r.unregister(); }));
+            }
+          } catch (e) {
+            /* Si algo de esto falla, se recarga igual: puede bastar. */
+          }
+          location.reload();
+        }
+
+        function mostrar() {
+          if (avisado || arrancada()) return;
+          avisado = true;
+
+          var motivo = problemas.length ? problemas.join('\n') : 'La app no ha terminado de arrancar.';
+          var caja = document.createElement('div');
+          caja.setAttribute(
+            'style',
+            'position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;' +
+              'justify-content:center;gap:18px;padding:28px;box-sizing:border-box;' +
+              'background:#0C0D12;color:#F2F3F7;font:16px/1.5 -apple-system,system-ui,sans-serif;' +
+              'padding-top:calc(28px + env(safe-area-inset-top));' +
+              'padding-bottom:calc(28px + env(safe-area-inset-bottom))',
+          );
+
+          var titulo = document.createElement('div');
+          titulo.textContent = 'Momentum no ha podido arrancar';
+          titulo.setAttribute('style', 'font-size:22px;font-weight:800');
+
+          var texto = document.createElement('div');
+          texto.textContent = 'Casi siempre se arregla vaciando la caché. Tus datos no se tocan: están en este dispositivo y en tu cuenta.';
+          texto.setAttribute('style', 'color:#A8ADBD');
+
+          var detalle = document.createElement('pre');
+          detalle.textContent = motivo;
+          detalle.setAttribute(
+            'style',
+            'margin:0;padding:12px;border-radius:10px;background:#1A1C25;color:#A8ADBD;' +
+              'font:12px/1.45 ui-monospace,monospace;white-space:pre-wrap;word-break:break-word;' +
+              'max-height:32vh;overflow:auto',
+          );
+
+          var limpiar = document.createElement('button');
+          limpiar.textContent = 'Vaciar caché y reintentar';
+          limpiar.setAttribute(
+            'style',
+            'min-height:52px;border:0;border-radius:14px;background:#4B32D6;color:#fff;' +
+              'font-size:16px;font-weight:800',
+          );
+          limpiar.onclick = function () { limpiarYRecargar(limpiar); };
+
+          var recargar = document.createElement('button');
+          recargar.textContent = 'Solo recargar';
+          recargar.setAttribute(
+            'style',
+            'min-height:44px;border:0;border-radius:14px;background:transparent;color:#A8ADBD;font-size:15px',
+          );
+          recargar.onclick = function () { location.reload(); };
+
+          caja.appendChild(titulo);
+          caja.appendChild(texto);
+          caja.appendChild(detalle);
+          caja.appendChild(limpiar);
+          caja.appendChild(recargar);
+          document.body.appendChild(caja);
+        }
+
+        // 15 s: de sobra para el primer arranque, que tiene que descargar el .wasm de
+        // SQLite y montar la base de datos, y aun así corto para no dejar mirando el vacío.
+        setTimeout(mostrar, 15000);
+      })();
+    </script>
+
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
