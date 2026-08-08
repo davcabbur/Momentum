@@ -34,6 +34,7 @@ Primer y único usuario por ahora es el autor; posible salida a mercado más ade
   - `web.output` es `"single"`: la cáscara sale de `public/index.html` (`+html.tsx` NO se aplica en ese modo). `"static"` no vale: el prerender corre en Node, sin `window`, y Supabase revienta al importarse.
   - En web la BD se abre en asíncrono: `initDb()` en `src/db/client.web.ts`, esperado en `src/app/_layout.tsx`. En nativo es un no-op. No volver a `openDatabaseSync` en web: da "Sync operation timeout".
   - Variantes `.web.ts` para lo que no existe en navegador: `notifications.web.ts` (no-op: no se pueden programar avisos) y `backup-file.web.ts` (descarga/selector del navegador).
+  - **Avisos: usar SIEMPRE `Alert` de `@/lib/alert`, nunca el de `react-native`.** En react-native-web `Alert.alert` es una función vacía (`static alert() {}`): los mensajes desaparecen sin rastro y las confirmaciones no ejecutan su acción, porque el diálogo nunca aparece. `alert.web.ts` los sirve con los diálogos del navegador.
   - Login con Google en web: redirección de página completa (`detectSessionInUrl` activo solo en web). Nada de ventana emergente: `COOP: same-origin` la deja incomunicada. La URL de la app tiene que estar en Supabase → Authentication → Redirect URLs.
 
 ## Reglas de producto (innegociables)

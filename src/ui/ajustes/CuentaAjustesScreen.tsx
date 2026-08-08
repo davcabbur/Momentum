@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert } from '@/lib/alert';
 
 import { useSession } from '@/auth/AuthProvider';
 import { deleteAccount, signOut } from '@/auth/auth';

@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { Alert, Platform, Pressable, ScrollView, Switch, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, Switch, Text, View } from 'react-native';
+import { Alert } from '@/lib/alert';
 
 import { getSetting, setSetting } from '@/db/settings-repo';
 import { cancelReminders, ensureNotificationPermission, scheduleDailyReminder } from '@/lib/notifications';

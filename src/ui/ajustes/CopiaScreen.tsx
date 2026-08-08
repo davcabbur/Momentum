@@ -1,4 +1,5 @@
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert } from '@/lib/alert';
 
 import { exportData, importData } from '@/db/backup';
 import { seedExercises } from '@/db/exercise-repo';
