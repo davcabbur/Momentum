@@ -42,12 +42,14 @@
     "react-native-worklets": "0.5.1"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260804.1",
     "@types/jest": "~29.5.14",
     "@types/react": "~19.1.10",
     "babel-plugin-inline-import": "^3.0.0",
     "drizzle-kit": "^0.31.10",
     "jest": "^29.7.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "wrangler": "^4.118.0"
   },
   "scripts": {
     "start": "expo start",
@@ -57,7 +59,10 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "test": "jest",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "build:web": "expo export -p web --output-dir dist --clear",
+    "deploy": "node scripts/ci-deploy.mjs",
+    "deploy:preview": "npm run build:web && wrangler dev"
   },
   "private": true
 }

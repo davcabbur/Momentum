@@ -1,0 +1,16 @@
+{
+  // TypeScript del Worker de Cloudflare (worker/index.ts). Va aparte del tsconfig de
+  // la app porque el entorno es otro: workerd, no React Native.
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["esnext"],
+    "types": ["@cloudflare/workers-types"],
+    "strict": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": ["worker/**/*.ts"]
+}

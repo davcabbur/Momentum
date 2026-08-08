@@ -1,0 +1,23 @@
+{
+  // Momentum — PWA servida desde Cloudflare Workers.
+  // No hay D1 ni secretos: la cuenta y la sincronización son de Supabase, y la base
+  // de datos vive en el dispositivo (expo-sqlite → OPFS en el navegador).
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "momentum",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-06-01",
+  "assets": {
+    "directory": "dist",
+    "binding": "ASSETS",
+    // Cualquier ruta desconocida devuelve index.html: es una SPA, las rutas las
+    // resuelve expo-router en el cliente.
+    "not_found_handling": "single-page-application",
+    // Sin esto, Cloudflare sirve los ficheros estáticos antes de llegar al Worker y
+    // se quedarían sin las cabeceras COOP/COEP — es decir, sin SharedArrayBuffer y
+    // sin base de datos. Tiene que pasar TODO por el Worker.
+    "run_worker_first": true
+  },
+  "observability": {
+    "enabled": true
+  }
+}

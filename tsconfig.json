@@ -19,6 +19,11 @@
     "expo-env.d.ts"
   ],
   "exclude": [
-    "supabase/functions"
+    "supabase/functions",
+    // El Worker de Cloudflare corre en workerd, no en React Native: sus tipos globales
+    // (Fetcher, Request de workers-types…) chocan con los del DOM/RN. Se comprueba
+    // aparte, con tsconfig.worker.json.
+    "worker",
+    "dist"
   ]
 }

@@ -1,6 +1,7 @@
 import 'react-native-url-polyfill/auto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
+import { Platform } from 'react-native';
 
 // La anon key es PÚBLICA y segura para incrustar en la app: la protección la dan las
 // políticas RLS de Supabase (cada usuario solo accede a su propia fila). NO usar la service_role aquí.
@@ -13,7 +14,10 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     storage: AsyncStorage,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false,
+    // En web (PWA) el login con Google vuelve a la propia app con el `code` en la
+    // URL, y es supabase-js quien lo canjea por la sesión. En nativo el canje lo
+    // hace a mano signInWithGoogle(), así que ahí sobra.
+    detectSessionInUrl: Platform.OS === 'web',
     flowType: 'pkce',
   },
 });

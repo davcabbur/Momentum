@@ -16,6 +16,7 @@ Primer y único usuario por ahora es el autor; posible salida a mercado más ade
 - **Navegación**: expo-router, pestañas inferiores: **Hoy · Entreno · Progreso · Más**.
 - **Gráficas**: librería sobre `react-native-svg`.
 - Pruebas en dispositivo con Expo Go / development build; builds en la nube con EAS.
+- **Web (PWA)**: el mismo código sale también como app web instalable, para usarla en el iPhone sin App Store. Ver `DEPLOY.md`.
 
 ## Backend e infraestructura (sin secretos)
 
@@ -27,6 +28,13 @@ Primer y único usuario por ahora es el autor; posible salida a mercado más ade
 - **Login obligatorio.** Google OAuth en **producción**: cualquier cuenta de Google puede entrar (ya no hay límite de usuarios de prueba). Scopes básicos (email+perfil), sin verificación de Google; puede salir un aviso de "app no verificada", es normal.
 - **Política de privacidad**: `docs/privacy.html`, servida por **GitHub Pages** (rama `main`, carpeta `/docs`) en `https://davcabbur.github.io/Momentum/privacy.html`. El repo es **público** (requisito de Pages gratis). La app enlaza esa URL (`PRIVACY_URL` en `src/ui/ajustes/AjustesMenu.tsx`); cambios se publican solos al hacer push a `main`.
 - **Salida a Play Store** en preparación: ver memoria `play-store-launch` para el estado y los pendientes externos (desplegar función, OAuth, closed testing, Data Safety).
+- **PWA en Cloudflare Workers** (para el iPhone, sin App Store). **Léete `DEPLOY.md` antes de tocar nada de web.** Lo esencial:
+  - No hay backend ni D1: `worker/index.ts` solo sirve `dist/` añadiendo `Cross-Origin-Opener-Policy: same-origin` y `Cross-Origin-Embedder-Policy: require-corp`. Sin esas cabeceras no hay `SharedArrayBuffer` y `expo-sqlite` no puede abrir la BD en web. `assets.run_worker_first: true` es obligatorio: si no, los estáticos se sirven sin pasar por el Worker.
+  - Despliegue: push a `main` → `.github/workflows/deploy.yml` → `scripts/ci-deploy.mjs`. Secretos: solo `CLOUDFLARE_API_TOKEN` (Workers Scripts:Edit) y `CLOUDFLARE_ACCOUNT_ID`. **No conectar el repo a Cloudflare Workers Builds** (desplegaría en paralelo y se pisarían).
+  - `web.output` es `"single"`: la cáscara sale de `public/index.html` (`+html.tsx` NO se aplica en ese modo). `"static"` no vale: el prerender corre en Node, sin `window`, y Supabase revienta al importarse.
+  - En web la BD se abre en asíncrono: `initDb()` en `src/db/client.web.ts`, esperado en `src/app/_layout.tsx`. En nativo es un no-op. No volver a `openDatabaseSync` en web: da "Sync operation timeout".
+  - Variantes `.web.ts` para lo que no existe en navegador: `notifications.web.ts` (no-op: no se pueden programar avisos) y `backup-file.web.ts` (descarga/selector del navegador).
+  - Login con Google en web: redirección de página completa (`detectSessionInUrl` activo solo en web). Nada de ventana emergente: `COOP: same-origin` la deja incomunicada. La URL de la app tiene que estar en Supabase → Authentication → Redirect URLs.
 
 ## Reglas de producto (innegociables)
 
@@ -70,7 +78,10 @@ Mantener cada módulo enfocado y testeable por separado, para enchufar las fases
 - `npx expo start --android` — arrancar directo en Android.
 - `npm test` — ejecutar tests (Jest, cuando se configure en A2).
 - `npx tsc --noEmit` — verificar TypeScript sin emitir archivos.
+- `npx tsc --noEmit -p tsconfig.worker.json` — verificar el Worker de Cloudflare (va aparte: corre en workerd, no en RN).
 - `npx drizzle-kit generate` — generar migraciones de la BD (cuando se añada Drizzle).
+- `npm run build:web` — generar `dist/` (la PWA).
+- `npx wrangler dev` — servir `dist/` con las cabeceras reales de producción.
 
 ## Roadmap (fuera del Núcleo, no construir aún)
 
