@@ -1,16 +1,8 @@
 import { useEffect, useState } from 'react';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useThemedStyles, type Theme } from '@/ui/theme';
-
-/**
- * En web, expo-camera lee los códigos con la API BarcodeDetector del navegador.
- * Chrome en Android la tiene; Safari (iPhone) no, y sin ella la cámara se abriría y
- * no reconocería nada — se ve como que la app está rota. Mejor decirlo y mandar a la
- * búsqueda por nombre, que sí funciona en todas partes.
- */
-const canScan = Platform.OS !== 'web' || (typeof window !== 'undefined' && 'BarcodeDetector' in window);
 
 interface Props {
   visible: boolean;
@@ -18,7 +10,13 @@ interface Props {
   onScanned: (barcode: string) => void;
 }
 
-/** Escáner de código de barras (cámara). Llama a onScanned una vez con el código. */
+/**
+ * Escáner de código de barras (cámara) en Android/iOS nativos.
+ *
+ * La versión web es otra: `ScannerSheet.web.tsx`. expo-camera no sirve en navegador —solo
+ * enciende su escáner para códigos 'qr' y trae jsQR de un CDN que nuestras cabeceras
+ * bloquean—, así que allí se lee la cámara a mano y se decodifica con zxing.
+ */
 export function ScannerSheet({ visible, onClose, onScanned }: Props) {
   const [permission, requestPermission] = useCameraPermissions();
   const [handled, setHandled] = useState(false);
@@ -29,24 +27,6 @@ export function ScannerSheet({ visible, onClose, onScanned }: Props) {
   }, [visible]);
 
   if (!visible) return null;
-
-  if (!canScan) {
-    return (
-      <Modal visible animationType="slide" onRequestClose={onClose}>
-        <View style={styles.screen}>
-          <View style={styles.center}>
-            <Text style={styles.msg}>
-              Este navegador no puede leer códigos de barras. Busca el alimento por su nombre: encontrarás lo mismo,
-              solo con un par de letras más.
-            </Text>
-            <Pressable style={styles.btn} onPress={onClose}>
-              <Text style={styles.btnTxt}>Buscar por nombre</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
-    );
-  }
 
   return (
     <Modal visible animationType="slide" onRequestClose={onClose}>
