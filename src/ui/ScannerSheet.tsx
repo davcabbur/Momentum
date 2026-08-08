@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useThemedStyles, type Theme } from '@/ui/theme';
 
+<<<<<<< Updated upstream
 /**
  * En web, expo-camera lee los códigos con la API BarcodeDetector del navegador.
  * Chrome en Android la tiene; Safari (iPhone) no, y sin ella la cámara se abriría y
@@ -11,6 +12,8 @@ import { useThemedStyles, type Theme } from '@/ui/theme';
  * búsqueda por nombre, que sí funciona en todas partes.
  */
 const canScan = Platform.OS !== 'web' || (typeof window !== 'undefined' && 'BarcodeDetector' in window);
+=======
+>>>>>>> Stashed changes
 
 interface Props {
   visible: boolean;
@@ -18,7 +21,13 @@ interface Props {
   onScanned: (barcode: string) => void;
 }
 
-/** Escáner de código de barras (cámara). Llama a onScanned una vez con el código. */
+/**
+ * Escáner de código de barras (cámara) en Android/iOS nativos.
+ *
+ * La versión web es otra: `ScannerSheet.web.tsx`. expo-camera no sirve en navegador —solo
+ * enciende su escáner para códigos 'qr' y trae jsQR de un CDN que nuestras cabeceras
+ * bloquean—, así que allí se lee la cámara a mano y se decodifica con zxing.
+ */
 export function ScannerSheet({ visible, onClose, onScanned }: Props) {
   const [permission, requestPermission] = useCameraPermissions();
   const [handled, setHandled] = useState(false);
@@ -30,6 +39,7 @@ export function ScannerSheet({ visible, onClose, onScanned }: Props) {
 
   if (!visible) return null;
 
+<<<<<<< Updated upstream
   if (!canScan) {
     return (
       <Modal visible animationType="slide" onRequestClose={onClose}>
@@ -48,6 +58,8 @@ export function ScannerSheet({ visible, onClose, onScanned }: Props) {
     );
   }
 
+=======
+>>>>>>> Stashed changes
   return (
     <Modal visible animationType="slide" onRequestClose={onClose}>
       <View style={styles.screen}>
