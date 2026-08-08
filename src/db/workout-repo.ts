@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from 'drizzle-orm';
+import { and, asc, desc, eq, notExists, sql } from 'drizzle-orm';
 
 import { db } from './client';
 import { exercise, routineDay, setLog, workoutSession } from './schema';
@@ -26,13 +26,22 @@ export async function findSession(date: string, routineDayId: number): Promise<n
   return rows[0]?.id ?? null;
 }
 
-/** Borra las sesiones que se quedaron sin ninguna serie (p. ej. abriste un día y no registraste). */
+/**
+ * Borra las sesiones que se quedaron sin ninguna serie (p. ej. abriste un día y no
+ * registraste). Corre al entrar en Entreno.
+ *
+ * Una sola sentencia, no un bucle. Antes se pedía la lista de sesiones y se hacía una
+ * consulta por cada una: en Android eso son llamadas nativas rápidas y no se nota, pero en
+ * web el driver de Drizzle solo tiene operaciones síncronas, y cada una bloquea el hilo
+ * principal esperando al worker de SQLite. Con un historial de verdad son cientos de
+ * bloqueos seguidos y la interfaz no llega a pintar: la pantalla se queda cargando para
+ * siempre. Con la base vacía no hay ni una vuelta, así que el fallo solo aparecía con
+ * datos.
+ */
 export async function deleteEmptySessions(): Promise<void> {
-  const sessions = await db.select({ id: workoutSession.id }).from(workoutSession);
-  for (const s of sessions) {
-    const sets = await db.select({ id: setLog.id }).from(setLog).where(eq(setLog.sessionId, s.id)).limit(1);
-    if (sets.length === 0) await db.delete(workoutSession).where(eq(workoutSession.id, s.id));
-  }
+  await db
+    .delete(workoutSession)
+    .where(notExists(db.select({ uno: sql`1` }).from(setLog).where(eq(setLog.sessionId, workoutSession.id))));
 }
 
 export async function listSets(sessionId: number, exerciseId: number): Promise<SetLog[]> {
