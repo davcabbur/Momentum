@@ -1,14 +1,21 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Alert } from '@/lib/alert';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { resetPassword, signInEmail, signInWithGoogle, signUpEmail } from '@/auth/auth';
+import { forgetEmail, getRememberedEmail, rememberEmail } from '@/auth/remembered-account';
 import { translateAuthError } from '@/lib/auth-errors';
 import { GoogleG } from '@/ui/GoogleG';
 import { useTheme, useThemedStyles, type Theme } from '@/ui/theme';
 
-/** Login/registro (pantalla de entrada). Diseño del handoff de marca. Email + Google. */
+/**
+ * Login/registro (pantalla de entrada). Diseño del handoff de marca. Email + Google.
+ *
+ * Si ya se entró antes en este dispositivo, la cuenta se recuerda y solo se pide la
+ * contraseña: un campo y dentro. El correo no se pierde de vista —se muestra— y hay una
+ * salida para usar otro, que es lo que hace que esto no sea una jaula.
+ */
 export function CuentaScreen() {
   const { c } = useTheme();
   const styles = useThemedStyles(makeStyles);
@@ -19,9 +26,37 @@ export function CuentaScreen() {
   const [focus, setFocus] = useState<'email' | 'pass' | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // Cuenta recordada: null mientras se lee, '' si no hay ninguna.
+  const [remembered, setRemembered] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    getRememberedEmail().then((value) => {
+      if (!alive) return;
+      setRemembered(value ?? '');
+      if (value) setEmail(value);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  /** Con la cuenta recordada solo se pide la contraseña (y nunca al registrarse). */
+  const soloPass = mode === 'login' && !!remembered;
+
+  async function usarOtroCorreo() {
+    await forgetEmail();
+    setRemembered('');
+    setEmail('');
+    setPass('');
+  }
+
   async function submit() {
     if (!email.trim() || pass.length < 6) {
-      Alert.alert('Datos incompletos', 'Introduce un correo y una contraseña de al menos 6 caracteres.');
+      Alert.alert(
+        'Datos incompletos',
+        soloPass ? 'Escribe tu contraseña (al menos 6 caracteres).' : 'Introduce un correo y una contraseña de al menos 6 caracteres.',
+      );
       return;
     }
     setBusy(true);
@@ -36,6 +71,9 @@ export function CuentaScreen() {
       } else {
         const { error } = await signInEmail(email, pass);
         if (error) Alert.alert('No se pudo entrar', translateAuthError(error));
+        // Solo se recuerda lo que ha funcionado: guardar un correo con el que no se
+        // puede entrar dejaría la pantalla de un campo pidiendo lo imposible.
+        else await rememberEmail(email);
       }
       // Si va bien, la sesión cambia y la "puerta" muestra la app automáticamente.
     } finally {
@@ -80,18 +118,34 @@ export function CuentaScreen() {
             : 'Retoma tu progreso donde lo dejaste. Tu entrenador te espera.'}
         </Text>
 
-        <Text style={styles.label}>Correo</Text>
-        <TextInput
-          value={email}
-          onChangeText={setEmail}
-          onFocus={() => setFocus('email')}
-          onBlur={() => setFocus(null)}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          placeholder="tu@correo.com"
-          placeholderTextColor={c.textMuted}
-          style={[styles.input, { borderColor: borderFor('email') }]}
-        />
+        {soloPass ? (
+          <View style={styles.accountRow}>
+            <View style={styles.accountInfo}>
+              <Text style={styles.accountLabel}>Tu cuenta</Text>
+              <Text style={styles.accountEmail} numberOfLines={1}>
+                {remembered}
+              </Text>
+            </View>
+            <Pressable onPress={usarOtroCorreo} hitSlop={8}>
+              <Text style={styles.accountSwap}>Cambiar</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <>
+            <Text style={styles.label}>Correo</Text>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              onFocus={() => setFocus('email')}
+              onBlur={() => setFocus(null)}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              placeholder="tu@correo.com"
+              placeholderTextColor={c.textMuted}
+              style={[styles.input, { borderColor: borderFor('email') }]}
+            />
+          </>
+        )}
 
         <Text style={styles.label}>Contraseña</Text>
         <TextInput
@@ -100,6 +154,15 @@ export function CuentaScreen() {
           onFocus={() => setFocus('pass')}
           onBlur={() => setFocus(null)}
           secureTextEntry
+          // Con la cuenta ya puesta, el foco va directo a lo único que falta.
+          autoFocus={soloPass}
+          // Que iOS y el gestor de contraseñas sepan qué es esto y lo ofrezcan solo.
+          textContentType={signup ? 'newPassword' : 'password'}
+          autoComplete={signup ? 'new-password' : 'current-password'}
+          returnKeyType="go"
+          onSubmitEditing={() => {
+            if (!busy) submit();
+          }}
           placeholder="········"
           placeholderTextColor={c.textMuted}
           style={[styles.input, { borderColor: borderFor('pass') }]}
@@ -149,6 +212,22 @@ const makeStyles = (c: Theme) =>
     subtitle: { color: c.textMuted, fontSize: 15, lineHeight: 21, marginTop: 8 },
     label: { color: c.textMuted, fontSize: 13, fontWeight: '600', marginTop: 18, marginBottom: 6 },
     input: { height: 52, backgroundColor: c.card, borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, color: c.text, fontSize: 15 },
+    accountRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      marginTop: 20,
+      backgroundColor: c.card,
+      borderColor: c.cardBorder,
+      borderWidth: 1,
+      borderRadius: 14,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+    },
+    accountInfo: { flex: 1 },
+    accountLabel: { color: c.textMuted, fontSize: 12, fontWeight: '600' },
+    accountEmail: { color: c.text, fontSize: 15, fontWeight: '600', marginTop: 2 },
+    accountSwap: { color: c.accent, fontSize: 13, fontWeight: '700' },
     forgot: { alignSelf: 'flex-end', marginTop: 10 },
     forgotTxt: { color: c.accent, fontSize: 13, fontWeight: '700' },
     primary: {
