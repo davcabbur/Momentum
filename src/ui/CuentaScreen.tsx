@@ -28,14 +28,14 @@ export function CuentaScreen() {
     try {
       if (mode === 'signup') {
         const { error, needsConfirm } = await signUpEmail(email, pass);
-        if (error) return Alert.alert('No se pudo registrar', translateAuthError(error.message));
+        if (error) return Alert.alert('No se pudo registrar', translateAuthError(error));
         if (needsConfirm) {
           Alert.alert('Casi listo', 'Te hemos enviado un correo para confirmar tu cuenta. Confírmalo y vuelve a iniciar sesión.');
           setMode('login');
         }
       } else {
         const { error } = await signInEmail(email, pass);
-        if (error) Alert.alert('No se pudo entrar', translateAuthError(error.message));
+        if (error) Alert.alert('No se pudo entrar', translateAuthError(error));
       }
       // Si va bien, la sesión cambia y la "puerta" muestra la app automáticamente.
     } finally {
@@ -47,7 +47,7 @@ export function CuentaScreen() {
     setBusy(true);
     try {
       const { error } = await signInWithGoogle();
-      if (error) Alert.alert('No se pudo entrar con Google', translateAuthError(error.message));
+      if (error) Alert.alert('No se pudo entrar con Google', translateAuthError(error));
     } finally {
       setBusy(false);
     }
@@ -56,7 +56,7 @@ export function CuentaScreen() {
   async function forgot() {
     if (!email.trim()) return Alert.alert('Correo', 'Escribe tu correo arriba y vuelve a pulsar.');
     const { error } = await resetPassword(email);
-    Alert.alert(error ? 'Error' : 'Listo', error ? translateAuthError(error.message) : 'Te hemos enviado un correo para restablecer la contraseña.');
+    Alert.alert(error ? 'Error' : 'Listo', error ? translateAuthError(error) : 'Te hemos enviado un correo para restablecer la contraseña.');
   }
 
   const signup = mode === 'signup';

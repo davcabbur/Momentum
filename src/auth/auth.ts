@@ -4,16 +4,17 @@ import * as WebBrowser from 'expo-web-browser';
 import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
+import type { AuthErrorLike } from '@/lib/auth-errors';
 
-export async function signUpEmail(email: string, password: string): Promise<{ error: Error | null; needsConfirm: boolean }> {
+export async function signUpEmail(email: string, password: string): Promise<{ error: AuthErrorLike | null; needsConfirm: boolean }> {
   const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
   // Con "Confirm email" activo, no hay sesión hasta que el usuario confirma el correo.
-  return { error: (error as Error | null) ?? null, needsConfirm: !error && !data.session };
+  return { error: (error as AuthErrorLike | null) ?? null, needsConfirm: !error && !data.session };
 }
 
-export async function signInEmail(email: string, password: string): Promise<{ error: Error | null }> {
+export async function signInEmail(email: string, password: string): Promise<{ error: AuthErrorLike | null }> {
   const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-  return { error: (error as Error | null) ?? null };
+  return { error: (error as AuthErrorLike | null) ?? null };
 }
 
 export async function signOut(): Promise<void> {
@@ -44,12 +45,12 @@ export async function deleteAccount(): Promise<{ error: Error | null }> {
   return { error: fnError };
 }
 
-export async function resetPassword(email: string): Promise<{ error: Error | null }> {
+export async function resetPassword(email: string): Promise<{ error: AuthErrorLike | null }> {
   const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
-  return { error: (error as Error | null) ?? null };
+  return { error: (error as AuthErrorLike | null) ?? null };
 }
 
-export async function signInWithGoogle(): Promise<{ error: Error | null }> {
+export async function signInWithGoogle(): Promise<{ error: AuthErrorLike | null }> {
   if (Platform.OS === 'web') return signInWithGoogleWeb();
   try {
     const redirectTo = makeRedirectUri({ scheme: 'momentum' });
@@ -64,7 +65,7 @@ export async function signInWithGoogle(): Promise<{ error: Error | null }> {
     const code = Linking.parse(res.url).queryParams?.code;
     if (typeof code === 'string') {
       const { error: exErr } = await supabase.auth.exchangeCodeForSession(code);
-      return { error: (exErr as Error | null) ?? null };
+      return { error: (exErr as AuthErrorLike | null) ?? null };
     }
     return { error: new Error('Respuesta de Google inválida.') };
   } catch (e) {
@@ -85,14 +86,14 @@ export async function signInWithGoogle(): Promise<{ error: Error | null }> {
  * La URL de vuelta es el propio origen, y hay que tenerla dada de alta en Supabase →
  * Authentication → URL Configuration → Redirect URLs (ver DEPLOY.md).
  */
-async function signInWithGoogleWeb(): Promise<{ error: Error | null }> {
+async function signInWithGoogleWeb(): Promise<{ error: AuthErrorLike | null }> {
   try {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: window.location.origin },
     });
     // Si no hay error el navegador ya está navegando fuera; no hay nada más que hacer.
-    return { error: (error as Error | null) ?? null };
+    return { error: (error as AuthErrorLike | null) ?? null };
   } catch (e) {
     return { error: e as Error };
   }
