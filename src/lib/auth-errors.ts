@@ -12,6 +12,15 @@
  * puede diagnosticar a distancia.
  */
 
+/**
+ * Un fallo de red no distingue entre "no tienes internet" y "no contesta el servidor", y
+ * decir lo primero cuando pasaba lo segundo manda a mirar donde no es. Este mensaje cubre
+ * los dos casos sin mentir en ninguno, y nombra la causa que no se le ocurre a nadie: un
+ * proyecto de Supabase en pausa tumba la app entera, en el móvil y en la web a la vez.
+ */
+const NO_REACH =
+  'No he podido contactar con el servidor. Comprueba tu conexión; si tienes internet, el servidor puede estar en pausa o caído.';
+
 /** Errores con `code` estable de Supabase Auth. */
 const BY_CODE: Record<string, string> = {
   invalid_credentials: 'Correo o contraseña incorrectos.',
@@ -47,9 +56,9 @@ const BY_MESSAGE: Array<[needle: string, message: string]> = [
   ['email logins are disabled', 'La entrada con correo está desactivada en el servidor.'],
   ['for security purposes', 'Demasiados intentos. Espera un momento y vuelve a probar.'],
   ['rate limit', 'Demasiados intentos. Espera un momento y vuelve a probar.'],
-  ['network request failed', 'Sin conexión. Comprueba tu internet e inténtalo de nuevo.'],
-  ['failed to fetch', 'Sin conexión. Comprueba tu internet e inténtalo de nuevo.'],
-  ['load failed', 'Sin conexión. Comprueba tu internet e inténtalo de nuevo.'],
+  ['network request failed', NO_REACH],
+  ['failed to fetch', NO_REACH],
+  ['load failed', NO_REACH],
   // Suele ser un trigger o una restricción de la base de datos al crear el usuario.
   ['database error', 'Error del servidor al crear la cuenta. Vuelve a intentarlo en un rato.'],
 ];
