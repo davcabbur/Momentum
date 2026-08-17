@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert } from '@/lib/alert';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { deleteWeight, upsertWeight } from '@/db/bodyweight-repo';
@@ -22,26 +23,47 @@ function prettyDate(iso: string): string {
   return `${d}/${m}/${y}`;
 }
 
+/** Muestra el peso con coma, que es el separador decimal de aquí y el de la app. */
+const aTexto = (kg: number): string => kg.toFixed(1).replace('.', ',');
+
+/** Lee lo escrito acepte coma o punto: el teclado del iPhone en español da coma. */
+const aNumero = (texto: string): number => parseFloat(texto.replace(',', '.'));
+
 export function AddWeightSheet({ visible, date, initialKg, isExisting, onClose }: Props) {
   const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
-  const [value, setValue] = useState(String(initialKg));
+  const [value, setValue] = useState(() => aTexto(initialKg));
 
   useEffect(() => {
-    if (visible) setValue(String(initialKg));
+    if (visible) setValue(aTexto(initialKg));
   }, [visible, initialKg]);
 
+  /** Deja escribir solo cifras y UN separador decimal, con una decimal como mucho. */
+  function onChange(texto: string) {
+    const limpio = texto
+      .replace(/[^0-9.,]/g, '')
+      .replace(/[.,]/g, ',')
+      .replace(/,(?=.*,)/g, ''); // se queda solo la primera coma
+    const [entera, decimal] = limpio.split(',');
+    setValue(decimal === undefined ? entera : `${entera},${decimal.slice(0, 1)}`);
+  }
+
   function step(delta: number) {
-    const current = parseFloat(value.replace(',', '.'));
-    const next = (Number.isNaN(current) ? initialKg : current) + delta;
-    setValue(next.toFixed(1));
+    const current = aNumero(value);
+    // Nunca por debajo de 0,1: un peso de 0 o negativo no significa nada.
+    const next = Math.max(0.1, (Number.isNaN(current) ? initialKg : current) + delta);
+    setValue(aTexto(next));
   }
 
   async function save() {
-    const kg = parseFloat(value.replace(',', '.'));
-    if (!Number.isNaN(kg) && kg > 0) {
-      await upsertWeight(date, kg);
+    const kg = aNumero(value);
+    if (Number.isNaN(kg) || kg <= 0) {
+      // Antes se cerraba sin guardar y sin decir nada: parecía que el peso se había
+      // registrado y no era así.
+      Alert.alert('Peso no válido', 'Escribe tu peso en kilos, por ejemplo 82,4.');
+      return;
     }
+    await upsertWeight(date, kg);
     onClose();
   }
 
@@ -61,9 +83,15 @@ export function AddWeightSheet({ visible, date, initialKg, isExisting, onClose }
             </Pressable>
             <TextInput
               value={value}
-              onChangeText={setValue}
+              onChangeText={onChange}
               keyboardType="decimal-pad"
               selectTextOnFocus
+              // En web `selectTextOnFocus` no hace nada, así que sin esto al tocar el campo
+              // el cursor cae donde sea y acabas añadiendo cifras al peso en vez de
+              // reemplazarlo.
+              onFocus={(e) => (e.nativeEvent.target as unknown as HTMLInputElement)?.select?.()}
+              returnKeyType="done"
+              onSubmitEditing={save}
               style={styles.input}
             />
             <Pressable style={styles.stepBtn} onPress={() => step(0.1)}>
@@ -107,6 +135,11 @@ const makeStyles = (c: Theme) =>
     stepTxt: { color: c.accent, fontSize: 26, fontWeight: '700' },
     input: {
       flex: 1,
+      // Sin `minWidth: 0` el "+" desaparecía en web: react-native-web pinta un <input>,
+      // que trae una anchura intrínseca de unos 20 caracteres, y con `min-width: auto`
+      // flexbox no lo deja encogerse por debajo de eso. El campo desbordaba la fila y
+      // empujaba el botón de la derecha fuera de la pantalla.
+      minWidth: 0,
       color: c.text,
       fontSize: 28,
       fontWeight: '800',
