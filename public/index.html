@@ -68,14 +68,16 @@
         overscroll-behavior: none;
 
         /*
-          Márgenes seguros del iPhone (notch arriba, barra de gestos abajo). Los pone el
-          body para que ninguna pantalla tenga que acordarse.
+          Los márgenes seguros del iPhone NO se ponen aquí, y esto es importante:
+          react-native-safe-area-context los lee él mismo de env(safe-area-inset-*) en web
+          (ver NativeSafeAreaProvider.web.js) y los reparte por `useSafeAreaInsets`, que es
+          lo que ya usan las pantallas. Ponerlos también en el body los sumaba dos veces, y
+          se veía como un hueco muerto debajo de todo — por ejemplo bajo el botón de guardar
+          el peso. Un solo responsable: la librería, igual que en nativo.
+
+          `viewport-fit=cover` sigue siendo necesario arriba: sin él, esos env() valen 0 y
+          la librería no tendría nada que leer.
         */
-        padding-top: env(safe-area-inset-top);
-        padding-bottom: env(safe-area-inset-bottom);
-        padding-left: env(safe-area-inset-left);
-        padding-right: env(safe-area-inset-right);
-        box-sizing: border-box;
       }
 
       /* #root hereda en porcentaje, nunca en dvh. */
