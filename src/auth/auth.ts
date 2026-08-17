@@ -5,6 +5,7 @@ import { Platform } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
 import type { AuthErrorLike } from '@/lib/auth-errors';
+import { olvidarReconciliado } from '@/db/use-reconcile';
 
 export async function signUpEmail(email: string, password: string): Promise<{ error: AuthErrorLike | null; needsConfirm: boolean }> {
   const { data, error } = await supabase.auth.signUp({ email: email.trim(), password });
@@ -19,6 +20,9 @@ export async function signInEmail(email: string, password: string): Promise<{ er
 
 export async function signOut(): Promise<void> {
   await supabase.auth.signOut();
+  // Para que el siguiente inicio de sesión vuelva a reconciliar local/nube: es la primera
+  // entrada de esa cuenta en este dispositivo otra vez.
+  await olvidarReconciliado();
 }
 
 /**

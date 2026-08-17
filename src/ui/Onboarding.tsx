@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Alert } from '@/lib/alert';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { formatDate, parseDmy } from '@/bodyweight/format';
@@ -123,20 +124,29 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
 
   async function finish() {
     setSaving(true);
-    const startFinal = startIso ?? todayIso;
-    await setProfile({
-      sex: sex!,
-      age: Math.round(Number(age)),
-      heightCm: Math.round(num(height)),
-      stage: stage!,
-      activityLevel: activity!,
-    });
-    if (level) await setLevel(level);
-    await upsertWeight(startFinal, initial);
-    if (num(target) > 0 && targetIsoParsed) {
-      await setGoal(num(target), initial, startFinal, targetIsoParsed);
+    try {
+      const startFinal = startIso ?? todayIso;
+      await setProfile({
+        sex: sex!,
+        age: Math.round(Number(age)),
+        heightCm: Math.round(num(height)),
+        stage: stage!,
+        activityLevel: activity!,
+      });
+      if (level) await setLevel(level);
+      await upsertWeight(startFinal, initial);
+      if (num(target) > 0 && targetIsoParsed) {
+        await setGoal(num(target), initial, startFinal, targetIsoParsed);
+      }
+      onDone();
+    } catch (e) {
+      // Antes no había captura ni `finally`: si algo fallaba, `saving` se quedaba en true,
+      // el botón desactivado para siempre y ni un mensaje. Quedabas encallado en el último
+      // paso sin saber por qué, y sin nada guardado.
+      Alert.alert('No he podido guardar', `${(e as Error)?.message ?? 'Error desconocido'}\n\nInténtalo otra vez.`);
+    } finally {
+      setSaving(false);
     }
-    onDone();
   }
 
   return (
