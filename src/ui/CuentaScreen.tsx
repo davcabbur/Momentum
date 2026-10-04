@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Alert } from '@/lib/alert';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,6 +25,7 @@ export function CuentaScreen() {
   const [email, setEmail] = useState('');
   const [pass, setPass] = useState('');
   const [focus, setFocus] = useState<'email' | 'pass' | null>(null);
+  const [showPass, setShowPass] = useState(false);
   const [busy, setBusy] = useState(false);
 
   // Cuenta recordada: null mientras se lee, '' si no hay ninguna.
@@ -148,25 +150,34 @@ export function CuentaScreen() {
         )}
 
         <Text style={styles.label}>Contraseña</Text>
-        <TextInput
-          value={pass}
-          onChangeText={setPass}
-          onFocus={() => setFocus('pass')}
-          onBlur={() => setFocus(null)}
-          secureTextEntry
-          // Con la cuenta ya puesta, el foco va directo a lo único que falta.
-          autoFocus={soloPass}
-          // Que iOS y el gestor de contraseñas sepan qué es esto y lo ofrezcan solo.
-          textContentType={signup ? 'newPassword' : 'password'}
-          autoComplete={signup ? 'new-password' : 'current-password'}
-          returnKeyType="go"
-          onSubmitEditing={() => {
-            if (!busy) submit();
-          }}
-          placeholder="········"
-          placeholderTextColor={c.textMuted}
-          style={[styles.input, { borderColor: borderFor('pass') }]}
-        />
+        <View style={styles.passWrap}>
+          <TextInput
+            value={pass}
+            onChangeText={setPass}
+            onFocus={() => setFocus('pass')}
+            onBlur={() => setFocus(null)}
+            secureTextEntry={!showPass}
+            // Con la cuenta ya puesta, el foco va directo a lo único que falta.
+            autoFocus={soloPass}
+            // Que iOS y el gestor de contraseñas sepan qué es esto y lo ofrezcan solo.
+            textContentType={signup ? 'newPassword' : 'password'}
+            autoComplete={signup ? 'new-password' : 'current-password'}
+            returnKeyType="go"
+            onSubmitEditing={() => {
+              if (!busy) submit();
+            }}
+            placeholder="········"
+            placeholderTextColor={c.textMuted}
+            style={[styles.input, styles.passInput, { borderColor: borderFor('pass') }]}
+          />
+          <Pressable
+            style={styles.eye}
+            hitSlop={10}
+            onPress={() => setShowPass((v) => !v)}
+            accessibilityLabel={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}>
+            <Ionicons name={showPass ? 'eye-off-outline' : 'eye-outline'} size={22} color={c.textMuted} />
+          </Pressable>
+        </View>
 
         {!signup && (
           <Pressable style={styles.forgot} onPress={forgot}>
@@ -228,6 +239,9 @@ const makeStyles = (c: Theme) =>
     accountLabel: { color: c.textMuted, fontSize: 12, fontWeight: '600' },
     accountEmail: { color: c.text, fontSize: 15, fontWeight: '600', marginTop: 2 },
     accountSwap: { color: c.accent, fontSize: 13, fontWeight: '700' },
+    passWrap: { position: 'relative', justifyContent: 'center' },
+    passInput: { paddingRight: 46 },
+    eye: { position: 'absolute', right: 14 },
     forgot: { alignSelf: 'flex-end', marginTop: 10 },
     forgotTxt: { color: c.accent, fontSize: 13, fontWeight: '700' },
     primary: {
